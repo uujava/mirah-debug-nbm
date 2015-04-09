@@ -243,7 +243,9 @@ public class ToggleBreakpointActionProvider extends ActionsProviderSupport
 
     public String[] getClassInfo(String url, final int lineNumber) {
         try {
+            //LOG.info("getClassInfo url = " + url);
             final StyledDocument doc = getStyledDocument(url);
+            //LOG.info("getClassInfo doc = " + doc);
             Source source = getSource(url);
             if (doc == null) {
                 return null;
@@ -254,6 +256,11 @@ public class ToggleBreakpointActionProvider extends ActionsProviderSupport
                 @Override
                 public void run(ResultIterator ri) throws Exception {
                     SourceQuery queryDocument = new SourceQuery(doc);
+                    if ( queryDocument == null )
+                    {
+                        LOG.info("queryDocument == null for doc = "+doc);
+                        return; 
+                    }
                     result[0] = queryDocument.findPackage();
                     result[1] = queryDocument.findClassName(offset);
                     result[2] = queryDocument.findMethodName(offset);
@@ -295,6 +302,8 @@ public class ToggleBreakpointActionProvider extends ActionsProviderSupport
         }
 
         String[] classInfo = getClassInfo(url, lineNumber);
+        if ( classInfo == null ) return;
+
         String packageName = classInfo[0];
 //        LOG.info("packageName = " + packageName + " context=" + context);
         String className = classInfo[1];
@@ -305,8 +314,10 @@ public class ToggleBreakpointActionProvider extends ActionsProviderSupport
         lb = LineBreakpoint.create(url, lineNumber);
 
         String preferredClassName = packageName + className;
-        if (packageName != null) 
+        if (packageName != null)
+        {
             preferredClassName = packageName + "." + className;
+        }
         lb.setPreferredClassName(preferredClassName);
         lb.setPrintText(NbBundle.getBundle(ToggleBreakpointActionProvider.class).getString("CTL_Line_Breakpoint_Print_Text"));
         d.addBreakpoint(lb);

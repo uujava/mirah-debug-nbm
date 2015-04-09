@@ -381,7 +381,15 @@ public class MirahParser extends Parser {
         }
         
     }
-    
+/*
+    public static void putStack(String text) {
+        for (StackTraceElement ste : Thread.currentThread().getStackTrace()) {
+            if (LOG != null) {
+                LOG.info("STACK: " + text + "-> " + ste);
+            }
+        }
+    }
+*/
     public void reparse(Snapshot snapshot, String content)
             throws ParseException {
 
@@ -394,26 +402,23 @@ public class MirahParser extends Parser {
 //        LOG.info("REPARSE:"+content);
         
         WLMirahCompiler compiler = new WLMirahCompiler();
-//        LOG.info("compiler = " + compiler.getClass());
-//        LOG.info("loader = " + compiler.getClass().getClassLoader());
         
-        compiler.setPrecompileJavaStubs(false);
+        //compiler.setPrecompileJavaStubs(false);
         
         
-        URL location = compiler.getClass().getResource('/' + compiler.getClass().getName().replace('.', '/') + ".class");
-//        LOG.info("location = " + location);
-//        LOG.info("compiler = " + compiler.getClass().getClassLoader());
+        //URL location = compiler.getClass().getResource('/' + compiler.getClass().getName().replace('.', '/') + ".class");
         
         FileObject src = snapshot.getSource().getFileObject();
-//        LOG.info("src = " + src);
+        LOG.info("src = " + src);
 
         Project project = FileOwnerQuery.getOwner(src);
+        //LOG.info("reparse project = " + project);
 
         FileObject projectDirectory = project.getProjectDirectory();
         FileObject buildDir = projectDirectory.getFileObject("build");
         Preferences projPrefs = ProjectUtils.getPreferences(project, MirahExtenderImplementation.class, true);
         String projectType = projPrefs.get("project_type", "unknown");
-//        LOG.info("Project type is "+projectType);
+        //LOG.info("reparse project type is "+projectType);
         if ( "maven".equals(projectType)){
             try {
                 // It's a maven project so we want to build our sources to a different location
@@ -435,7 +440,7 @@ public class MirahParser extends Parser {
             compileClassPathStr = compileClassPath.toString();
         }
         
-//        LOG.info("=> compileClassPath = "+compileClassPath);
+        //LOG.info("=> compileClassPath = "+compileClassPath);
         
         ClassPath buildClassPath
                 = ClassPath.getClassPath(src, ClassPath.EXECUTE);
@@ -443,18 +448,18 @@ public class MirahParser extends Parser {
         if (buildClassPath != null) {
             buildClassPathStr = buildClassPath.toString();
         }
-//        LOG.info("=> buildClassPath = " + buildClassPath);
+        //LOG.info("=> buildClassPath = " + buildClassPath);
 
         ClassPath srcClassPath = ClassPath.getClassPath(src, ClassPath.SOURCE);
         String srcClassPathStr = "";
 
-//        LOG.info("=> srcClassPath = " + srcClassPath);
+        //LOG.info("=> srcClassPath = " + srcClassPath);
         
         if (srcClassPath != null) {
             srcClassPathStr = srcClassPath.toString();
         }
         String changedSourcePaths = RecompileQueue.getProjectQueue(project).getAndClearChangedSourcePaths();
-//        LOG.info("=> changedSourcePaths = " + changedSourcePaths);
+        //LOG.info("=> changedSourcePaths = " + changedSourcePaths);
         if (changedSourcePaths != null) {
             Set<String> set = new HashSet<String>();
             set.addAll(Arrays.asList(changedSourcePaths.split(Pattern.quote(File.pathSeparator))));
@@ -465,7 +470,7 @@ public class MirahParser extends Parser {
             }
             srcClassPathStr = sb.substring(0, sb.length() - File.pathSeparator.length());
         }
-//        LOG.info("=> srcClassPathStr = " + srcClassPathStr);
+        //LOG.info("=> srcClassPathStr = " + srcClassPathStr);
        
         compiler.setSourcePath(srcClassPathStr);
 
@@ -487,8 +492,8 @@ public class MirahParser extends Parser {
 
         }
         
-//        LOG.info("=> dest = " + dest);
-//        LOG.info("=> diag = " + diag);
+        //LOG.info("=> dest = " + dest);
+        //LOG.info("=> diag = " + diag);
         
         compiler.setDestinationDirectory(new File(dest));
         compiler.setDiagnostics(diag);
@@ -573,6 +578,12 @@ public class MirahParser extends Parser {
         }
         String srcText = content;
         FileObject fakeFileRoot = getRoot(src);
+        //LOG.info("fakeFileRoot == "+fakeFileRoot);
+        if ( fakeFileRoot == null )
+        {
+            LOG.info("fakeFileRoot == NULL for src = " + src);
+            return;
+        }
         String relPath = FileUtil.getRelativePath(fakeFileRoot, src);
         relPath = relPath.substring(0, relPath.lastIndexOf("."));
         compiler.addFakeFile(relPath, srcText);
@@ -588,7 +599,7 @@ public class MirahParser extends Parser {
                 }
             }
             
-            if ("maven2".equals(projectType)){
+            if ("maven".equals(projectType)){
                 // If its a maven project, we need to copy the build files into 
                 LOG.info("This is a MAVEN PROJECT");
                 FileObject libDir = projectDirectory.getFileObject("lib");
@@ -596,9 +607,9 @@ public class MirahParser extends Parser {
                     libDir = projectDirectory.createFolder("lib");
                     
                 }
-//                LOG.info("libDir = "+libDir);
+                //LOG.info("libDir = "+libDir);
                 FileObject mirahTmpClassesDir = libDir.getFileObject("mirah-tmp-classes");
-//                LOG.info("mirahTmpClassesDir = " + mirahTmpClassesDir);
+                //LOG.info("mirahTmpClassesDir = " + mirahTmpClassesDir);
                 if ( mirahTmpClassesDir == null ){
                     mirahTmpClassesDir = libDir.createFolder("mirah-tmp-classes");
                 }
@@ -612,7 +623,7 @@ public class MirahParser extends Parser {
             ex.printStackTrace();
         }
 
-//        LOG.info("resolvedTypes = "+debugger.resolvedTypes.size());
+        //LOG.info("resolvedTypes = "+debugger.resolvedTypes.size());
         
         synchronized (documentDebuggers) {
 
@@ -620,7 +631,7 @@ public class MirahParser extends Parser {
 
             if (debugger.resolvedTypes.size() > 0) {
                 debugger.compiler = compiler.getMirahc();
-
+//putStack("8");
                 documentDebuggers.put(doc, debugger);
                 fireOnParse(doc);
             }
@@ -630,14 +641,17 @@ public class MirahParser extends Parser {
 
     private FileObject getRoot(FileObject file) {
         Project project = FileOwnerQuery.getOwner(file);
+        //LOG.info("getRoot file="+file+" project="+project);
         Sources sources = ProjectUtils.getSources(project);
         for (SourceGroup sourceGroup : sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
+            //LOG.info("getRoot sourceGroup=" + sourceGroup);
             FileObject root = sourceGroup.getRootFolder();
+            //LOG.info("getRoot root=" + root);
             if (FileUtil.isParentOf(root, file) || root.equals(file)) {
                 return root;
             }
         }
-        return null;
+        return ClassPath.getClassPath(file, ClassPath.SOURCE).findOwnerRoot(file);
     }
 
     @Override

@@ -228,6 +228,9 @@ public class EditorContextImpl extends EditorContext {
      * @param timeStamp a time stamp to be used
      */
     public boolean showSource(String url, int lineNumber, int column, int length, Object timeStamp) {
+        
+        //LOG.info("showSource url="+url+" lineNumber="+lineNumber);
+        
         Line l = LineTranslations.getTranslations().getLine(url, lineNumber, timeStamp); // false = use original ln
         if (l == null) {
             ErrorManager.getDefault().log(ErrorManager.WARNING,

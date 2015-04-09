@@ -87,6 +87,7 @@ public class SourcePath {
 
     public SourcePath (ContextProvider contextProvider) {
         this.contextProvider = contextProvider;
+        //LOG.info("SourcePath contextProvider="+contextProvider);
         debugger = contextProvider.lookupFirst(null, JPDADebugger.class);
         getContext();// To initialize the source path provider
     }
@@ -95,12 +96,14 @@ public class SourcePath {
         if (sourcePathProvider == null) {
             List l = contextProvider.lookup (null, SourcePathProvider.class);
             sourcePathProvider = (SourcePathProvider) l.get (0);
+            //LOG.info("SourcePath sourcePathProvider=" + sourcePathProvider);
             int i, k = l.size ();
             for (i = 1; i < k; i++) {
                 sourcePathProvider = new CompoundContextProvider (
                     (SourcePathProvider) l.get (i),
                     sourcePathProvider
                 );
+                //LOG.info("SourcePath2 sourcePathProvider=" + sourcePathProvider);
             }
             initSourcePaths ();
         }
@@ -109,7 +112,7 @@ public class SourcePath {
 
     static SourcePathProvider getDefaultContext() {
         
-//        LOG.info("getDefaultContext");
+        LOG.info("getDefaultContext");
         List providers = DebuggerManager.getDebuggerManager().
                 lookup("netbeans-JPDASession", SourcePathProvider.class);
         for (Iterator it = providers.iterator(); it.hasNext(); ) {
@@ -140,7 +143,7 @@ public class SourcePath {
         char directorySeparator,
         boolean includeExtension
     ) {
-//        LOG.info("getRelativePath");
+        //LOG.info("getRelativePath url="+url+" rel = "+getContext().getRelativePath(url, directorySeparator, includeExtension));
         return getContext ().getRelativePath
             (url, directorySeparator, includeExtension);
     }
@@ -162,7 +165,7 @@ public class SourcePath {
         StackFrame sf,
         String stratumn
     ) {
-//        LOG.info("getURL stratumn="+stratumn);
+        //LOG.info("getURL stratumn="+stratumn);
         try {
             return getURL (
                 convertSlash (sf.location ().sourcePath (stratumn)),
@@ -182,7 +185,7 @@ public class SourcePath {
      * Returns array of source roots.
      */
     public String[] getSourceRoots () {
-//        LOG.info("getSourceRoots");
+        //LOG.info("getSourceRoots = "+getContext().getSourceRoots());
         return getContext ().getSourceRoots ();
     }
 
@@ -239,7 +242,7 @@ public class SourcePath {
         String stratumn,
         boolean global
     ) {
-//        LOG.info("sourceAvailable t="+t+" stratumn="+stratumn);
+        //LOG.info("sourceAvailable t="+t+" stratumn="+stratumn);
         try {
             return sourceAvailable (
                 convertSlash (t.getSourcePath (stratumn)), global
@@ -290,7 +293,7 @@ public class SourcePath {
         JPDAThread t,
         String stratumn
     ) {
-//        LOG.info("showSource t=" + t + " stratumn=" + stratumn);
+        LOG.info("showSource t=" + t + " stratumn=" + stratumn);
         int lineNumber = t.getLineNumber (stratumn);
         if (lineNumber < 1) lineNumber = 1;
         try {
@@ -312,7 +315,7 @@ public class SourcePath {
 
     public boolean showSource (CallStackFrame csf, String stratumn) {
         try {
-//            LOG.info("showSource csf=" + csf + " stratumn=" + stratumn);
+            //LOG.info("showSource csf=" + csf + " stratumn=" + stratumn);
             String url = getURL (
                 convertSlash (csf.getSourcePath (stratumn)), true
             );
@@ -354,7 +357,7 @@ public class SourcePath {
     }
 
     public boolean showSource (Field v) {
-//        LOG.info("showSource v=" + v);
+        //LOG.info("showSource v=" + v);
         String fieldName = ((Field) v).getName ();
         String className = className = ((Field) v).getClassName ();
         String url = getURL (
@@ -430,7 +433,7 @@ public class SourcePath {
         CallStackFrame csf,
         String stratumn
     ) {
-//        LOG.info("annotate csf=" + csf + " stratumn=" + stratumn);
+        //LOG.info("annotate csf=" + csf + " stratumn=" + stratumn);
         int lineNumber = csf.getLineNumber (stratumn);
         if (lineNumber < 1) return null;
         Operation operation = csf.getCurrentOperation(stratumn);
@@ -542,7 +545,7 @@ public class SourcePath {
                                            Operation operation, String type,
                                            boolean method) {
 
-//        LOG.info("createAnnotation debugger=" + debugger + " operation=" + operation);
+        //LOG.info("createAnnotation debugger=" + debugger + " operation=" + operation);
 
         int startOffset;
         int endOffset;

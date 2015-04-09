@@ -8,6 +8,7 @@ package ca.weblite.netbeans.mirah;
 
 
 import ca.weblite.netbeans.mirah.support.api.MirahExtender;
+import java.util.logging.Logger;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -21,6 +22,8 @@ import org.openide.filesystems.FileObject;
  */
 public class MirahOnSaveTask implements OnSaveTask {
 
+    
+    private static Logger LOG = Logger.getLogger(MirahOnSaveTask.class.getCanonicalName());
     Context context;
     
     private MirahOnSaveTask(Context context){
@@ -30,16 +33,20 @@ public class MirahOnSaveTask implements OnSaveTask {
     @Override
     public void performTask() {
         
+        //LOG.info("performTask!!!");
         FileObject fo = NbEditorUtilities.getFileObject(context.getDocument());
         Project proj = FileOwnerQuery.getOwner(fo);
-        
-         if (!MirahExtender.isActive(proj)) {
+        //LOG.info("fo = "+fo+" project = "+proj);
+        if (!MirahExtender.isActive(proj)) {
+            //LOG.info("MirahExtender.activate!!");
             MirahExtender.activate(proj);
         }
         System.out.println("About to check if mirah is current");
+        //LOG.info("About to check if mirah is current");
         
         if (!MirahExtender.isCurrent(proj)){
             System.out.println("Mirah is not current");
+            //LOG.info("Mirah is not current!!!");
             MirahExtender.update(proj);
         }
     }

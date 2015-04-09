@@ -71,9 +71,28 @@ public class SourceQuery implements List<Node>{
         this.results = new ArrayList<Node>();
         this.results.add(root);
     }
-    
+    /*
+    public static void putStack(String text) {
+
+        for (StackTraceElement ste : Thread.currentThread().getStackTrace()) {
+            if (LOG != null) {
+                LOG.info("STACK: " + text + "-> " + ste);
+            }
+        }
+    }
+    */
     public String findPackage() {
-        List<Node> list = (results != null) ? results : dbg.compiler.compiler().getParsedNodes();
+        List<Node> list = results;
+        if ( list == null )
+        {
+            if ( dbg == null || dbg.compiler == null || dbg.compiler.compiler() == null )
+            {
+                //LOG.info("findPackage DEBUGGER is NULL!!!");
+                return null;
+            }
+            list = dbg.compiler.compiler().getParsedNodes();
+        }
+//        List<Node> list = (results != null) ? results : dbg.compiler.compiler().getParsedNodes();
         for (int i = 0; i < list.size(); i++)
         if (list.get(i) instanceof Script) {
             Script script = (Script) list.get(i);
@@ -87,6 +106,11 @@ public class SourceQuery implements List<Node>{
     }
     
     public SourceQuery findClasses(int offset){
+
+        if (dbg == null || dbg.compiler == null || dbg.compiler.compiler() == null) {
+            //LOG.info("findClasses DEBUGGER is NULL!!!");
+            return null;
+        }
         ClassScanner scanner = new ClassScanner();
         scanner.offset = offset;
         for( Object node : dbg.compiler.compiler().getParsedNodes() ){
@@ -96,6 +120,10 @@ public class SourceQuery implements List<Node>{
     }
     
     public SourceQuery findMethods(int offset){
+        if (dbg == null || dbg.compiler == null || dbg.compiler.compiler() == null) {
+            //LOG.info("findMethods DEBUGGER is NULL!!!");
+            return null;
+        }
         MethodOffsetScanner scanner = new MethodOffsetScanner();
         scanner.offset = offset;
         for( Object node : dbg.compiler.compiler().getParsedNodes() ){
