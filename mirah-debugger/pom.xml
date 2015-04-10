@@ -23,6 +23,10 @@
     <packaging>nbm</packaging>
     <repositories>
         <repository>
+            <id>central</id>
+            <url>http://192.168.3.209/artifactory/repo</url>
+        </repository>
+        <!-- repository>
             <id>local-artifactory</id>
             <name>local artifactory</name>
             <releases>
@@ -37,8 +41,7 @@
             </snapshots>
             <url>http://192.168.3.209/artifactory/repo</url>
             <layout>default</layout>
-        </repository>
-        
+        </repository -->
         <repository>
             <id>netbeans</id>
             <name>NetBeans Platform Maven Repository</name>
@@ -50,21 +53,19 @@
                 <enabled>false</enabled>
             </snapshots>
         </repository>
-
         <repository>
             <id>repository.jboss.org-public</id>
             <name>JBoss.org Maven repository</name>
             <url>http://repository.jboss.org/nexus/content/groups/public</url>
         </repository>
-
-        <repository>
+        <!-- repository>
             <id>Typesafe releases</id>
             <url>http://repo.typesafe.com/typesafe/ivy-releases</url>
         </repository>
         <repository>
             <id>Typesafe snapshots</id>
             <url>http://repo.typesafe.com/typesafe/ivy-snapshots</url>
-        </repository>
+        </repository -->
 
     </repositories>
     <!-- repositories>
