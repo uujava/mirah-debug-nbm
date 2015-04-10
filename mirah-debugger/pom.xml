@@ -140,6 +140,7 @@
             <artifactId>org-netbeans-api-debugger</artifactId>
             <version>${netbeans.version}</version>
             <!-- scope>provided</scope -->
+            <type>nbm</type>
         </dependency>
         <dependency>
             <groupId>org.netbeans.api</groupId>
