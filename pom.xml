@@ -23,13 +23,13 @@
     <bundle.namespace>${project.groupId}.${project.artifactId}</bundle.namespace>
   </properties>
     <repositories>
-            <repository>
+            <!-- repository>
                     <id>central</id>
                     <url>http://192.168.3.209/artifactory/repo</url>
-                    <!-- url>http://localhost:8081/artifactory/repo</url -->
-            </repository>
+                    <!- url>http://localhost:8081/artifactory/repo</url ->
+            </repository -->
         
-            <!-- repository>
+            <repository>
                 <id>local-artifactory</id>
                 <name>local artifactory</name>
                 <releases>
@@ -44,7 +44,7 @@
                 </snapshots>
                 <url>http://192.168.3.209/artifactory/repo</url>
                 <layout>default</layout>
-            </repository -->
+            </repository>
         <repository>
             <id>netbeans</id>
             <name>NetBeans Platform Maven Repository</name>

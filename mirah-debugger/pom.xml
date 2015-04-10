@@ -21,7 +21,24 @@
     <groupId>ru-programpark</groupId>
     <name>mirah-debugger</name>
     <packaging>nbm</packaging>
-<!--    <repositories>
+    <repositories>
+        <repository>
+            <id>local-artifactory</id>
+            <name>local artifactory</name>
+            <releases>
+                <enabled>true</enabled>
+                <updatePolicy>always</updatePolicy>
+                <checksumPolicy>fail</checksumPolicy>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+                <updatePolicy>always</updatePolicy>
+                <checksumPolicy>fail</checksumPolicy>
+            </snapshots>
+            <url>http://192.168.3.209/artifactory/repo</url>
+            <layout>default</layout>
+        </repository>
+        
         <repository>
             <id>netbeans</id>
             <name>NetBeans Platform Maven Repository</name>
@@ -49,8 +66,7 @@
             <url>http://repo.typesafe.com/typesafe/ivy-snapshots</url>
         </repository>
 
-    </repositories>-->
-
+    </repositories>
     <!-- repositories>
         
 <repository>
@@ -132,7 +148,7 @@
         <enabled>false</enabled>
     </releases>
 </repository>   
-    </repositories-->
+    </repositories -->
   
     <dependencies>
         <dependency>
@@ -140,14 +156,14 @@
             <artifactId>org-netbeans-api-debugger</artifactId>
             <version>${netbeans.version}</version>
             <!-- scope>provided</scope -->
-            <type>nbm</type>
+            <!-- type>nbm</type -->
         </dependency>
         <dependency>
             <groupId>org.netbeans.api</groupId>
             <artifactId>org-netbeans-api-debugger-jpda</artifactId>
             <version>${netbeans.version}</version>
             <!-- scope>provided</scope -->
-            <type>nbm</type>
+            <!-- type>nbm</type -->
         </dependency>
         <dependency>
             <groupId>org.netbeans.api</groupId>
