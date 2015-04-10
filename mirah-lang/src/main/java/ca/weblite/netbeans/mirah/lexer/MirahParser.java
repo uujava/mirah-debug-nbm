@@ -651,6 +651,14 @@ public class MirahParser extends Parser {
                 return root;
             }
         }
+	    for (SourceGroup sourceGroup : sources.getSourceGroups("ruby")) {
+		    //LOG.info("getRoot sourceGroup=" + sourceGroup);
+		    FileObject root = sourceGroup.getRootFolder();
+		    //LOG.info("getRoot root=" + root);
+		    if (FileUtil.isParentOf(root, file) || root.equals(file)) {
+			    return root;
+		    }
+	    }
         return ClassPath.getClassPath(file, ClassPath.SOURCE).findOwnerRoot(file);
     }
 

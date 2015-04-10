@@ -27,49 +27,8 @@
                     <id>central</id>
                     <url>http://192.168.3.209/artifactory/repo</url>
             </repository>
-        
-            <!-- repository>
-                <id>local-artifactory</id>
-                <name>local artifactory</name>
-                <releases>
-                    <enabled>true</enabled>
-                    <updatePolicy>always</updatePolicy>
-                    <checksumPolicy>fail</checksumPolicy>
-                </releases>
-                <snapshots>
-                    <enabled>true</enabled>
-                    <updatePolicy>always</updatePolicy>
-                    <checksumPolicy>fail</checksumPolicy>
-                </snapshots>
-                <url>http://192.168.3.209/artifactory/repo</url>
-                <layout>default</layout>
-            </repository -->
-        <repository>
-            <id>netbeans</id>
-            <name>NetBeans Platform Maven Repository</name>
-            <url>http://bits.netbeans.org/nexus/content/groups/netbeans</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </repository>
-        <repository>
-            <id>repository.jboss.org-public</id>
-            <name>JBoss.org Maven repository</name>
-            <url>http://repository.jboss.org/nexus/content/groups/public</url>
-        </repository>
-        <repository>
-            <id>Typesafe releases</id>
-            <url>http://repo.typesafe.com/typesafe/ivy-releases</url>
-        </repository>
-        <repository>
-            <id>Typesafe snapshots</id>
-            <url>http://repo.typesafe.com/typesafe/ivy-snapshots</url>
-        </repository>
     </repositories>
-  <dependencies>
+  <!--dependencies>
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
@@ -81,11 +40,6 @@
       <artifactId>maven-mirah-plugin</artifactId>
       <version>1.2-SNAPSHOT</version>
     </dependency>
-    <!-- dependency>
-      <groupId>${project.groupId}</groupId>
-      <artifactId>mirah-parser</artifactId>
-      <version>2.1</version>
-    </dependency -->
     <dependency>
       <groupId>org.netbeans.modules</groupId>
       <artifactId>org-netbeans-modules-java-preprocessorbridge</artifactId>
@@ -97,7 +51,7 @@
       <version>${netbeans.version}</version>
       <type>nbm</type>
     </dependency>
-  </dependencies>
+  </dependencies-->
   <build>
     <pluginManagement>
       <plugins>
