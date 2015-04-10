@@ -140,12 +140,14 @@
             <artifactId>org-netbeans-api-debugger</artifactId>
             <version>${netbeans.version}</version>
             <!-- scope>provided</scope -->
+            <type>nbm</type>
         </dependency>
         <dependency>
             <groupId>org.netbeans.api</groupId>
             <artifactId>org-netbeans-api-debugger-jpda</artifactId>
             <version>${netbeans.version}</version>
             <!-- scope>provided</scope -->
+            <type>nbm</type>
         </dependency>
         <dependency>
             <groupId>org.netbeans.api</groupId>
@@ -171,11 +173,13 @@
             <groupId>org.netbeans.api</groupId>
             <artifactId>org-netbeans-spi-debugger-ui</artifactId>
             <version>${netbeans.version}</version>
+            <type>nbm</type>
         </dependency>
         <dependency>
             <groupId>org.netbeans.api</groupId>
             <artifactId>org-netbeans-spi-viewmodel</artifactId>
             <version>${netbeans.version}</version>
+            <type>nbm</type>
         </dependency>
         <dependency>
             <groupId>org.netbeans.api</groupId>
@@ -235,6 +239,7 @@
             <artifactId>org-netbeans-modules-debugger-jpda-ui</artifactId>
             <version>${netbeans.version}</version>
             <scope>provided</scope>
+            <type>nbm</type>
         </dependency>
         <dependency>
             <groupId>org.netbeans.api</groupId>

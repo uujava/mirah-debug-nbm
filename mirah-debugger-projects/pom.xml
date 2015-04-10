@@ -65,6 +65,7 @@
             <groupId>org.netbeans.api</groupId>
             <artifactId>org-netbeans-api-debugger</artifactId>
             <version>${netbeans.version}</version>
+            <type>nbm</type>
         </dependency>
         <dependency>
             <groupId>org.netbeans.api</groupId>
