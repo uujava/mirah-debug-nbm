@@ -66,8 +66,25 @@
             <id>Typesafe snapshots</id>
             <url>http://repo.typesafe.com/typesafe/ivy-snapshots</url>
         </repository -->
-
     </repositories>
+    <pluginRepositories>
+        <pluginRepository>
+            <id>local-artifactory</id>
+            <name>local artifactory</name>
+            <releases>
+                <enabled>true</enabled>
+                <updatePolicy>always</updatePolicy>
+                <checksumPolicy>fail</checksumPolicy>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+                <updatePolicy>always</updatePolicy>
+                <checksumPolicy>fail</checksumPolicy>
+            </snapshots>
+            <url>http://192.168.3.209/artifactory/repo</url>
+            <layout>default</layout>
+        </pluginRepository>
+    </pluginRepositories> 
     <dependencies>
         <dependency>
             <groupId>org.netbeans.api</groupId>
