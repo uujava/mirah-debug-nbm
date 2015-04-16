@@ -6,6 +6,7 @@
 
 package ca.weblite.netbeans.mirah.cc;
 
+import ca.weblite.netbeans.mirah.LOG;
 import ca.weblite.netbeans.mirah.lexer.ClassQuery;
 import ca.weblite.netbeans.mirah.lexer.MirahLanguageHierarchy;
 import ca.weblite.netbeans.mirah.lexer.MirahParser;
@@ -13,6 +14,7 @@ import ca.weblite.netbeans.mirah.lexer.MirahTokenId;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
@@ -46,6 +48,7 @@ import org.openide.util.Exceptions;
  * @author shannah
  */
 public class DefCompletionQuery extends AsyncCompletionQuery {
+
     boolean parsed = false;
     int tries = 0;
     
@@ -96,6 +99,8 @@ public class DefCompletionQuery extends AsyncCompletionQuery {
 
     @Override
     protected void query(final CompletionResultSet crs, final Document doc, final int caretOffset) {
+        
+        LOG.info(this,"query = query="+crs);
         
         try {
 

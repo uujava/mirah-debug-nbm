@@ -116,12 +116,12 @@ public class ClassIndex {
         }
         public void addMatch(String match){
             if ( matchSet.contains(match)){
-                //System.out.println("Matchset already contains "+match);
+                LOG.info(this,"Matchset already contains "+match);
                 return;
             }
-            //System.out.println("Adding match "+match);
+            LOG.info(this,"Adding match "+match);
             matchSet.add(match);
-            //System.out.println(matchSet);
+            LOG.info(this,":::: "+matchSet);
             while ( match.indexOf(".")==0 ){
                 match = match.substring(1);
             }
@@ -136,6 +136,7 @@ public class ClassIndex {
     
     public void findClass(CompoundQuery query, Future results){
         for ( Query q : query.queries ){
+            LOG.info(this,"findClass q-"+q);
             findClass(q, results);
         }
     }
@@ -145,6 +146,7 @@ public class ClassIndex {
             int numBefore = results.getMatches().size();
             findClass(root, results.getMatches(), query.simpleName, query.prefix);
             int numAfter = results.getMatches().size();
+            LOG.info(this,"findClass query=" + query.simpleName + " numAfter=" + numAfter + " numBefore=" + numBefore);
             if ( numBefore != numAfter ){
                 results.resultsAdded();
             }
@@ -158,6 +160,9 @@ public class ClassIndex {
     private static void findClass(FileObject root, List<String> matches, final String simpleName, final String prefix) {
         FileObject start = root;
         String[] prefixSegments = prefix.split("/");
+        
+        LOG.info(ClassIndex.class,"findClass root="+root+" simpleName="+simpleName+" prefix="+prefix);
+        
         for ( String seg : prefixSegments ){
             if ( start.getFileObject(seg) != null ){
                 start = start.getFileObject(seg);
@@ -170,9 +175,12 @@ public class ClassIndex {
                 if ( obj instanceof FileObject ){
                     FileObject fo = (FileObject)obj;
                     String name = fo.getName();
+//                    LOG.info(ClassIndex.class,"equals name="+name+"."+fo.getExt()+" simpleName="+simpleName );
                     //if ( name.contains("JMenu")){
                     //    System.err.println("Name "+name+" simple name "+simpleName+" fo "+fo+" ext "+fo.getExt());
                     //}
+                    if ( "class".equals(fo.getExt()) && (simpleName.equals(name) || name.endsWith("$" + simpleName)) )
+                    LOG.info(ClassIndex.class,"EQUALS!!!!!!!! "+simpleName);
                     return ("class".equals(fo.getExt()) && (simpleName.equals(name) || name.endsWith("$"+simpleName)));
                 }
                 return false;
@@ -183,6 +191,7 @@ public class ClassIndex {
         find(start, foMatches, cmp);
         for ( FileObject fo : foMatches ){
             String fqn = getFQN(root, fo);
+            LOG.info(ClassIndex.class,"fqn = "+fqn);
             matches.add(fqn);
             
         }

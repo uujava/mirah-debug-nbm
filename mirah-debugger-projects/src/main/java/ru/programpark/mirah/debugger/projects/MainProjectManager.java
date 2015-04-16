@@ -43,7 +43,6 @@ package ru.programpark.mirah.debugger.projects;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.util.logging.Logger;
 import javax.swing.Action;
 import org.netbeans.api.project.Project;
 import org.netbeans.spi.project.ui.support.MainProjectSensitiveActions;
@@ -57,9 +56,6 @@ public class MainProjectManager implements ProjectActionPerformer {
 
     private static MainProjectManager mainProjectManager = new MainProjectManager ();
 
-    static Logger LOG = Logger.getLogger(MainProjectManager.class.getCanonicalName());
-    
-    
     public static MainProjectManager getDefault () {
         return mainProjectManager;
     }

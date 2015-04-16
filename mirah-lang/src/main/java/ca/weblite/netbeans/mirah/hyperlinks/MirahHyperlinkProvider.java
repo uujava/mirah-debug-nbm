@@ -6,6 +6,7 @@
 
 package ca.weblite.netbeans.mirah.hyperlinks;
 
+import ca.weblite.netbeans.mirah.LOG;
 import ca.weblite.netbeans.mirah.cc.MirahCodeCompleter;
 import ca.weblite.netbeans.mirah.lexer.MirahLanguageHierarchy;
 import ca.weblite.netbeans.mirah.lexer.MirahParser;
@@ -33,6 +34,7 @@ import org.netbeans.lib.editor.hyperlink.spi.HyperlinkType;
 @MimeRegistration(mimeType = "text/x-mirah", service = HyperlinkProviderExt.class)
 public class MirahHyperlinkProvider implements HyperlinkProviderExt  {
 
+    
     private enum LinkType {
         Constant,
         Identifier,
@@ -68,6 +70,7 @@ public class MirahHyperlinkProvider implements HyperlinkProviderExt  {
     @Override
     public void performClickAction(Document dcmnt, int i, HyperlinkType ht) {
         
+        LOG.info(this,"performClickAction doc="+dcmnt+" i="+i+" ht="+ht);
     }
 
     @Override

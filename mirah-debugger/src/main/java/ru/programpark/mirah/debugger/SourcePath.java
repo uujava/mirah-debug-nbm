@@ -52,7 +52,6 @@ import java.util.Iterator;
 import java.util.WeakHashMap;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Logger;
 import org.netbeans.api.debugger.Properties;
 import org.netbeans.spi.debugger.ContextProvider;
 
@@ -79,7 +78,6 @@ import org.openide.ErrorManager;
  */
 public class SourcePath {
 
-    static Logger LOG = Logger.getLogger(SourcePath.class.getCanonicalName());    
     private ContextProvider         contextProvider;
     private SourcePathProvider      sourcePathProvider;
     private JPDADebugger            debugger;
@@ -112,7 +110,7 @@ public class SourcePath {
 
     static SourcePathProvider getDefaultContext() {
         
-        LOG.info("getDefaultContext");
+        LOG.info(SourcePath.class,"getDefaultContext");
         List providers = DebuggerManager.getDebuggerManager().
                 lookup("netbeans-JPDASession", SourcePathProvider.class);
         for (Iterator it = providers.iterator(); it.hasNext(); ) {
@@ -293,7 +291,7 @@ public class SourcePath {
         JPDAThread t,
         String stratumn
     ) {
-        LOG.info("showSource t=" + t + " stratumn=" + stratumn);
+        LOG.info(this,"showSource t=" + t + " stratumn=" + stratumn);
         int lineNumber = t.getLineNumber (stratumn);
         if (lineNumber < 1) lineNumber = 1;
         try {

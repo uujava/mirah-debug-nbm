@@ -6,6 +6,7 @@
 
 package ca.weblite.netbeans.mirah.lexer;
 
+import ca.weblite.netbeans.mirah.LOG;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -236,6 +237,8 @@ public class DocumentQuery {
     }
    
     public boolean requiresImport(String fqn){
+        
+        LOG.info(this,"requiresImport = "+fqn);
         if ( fqn == null ){
             return false;
         }

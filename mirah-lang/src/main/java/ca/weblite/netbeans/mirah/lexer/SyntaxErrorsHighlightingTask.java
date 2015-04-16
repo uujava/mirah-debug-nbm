@@ -13,7 +13,6 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.text.Document;
@@ -38,8 +37,6 @@ import org.openide.util.RequestProcessor;
  * @author shannah
  */
 class SyntaxErrorsHighlightingTask extends ParserResultTask {
-
-    private static final Logger LOG = Logger.getLogger(SyntaxErrorsHighlightingTask.class.getCanonicalName());
 
     public SyntaxErrorsHighlightingTask() {
        

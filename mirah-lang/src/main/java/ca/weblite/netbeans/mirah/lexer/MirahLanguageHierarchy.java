@@ -14,7 +14,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Logger;
 import mirah.impl.MirahParser;
 import mirah.impl.Tokens;
 import mirah.impl.Tokens.*;
@@ -90,8 +89,7 @@ public class MirahLanguageHierarchy extends LanguageHierarchy<MirahTokenId>{
         
            
     };
-    private static final Logger LOG =
-    Logger.getLogger(MirahLanguageHierarchy.class.getCanonicalName());
+
     private static List<MirahTokenId>  tokens;
     private static Map<Integer,MirahTokenId>
                                     idToToken;

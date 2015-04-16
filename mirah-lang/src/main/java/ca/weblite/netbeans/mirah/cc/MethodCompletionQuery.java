@@ -6,6 +6,7 @@
 
 package ca.weblite.netbeans.mirah.cc;
 
+import ca.weblite.netbeans.mirah.LOG;
 import ca.weblite.netbeans.mirah.lexer.DocumentQuery;
 import ca.weblite.netbeans.mirah.lexer.MirahParser;
 import ca.weblite.netbeans.mirah.lexer.MirahTokenId;
@@ -40,6 +41,7 @@ import org.openide.util.Exceptions;
  * @author shannah
  */
 public class MethodCompletionQuery extends AsyncCompletionQuery {
+    
     boolean parsed = false;
     int tries = 0;
     Object lock = new Object();
@@ -57,6 +59,9 @@ public class MethodCompletionQuery extends AsyncCompletionQuery {
 
     @Override
     protected boolean canFilter(JTextComponent component) {
+        
+        LOG.info(this,"canFilter component="+component);
+        
         if ( currentType == null ){
             return false;
         }
@@ -89,6 +94,7 @@ public class MethodCompletionQuery extends AsyncCompletionQuery {
     @Override
     protected void filter(CompletionResultSet resultSet) {
         //System.out.println("Filter "+filter);
+        LOG.info(this,"Filter "+filter);
         for ( Method m : currentType.getMethods()){
             if ( m.getName().toLowerCase().indexOf(filter.toLowerCase()) == 0 && isStatic == Modifier.isStatic(m.getModifiers()) ){
                 resultSet.addItem(new MirahMethodCompletionItem(file, m, initialOffset, filter.length(), currentType));
@@ -104,6 +110,10 @@ public class MethodCompletionQuery extends AsyncCompletionQuery {
     @Override
     protected void query(final CompletionResultSet crs, final Document doc, final int caretOffset) {
         BaseDocument bdoc = (BaseDocument)doc;
+        
+        LOG.info(this,"query bdoc=" + bdoc);
+        LOG.info(this,"query caretOffset=" + caretOffset);
+
         if ( crs.isFinished() || this.isTaskCancelled()){
             return;
         }
@@ -117,6 +127,7 @@ public class MethodCompletionQuery extends AsyncCompletionQuery {
 
         tries++;
         MirahParser.DocumentDebugger dbg = MirahParser.getDocumentDebugger(doc);
+        LOG.info(this,"query dbg=" + dbg);
 
         if ( dbg != null ){
             try {
@@ -141,6 +152,9 @@ public class MethodCompletionQuery extends AsyncCompletionQuery {
                 // the dot that we will be checking for a type
                 Token<MirahTokenId> subjectToken = null;
                 Token<MirahTokenId> thisTok = toks.token();
+                
+                LOG.info(this,"query subjectToken=" + subjectToken);
+                LOG.info(this,"query thisTok=" + thisTok);
                 if ( thisTok != null ){
                     MirahTokenId thisTokType = thisTok.id();
 
@@ -165,6 +179,7 @@ public class MethodCompletionQuery extends AsyncCompletionQuery {
                     }
 
                 }
+                LOG.info(this,"query dotToken=" + dotToken);
 
                 if ( dotToken == null ){
                     crs.finish();
@@ -182,6 +197,7 @@ public class MethodCompletionQuery extends AsyncCompletionQuery {
                         break;
                     }
                 }
+                LOG.info(this,"query subjectToken=" + subjectToken);
 
 
 
@@ -203,6 +219,8 @@ public class MethodCompletionQuery extends AsyncCompletionQuery {
 
                 Node foundNode = MirahCodeCompleter.findNode(dbg, subjectToken.offset(hi)+subjectToken.length());
 
+                LOG.info(this,"query foundNode=" + foundNode);
+
                 ResolvedType type = null;
                 if ( foundNode != null ){
                     type = dbg.getType(foundNode);
@@ -220,6 +238,7 @@ public class MethodCompletionQuery extends AsyncCompletionQuery {
                     //}
 
                 }
+                LOG.info(this,"query type=" + type);
 
                 if ( foundNode == null || type == null ){
                     Source src = Source.create(doc);
@@ -233,6 +252,7 @@ public class MethodCompletionQuery extends AsyncCompletionQuery {
                             sb.append(' ');
                         }
                         sb.append(text.substring(eol));
+                        LOG.info(this,"query reparse=" + sb.toString());
 
                         parser.reparse(snapshot, sb.toString());
 
@@ -248,10 +268,12 @@ public class MethodCompletionQuery extends AsyncCompletionQuery {
                     }
 
                 }
+                LOG.info(this,"query foundNode3=" + foundNode);
 
                 if ( foundNode != null ){
 
                     type = dbg.getType(foundNode);
+                    LOG.info(this,"query type=" + type);
 
                     if ( type != null ){
 
@@ -259,15 +281,18 @@ public class MethodCompletionQuery extends AsyncCompletionQuery {
                         FileObject fileObject = NbEditorUtilities.getFileObject(doc);
                         Class cls = MirahCodeCompleter.findClass(fileObject, dbg.getType(foundNode).name());
                         currentType = cls;
+                        LOG.info(this,"query cls=" + cls);
 
                         isStatic = foundNode instanceof Constant;
                         if ( cls != null ){
                             if ( isStatic && filter == null || "new".startsWith(filter)){
                                 for ( Constructor c : cls.getConstructors()){
+                                    LOG.info(this,"query Constructor=" + c);
                                     crs.addItem(new MirahConstructorCompletionItem(c, caretOffset-filter.length(), filter.length()));
                                 }
                             }
                             for ( Method m : cls.getMethods()){
+                                LOG.info(this,"query Method=" + m);
                                 if ( m.getName().startsWith(filter) && isStatic == Modifier.isStatic(m.getModifiers())){
                                     crs.addItem(new MirahMethodCompletionItem(fileObject, m, caretOffset-filter.length(), filter.length(), cls));
                                 }

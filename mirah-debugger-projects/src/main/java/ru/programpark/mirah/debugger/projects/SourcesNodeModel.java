@@ -42,7 +42,6 @@
 package ru.programpark.mirah.debugger.projects;
 
 import java.io.File;
-import java.util.logging.Logger;
 
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -66,12 +65,9 @@ public class SourcesNodeModel implements NodeModel {
     public static final String FILTER =
         "org/netbeans/modules/debugger/jpda/resources/Filter";
 
-    static Logger LOG = Logger.getLogger(SourcesNodeModel.class.getCanonicalName());
-
-
     public String getDisplayName (Object o) throws UnknownTypeException {
         
-        LOG.info("getDisplayName o="+o);
+        LOG.info(this,"getDisplayName o="+o);
         if (o == TreeModel.ROOT) {
             return NbBundle.getBundle(SourcesNodeModel.class).getString("CTL_SourcesModel_Column_Name_Name");
         } else
@@ -95,7 +91,7 @@ public class SourcesNodeModel implements NodeModel {
     }
 
     public String getShortDescription (Object o) throws UnknownTypeException {
-                LOG.info("getShortDescription o="+o);
+                LOG.info(this,"getShortDescription o="+o);
 
         if (o == TreeModel.ROOT)
             return NbBundle.getBundle(SourcesNodeModel.class).getString("CTL_SourcesModel_Column_Name_Desc");

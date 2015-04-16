@@ -46,7 +46,6 @@ import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Set;
-import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.debugger.ActionsManager;
 
@@ -80,8 +79,6 @@ public class FixActionProvider extends ActionsProviderSupport {
 
     private JPDADebugger debugger;
     private Listener listener;
-    static Logger LOG = Logger.getLogger(FixActionProvider.class.getCanonicalName());
-
 
     public FixActionProvider (ContextProvider lookupProvider) {
         debugger = lookupProvider.lookupFirst(null, JPDADebugger.class);
@@ -110,7 +107,7 @@ public class FixActionProvider extends ActionsProviderSupport {
 
     public void doAction (Object action) {
         
-        LOG.info("doAction action="+action);
+        LOG.info(this,"doAction action="+action);
         if (!SwingUtilities.isEventDispatchThread()) {
             try {
                 SwingUtilities.invokeAndWait(new Runnable() {

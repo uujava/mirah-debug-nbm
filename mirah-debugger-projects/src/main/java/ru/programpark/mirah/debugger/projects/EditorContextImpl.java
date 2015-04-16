@@ -68,7 +68,6 @@ import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePathScanner;
 
 import java.util.Collections;
-import java.util.logging.Logger;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
@@ -140,8 +139,6 @@ public class EditorContextImpl extends EditorContext {
     private EditorContextDispatcher contextDispatcher;
 
     private boolean listenerAdded = false;
-
-    static Logger LOG = Logger.getLogger(EditorContextImpl.class.getCanonicalName());
 
     {
         pcs = new PropertyChangeSupport(this);
@@ -891,7 +888,7 @@ public class EditorContextImpl extends EditorContext {
         }
         JEditorPane ep = contextDispatcher.getCurrentEditor();
         Source source = Source.create(fo);
-        LOG.info("getCurrentMethodDeclaration source="+source);
+        LOG.info(this,"getCurrentMethodDeclaration source="+source);
         if (source == null) {
             return null;
         }
@@ -1103,7 +1100,7 @@ public class EditorContextImpl extends EditorContext {
      */
     @Override
     public String getClassName(String url, final int lineNumber) {
-        LOG.info("getClassName url =" + url + " lineNumber=" + lineNumber);
+        LOG.info(this,"getClassName url =" + url + " lineNumber=" + lineNumber);
         try {
             final StyledDocument doc = getStyledDocument(url);
             Source source = getSource(url);

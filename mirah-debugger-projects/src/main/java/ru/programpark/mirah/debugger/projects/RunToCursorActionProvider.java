@@ -47,7 +47,6 @@ package ru.programpark.mirah.debugger.projects;
 import java.beans.PropertyChangeEvent;
 import java.util.Collections;
 import java.util.Set;
-import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.debugger.ActionsManager;
 
@@ -76,8 +75,6 @@ import org.openide.util.WeakListeners;
 //@Registration(actions={"runToCursor"}, activateForMIMETypes={"text/x-mirah"})
 public class RunToCursorActionProvider extends ActionsProviderSupport {
 
-    static Logger LOG = Logger.getLogger(RunToCursorActionProvider.class.getCanonicalName());
-    
     private EditorContextDispatcher editorContext;
     private LineBreakpoint          breakpoint;
     private static RequestProcessor RP = new RequestProcessor(RunToCursorActionProvider.class.getName());
@@ -107,7 +104,7 @@ public class RunToCursorActionProvider extends ActionsProviderSupport {
     @Override
     public void doAction (Object action) {
       
-        LOG.info("doAction =" + action);
+        LOG.info(this,"doAction =" + action);
         
         // 1) set breakpoint
         removeBreakpoint ();
@@ -122,7 +119,7 @@ public class RunToCursorActionProvider extends ActionsProviderSupport {
     
     @Override
     public void postAction(Object action, final Runnable actionPerformedNotifier) {
-        LOG.info("postAction =" + action);
+        LOG.info(this,"postAction =" + action);
         final LineBreakpoint newBreakpoint = LineBreakpoint.create (
             editorContext.getCurrentURLAsString(),
             editorContext.getCurrentLineNumber ()

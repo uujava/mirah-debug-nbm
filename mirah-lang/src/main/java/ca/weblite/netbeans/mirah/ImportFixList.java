@@ -47,8 +47,7 @@ public class ImportFixList  implements LazyFixList, Runnable {
         this.source = source;
         this.className = className;
         
-        
-        
+        LOG.info(this,"ImportFixList source="+source+" className="+className);
     }
     
     
@@ -85,22 +84,30 @@ public class ImportFixList  implements LazyFixList, Runnable {
 
     @Override
     public void run() {
-        System.err.println("In ImportFixList.run()");
         FileObject fo = source.getFileObject();
         ClassIndex idx = new ClassIndex();
         ClassIndex.CompoundQuery q = new ClassIndex.CompoundQuery(0);
 
+        LOG.info(this,"In ImportFixList.run() fo="+fo);
+        
         ClassPath[] classPaths = new ClassPath[]{
             ClassPath.getClassPath(fo, ClassPath.SOURCE),
             ClassPath.getClassPath(fo, ClassPath.EXECUTE),
             ClassPath.getClassPath(fo, ClassPath.COMPILE),
             ClassPath.getClassPath(fo, ClassPath.BOOT)
         };
+        
+        LOG.info(this,"ClassPath.SOURCE ="+ClassPath.getClassPath(fo, ClassPath.SOURCE));
+        LOG.info(this,"ClassPath.EXECUTE =" + ClassPath.getClassPath(fo, ClassPath.EXECUTE));
+        LOG.info(this,"ClassPath.COMPILE =" + ClassPath.getClassPath(fo, ClassPath.COMPILE));
+        LOG.info(this,"ClassPath.BOOT =" + ClassPath.getClassPath(fo, ClassPath.BOOT));
+        
         int priority = 10;
         for ( ClassPath cp : classPaths){
             
             q.addQuery(new ClassIndex.ClassPathQuery(priority--, className, "", cp));
         }
+        LOG.info(this,"q ==> "+q);
 
         ClassIndex.Future results = new ClassIndex.Future(){
 
@@ -113,6 +120,7 @@ public class ImportFixList  implements LazyFixList, Runnable {
                 Set<String> matches = new HashSet<String>();
                 matches.addAll(this.getMatches());
                 for ( String match : matches ){
+                    LOG.info(ClassIndex.class,"match ==> " + match);
                     Fix fix = new ImportFix(match);
                     synchronized(fixes){
                         fixes.add(fix);

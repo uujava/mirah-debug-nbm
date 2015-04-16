@@ -6,7 +6,6 @@
 package ru.programpark.mirah.editor;
 
 import java.util.Map;
-import java.util.logging.Logger;
 import org.netbeans.modules.csl.api.SemanticAnalyzer;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.Scheduler;
@@ -18,8 +17,6 @@ import org.netbeans.modules.parsing.spi.SchedulerEvent;
  */
 public class MirahSemanticAnalyzer extends SemanticAnalyzer /*[ParserResult]*/ {
 
-    static Logger LOG = Logger.getLogger(MirahSemanticAnalyzer.class.getCanonicalName());
-    
     @Override
     public Map getHighlights() {
 //        LOG.info("--> getHighlights");

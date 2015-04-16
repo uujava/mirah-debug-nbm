@@ -8,7 +8,6 @@ package ca.weblite.netbeans.mirah;
 
 
 import ca.weblite.netbeans.mirah.support.api.MirahExtender;
-import java.util.logging.Logger;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -23,7 +22,6 @@ import org.openide.filesystems.FileObject;
 public class MirahOnSaveTask implements OnSaveTask {
 
     
-    private static Logger LOG = Logger.getLogger(MirahOnSaveTask.class.getCanonicalName());
     Context context;
     
     private MirahOnSaveTask(Context context){

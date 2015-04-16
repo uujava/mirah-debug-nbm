@@ -40,8 +40,6 @@ public class MirahTokenId implements TokenId {
        get(Tokens.tJavaDoc)
     }));
     
-//    static Logger LOG = Logger.getLogger(MirahTokenId.class.getCanonicalName());
-    
     public static enum Enum {
         RPAREN,
         LPAREN,

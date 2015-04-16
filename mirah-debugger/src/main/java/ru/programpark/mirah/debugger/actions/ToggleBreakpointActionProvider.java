@@ -52,7 +52,6 @@ import java.net.URL;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import javax.swing.text.StyledDocument;
 import mirah.lang.ast.MethodDefinition;
@@ -101,6 +100,7 @@ import org.openide.text.NbDocument;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import ru.programpark.mirah.debugger.LOG;
 import ru.programpark.mirah.debugger.SourcePath;
 
 /**
@@ -117,8 +117,6 @@ import ru.programpark.mirah.debugger.SourcePath;
 public class ToggleBreakpointActionProvider extends ActionsProviderSupport
         implements PropertyChangeListener {
 
-    static Logger LOG = Logger.getLogger(ToggleBreakpointActionProvider.class.getCanonicalName());
-    
     private JPDADebugger debugger;
 
     public ToggleBreakpointActionProvider() {
@@ -258,7 +256,7 @@ public class ToggleBreakpointActionProvider extends ActionsProviderSupport
                     SourceQuery queryDocument = new SourceQuery(doc);
                     if ( queryDocument == null )
                     {
-                        LOG.info("queryDocument == null for doc = "+doc);
+                        LOG.info(this,"queryDocument == null for doc = "+doc);
                         return; 
                     }
                     result[0] = queryDocument.findPackage();
@@ -290,7 +288,7 @@ public class ToggleBreakpointActionProvider extends ActionsProviderSupport
         if ("".equals(url.trim())) {
             return;
         }
-        LOG.info("toggle breakpoint in URL = " + url + " lineNumber = " + lineNumber);
+        LOG.info(this,"toggle breakpoint in URL = " + url + " lineNumber = " + lineNumber);
 
         if ( lineNumber < 0 ) return;
         
@@ -314,14 +312,24 @@ public class ToggleBreakpointActionProvider extends ActionsProviderSupport
         lb = LineBreakpoint.create(url, lineNumber);
 
         String preferredClassName = packageName + className;
-        if (packageName != null)
-        {
+        if (packageName != null) {
             preferredClassName = packageName + "." + className;
         }
+        int lastIndex = url.lastIndexOf('/');
+        String sourcePath = lastIndex == -1 ? url : url.substring(lastIndex + 1);
+        lb.setSourceName(sourcePath);
+        LOG.info(this, "sourceName = " + sourcePath);
+        if ( packageName != null) {
+            sourcePath = packageName.replace('.','/') + "/" + sourcePath;
+        }
+        LOG.info(this,"sourcePath = " + sourcePath);
+        lb.setSourcePath(sourcePath);
+//      lb.setURL(url);
+//      lb.setStratum("MIRAH");
         lb.setPreferredClassName(preferredClassName);
         lb.setPrintText(NbBundle.getBundle(ToggleBreakpointActionProvider.class).getString("CTL_Line_Breakpoint_Print_Text"));
         d.addBreakpoint(lb);
-        LOG.info("add breakpoint in url="+url+" line=" + lineNumber + " preferredClassName="+preferredClassName);
+        LOG.info(this,"add breakpoint in url="+url+" line=" + lineNumber + " preferredClassName="+preferredClassName);
     }
 
     @Override

@@ -18,8 +18,6 @@ import org.netbeans.modules.csl.spi.ParserResult;
  */
 public class MirahDeclarationFinder implements DeclarationFinder {
 
-//    static Logger LOG = Logger.getLogger(MirahDeclarationFinder.class.getCanonicalName());
-    
     @Override
     public DeclarationLocation findDeclaration(ParserResult pr, int i) {
         

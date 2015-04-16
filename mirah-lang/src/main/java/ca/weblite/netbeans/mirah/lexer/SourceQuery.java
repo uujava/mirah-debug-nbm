@@ -20,7 +20,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Set;
-import java.util.logging.Logger;
 import javax.swing.text.Document;
 import mirah.lang.ast.ClassDefinition;
 import mirah.lang.ast.ClosureDefinition;
@@ -47,8 +46,6 @@ import org.openide.util.Exceptions;
  */
 public class SourceQuery implements List<Node>{
     
-    static Logger LOG = Logger.getLogger(SourceQuery.class.getCanonicalName());
-
     Document doc;
     DocumentDebugger dbg;
     List<Node> results = null;

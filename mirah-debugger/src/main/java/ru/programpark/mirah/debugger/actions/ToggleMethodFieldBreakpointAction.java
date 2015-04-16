@@ -45,7 +45,6 @@ import java.awt.event.ActionEvent;
 import java.io.FileInputStream;
 import java.util.Collection;
 import java.util.Map;
-import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ImageIcon;
@@ -83,8 +82,6 @@ public class ToggleMethodFieldBreakpointAction extends AbstractAction {//impleme
 //            e.printStackTrace();
 //        }
 //    }
-    
-    static Logger LOG = Logger.getLogger(ToggleMethodFieldBreakpointAction.class.getCanonicalName());
     
     private static final String[] BREAKPOINT_ANNOTATION_TYPES = new String[] {
         "Breakpoint_broken",

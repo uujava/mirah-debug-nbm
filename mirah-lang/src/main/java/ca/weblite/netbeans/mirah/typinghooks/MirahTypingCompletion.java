@@ -15,7 +15,6 @@ import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -38,7 +37,6 @@ import org.netbeans.spi.editor.typinghooks.TypedTextInterceptor;
  */
 public class MirahTypingCompletion {
    
-    private static final Logger LOG = Logger.getLogger(MirahTypingCompletion.class.getCanonicalName());
     /**
      * Returns true if bracket completion is enabled in options.
      */

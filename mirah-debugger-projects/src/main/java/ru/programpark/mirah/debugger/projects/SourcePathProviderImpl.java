@@ -50,9 +50,6 @@ import java.net.URL;
 import java.util.*;
 import java.util.HashSet;
 import java.util.TreeSet;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-//import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 
@@ -94,8 +91,6 @@ public class SourcePathProviderImpl extends SourcePathProvider {
 
     private static boolean          verbose = true;
 //        System.getProperty ("netbeans.debugger.sourcepathproviderimpl") != null;
-
-    private static Logger LOG = Logger.getLogger(SourcePathProviderImpl.class.getCanonicalName());
 
     private static final Pattern thisDirectoryPattern = Pattern.compile("(/|\\A)\\./");
     private static final Pattern parentDirectoryPattern = Pattern.compile("(/|\\A)([^/]+?)/\\.\\./");
@@ -283,9 +278,8 @@ public class SourcePathProviderImpl extends SourcePathProvider {
      * @return url
      */
     public String[] getAllURLs (String relativePath, boolean global) {      
-        if (verbose) System.out.println ("SPPI: getURL " + relativePath + " global " + global);
         List<FileObject> fos;
-//        if ( LOG != null ) LOG.info("getAllURLs relativePath="+relativePath);
+        LOG.info(this,"getAllURLs relativePath="+relativePath);
 
         relativePath = normalize(relativePath);
         if (originalSourcePath == null) {
@@ -297,10 +291,10 @@ public class SourcePathProviderImpl extends SourcePathProvider {
             synchronized (this) {
                 if (!global) {
                     fos = smartSteppingSourcePath.findAllResources(relativePath);
-                    if (verbose) System.out.println ("SPPI:   fos " + fos);
+                    LOG.info(this, "getAllURLs fos " + fos);
                 } else {
                     fos = originalSourcePath.findAllResources(relativePath);
-                    if (verbose) System.out.println ("SPPI:   fos " + fos);
+                    LOG.info(this, "getAllURLs fos2 " + fos);
                 }
             }
         }
@@ -336,10 +330,10 @@ public class SourcePathProviderImpl extends SourcePathProvider {
         
         // 1) url -> FileObject
         FileObject fo = null;                                       
-        if (verbose) System.out.println ("SPPI: getRelativePath " + url);
+//        LOG.info(this,"SPPI: getRelativePath " + url);
         try {
             fo = URLMapper.findFileObject (new URL (url));          
-            if (verbose) System.out.println ("SPPI:   fo " + fo);
+//            LOG.info(this,"SPPI:   fo " + fo);
         } catch (MalformedURLException e) {
             //e.printStackTrace ();
             return null;
@@ -349,6 +343,7 @@ public class SourcePathProviderImpl extends SourcePathProvider {
             directorySeparator,
             includeExtension
         );
+//        LOG.info(this, "SPPI:   relativePath = " + relativePath);
         if (relativePath == null) {
             // fallback to FileObject's class path
             ClassPath cp = ClassPath.getClassPath (fo, ClassPath.SOURCE);
@@ -360,7 +355,10 @@ public class SourcePathProviderImpl extends SourcePathProvider {
                 directorySeparator,
                 includeExtension
             );
+//            LOG.info(this, "SPPI:  relativePath2 = " + relativePath);
         }
+//        LOG.info(this, "url:" + url+" relative path:" + relativePath);
+//        LOG.putStack("");
         return relativePath;
     }
 

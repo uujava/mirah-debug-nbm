@@ -7,7 +7,6 @@
 package ca.weblite.netbeans.mirah.lexer;
 
 import java.util.Collection;
-import java.util.logging.Logger;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.ParserFactory;
@@ -17,7 +16,6 @@ import org.netbeans.modules.parsing.spi.ParserFactory;
  * @author shannah
  */
 public class MirahParserFactory extends ParserFactory{
-    private static final Logger LOG = Logger.getLogger(MirahParserFactory.class.getCanonicalName());
     
     public MirahParserFactory(){
         

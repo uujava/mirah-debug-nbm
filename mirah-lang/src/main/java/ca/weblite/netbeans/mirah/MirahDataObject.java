@@ -6,7 +6,6 @@
 package ca.weblite.netbeans.mirah;
 
 import java.io.IOException;
-import java.util.logging.Logger;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
 import org.openide.awt.ActionID;
@@ -89,8 +88,7 @@ import org.openide.windows.TopComponent;
     )
 })
 public class MirahDataObject extends MultiDataObject {
-private static final Logger LOG =
-    Logger.getLogger(MirahDataObject.class.getCanonicalName());
+
     public MirahDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException, IOException {
         super(pf, loader);
         registerEditor("text/x-mirah", true);

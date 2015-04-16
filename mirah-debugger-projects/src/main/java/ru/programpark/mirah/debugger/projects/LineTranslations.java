@@ -51,7 +51,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
-import java.util.logging.Logger;
 
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -73,8 +72,6 @@ import org.openide.util.WeakListeners;
  */
 class LineTranslations {
 
-    static Logger LOG = Logger.getLogger(LineTranslations.class.getCanonicalName());
-    
     private static LineTranslations translations;
 
     private ChangeListener          changedFilesListener;
@@ -193,7 +190,7 @@ class LineTranslations {
         } else {
             Line.Set lineSet = getLineSet (url, timeStamp);
             if (lineSet == null) return currentLineNumber;
-            LOG.info("  lineSet = "+lineSet+"date = "+lineSet.getDate());
+            LOG.info(this,"  lineSet = "+lineSet+"date = "+lineSet.getDate());
             try {
                 Line line = lineSet.getCurrent(currentLineNumber);
 //                LOG.info("  current line = "+line);

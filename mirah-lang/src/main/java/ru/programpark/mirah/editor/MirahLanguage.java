@@ -41,7 +41,6 @@ package ru.programpark.mirah.editor;
 import ca.weblite.netbeans.mirah.lexer.MirahParser;
 import ca.weblite.netbeans.mirah.lexer.MirahTokenId;
 import java.util.Set;
-import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.core.spi.multiview.MultiViewElement;
@@ -96,8 +95,6 @@ import org.openide.windows.TopComponent;
         binaryLibraryPathIds = {}
 )
 public class MirahLanguage extends DefaultLanguageConfig {
-
-    static Logger LOG = Logger.getLogger(MirahLanguage.class.getCanonicalName());
 
     @MultiViewElement.Registration(displayName = "#LBL_MirahEditorTab",
     iconBase = "ca/weblite/netbeans/mirah/1391571312_application-x-ruby.png",

@@ -7,7 +7,6 @@
 package ca.weblite.netbeans.mirah.lexer;
 
 
-import java.util.logging.Logger;
 import mirah.impl.MirahLexer.Input;
 import mirah.impl.MirahParser;
 import mirah.impl.Tokens;
@@ -33,7 +32,6 @@ public class MirahLexer implements Lexer<MirahTokenId>{
     private int lastNonWhiteToken = -1;
     //private MirahLexerInput input;
     
-    private static final Logger LOG = Logger.getLogger(MirahLexer.class.getCanonicalName());
     private org.mirah.mmeta.BaseParser.Token<mirah.impl.Tokens> tok = null;
 
     /*

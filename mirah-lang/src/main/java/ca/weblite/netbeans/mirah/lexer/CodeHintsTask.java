@@ -40,8 +40,6 @@ import org.openide.filesystems.FileObject;
  */
 class CodeHintsTask extends ParserResultTask {
 
-    private static final Logger LOG = Logger.getLogger(CodeHintsTask.class.getCanonicalName());
-
     private List<ErrorDescription> errorsOut;
     
     public CodeHintsTask() {

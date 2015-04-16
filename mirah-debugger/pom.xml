@@ -161,7 +161,7 @@
                 <version>3.13.3</version> 
                 <extensions>true</extensions>
                 <configuration>
-                    <author>Caoyuan Deng</author>
+                    <!-- author>Caoyuan Deng</author -->
                     <codeNameBase>ru.programpark.mirah.debugger/1</codeNameBase>
                     <licenseName>CDDL-GPLV2</licenseName>
                     <licenseFile>license.txt</licenseFile>    

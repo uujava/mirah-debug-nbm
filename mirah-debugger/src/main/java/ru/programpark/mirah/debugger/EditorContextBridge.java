@@ -48,7 +48,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.logging.Logger;
 
 import org.netbeans.api.debugger.Breakpoint.VALIDITY;
 import org.netbeans.api.debugger.DebuggerManager;
@@ -78,8 +77,6 @@ public class EditorContextBridge {
 
     private static EditorContext context;
 
-    static Logger LOG = Logger.getLogger(EditorContextBridge.class.getCanonicalName());    
-    
     public static EditorContext getContext () {
         if (context == null) {
             List l = DebuggerManager.getDebuggerManager ().lookup
@@ -312,6 +309,8 @@ public class EditorContextBridge {
         JPDAThread thread,
         String stratumn
     ) {
+        
+        LOG.info(EditorContextBridge.class,"getRelativePath thread="+thread+" stratumn="+stratumn);
         try {
             return convertSlash (thread.getSourcePath (stratumn));
         } catch (AbsentInformationException e) {
@@ -323,6 +322,7 @@ public class EditorContextBridge {
         CallStackFrame csf,
         String stratumn
     ) {
+        LOG.info(EditorContextBridge.class, "getRelativePath csf=" + csf + " stratumn=" + stratumn);
         try {
             return convertSlash (csf.getSourcePath (stratumn));
         } catch (AbsentInformationException e) {
@@ -333,6 +333,7 @@ public class EditorContextBridge {
     public static String getRelativePath (
         String className
     ) {
+        LOG.info(EditorContextBridge.class, "getRelativePath className=" + className);
         int i = className.indexOf ('$');
         if (i > 0) className = className.substring (0, i);
         String sourceName = className.replace

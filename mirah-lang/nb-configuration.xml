@@ -15,5 +15,6 @@ Any value defined here will override the pom.xml file value but is only applicab
 -->
         <ca-weblite-netbeans-mirah.project_5f_type>maven</ca-weblite-netbeans-mirah.project_5f_type>
         <ru-programpark-mirah.project_5f_type>maven</ru-programpark-mirah.project_5f_type>
+        <org-netbeans-modules-javascript2-requirejs.enabled>true</org-netbeans-modules-javascript2-requirejs.enabled>
     </properties>
 </project-shared-configuration>

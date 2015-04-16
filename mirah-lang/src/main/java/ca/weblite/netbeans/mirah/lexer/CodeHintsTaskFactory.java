@@ -8,7 +8,6 @@ package ca.weblite.netbeans.mirah.lexer;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.logging.Logger;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.SchedulerTask;
 import org.netbeans.modules.parsing.spi.TaskFactory;
@@ -20,9 +19,6 @@ import org.netbeans.modules.parsing.spi.TaskFactory;
  */
 public class CodeHintsTaskFactory extends TaskFactory {
 
-    private static final Logger LOG = Logger.getLogger(CodeHintsTask.class.getCanonicalName());
-    
-    
     public CodeHintsTaskFactory(){
         
     }

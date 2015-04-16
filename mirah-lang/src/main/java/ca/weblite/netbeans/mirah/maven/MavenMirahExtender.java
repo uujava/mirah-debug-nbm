@@ -7,6 +7,7 @@
 package ca.weblite.netbeans.mirah.maven;
 
 
+import ca.weblite.netbeans.mirah.LOG;
 import ca.weblite.netbeans.mirah.support.spi.MirahExtenderImplementation;
 import java.io.File;
 import java.io.FileInputStream;
@@ -219,18 +220,18 @@ public class MavenMirahExtender implements MirahExtenderImplementation{
                 build.addPlugin(compilerPlugin);
             }
 
-
+            LOG.info(AddMirahCompilerPlugin.class,"hasModelDependency ="+hasModelDependency(model, "ca.weblite", "mirah-tmp-classes"));
 
             if (!hasModelDependency(model, "ca.weblite", "mirah-tmp-classes" )) {
                 // Now create an empty mirah-tmp-classes jar
-                //System.out.println("About to create mirah-tmp-classes dir");
+                LOG.info(AddMirahCompilerPlugin.class,"About to create mirah-tmp-classes dir");
                 File libDir = new File(FileUtil.toFile(pom.getParent()), "lib");
                 File mirahTmpClassesDir = new File(libDir, "mirah-tmp-classes");
                 if ( !mirahTmpClassesDir.exists()){
-                    //System.out.println("Dir doesn't exist.. creating it");
+                    LOG.info(AddMirahCompilerPlugin.class,"Dir doesn't exist.. creating it");
                     mirahTmpClassesDir.mkdirs();
                 } else {
-                    //System.out.println("Dir already existed");
+                    LOG.info(AddMirahCompilerPlugin.class,"Dir already existed");
                 }
                 File mirahTmpClassesJar = new File(libDir, "mirah-tmp-classes.jar");
                 if ( !mirahTmpClassesJar.exists() ){
@@ -259,7 +260,7 @@ public class MavenMirahExtender implements MirahExtenderImplementation{
                 if ( !mirahTmpClassesTestDir.exists()){
                     mirahTmpClassesTestDir.mkdirs();
                 } else {
-                    //System.out.println("Dir already existed");
+                    LOG.info(AddMirahCompilerPlugin.class,"Dir2 already existed");
                 }
                 File mirahTmpClassesTestJar = new File(libDir, "mirah-tmp-classes-test.jar");
                 if ( !mirahTmpClassesTestJar.exists() ){
@@ -340,7 +341,7 @@ public class MavenMirahExtender implements MirahExtenderImplementation{
                 }
             } else if ( source.isDirectory() ){
                 String dirName = formatEntry(source, sourceRoot, true);
-                //System.out.println("Adding "+dirName+" to jar");
+                LOG.info(AddMirahCompilerPlugin.class,"Adding "+dirName+" to jar");
                 //ZipEntry entry = new ZipEntry(dirName);
                 //jos.putNextEntry(entry);
                 for ( File child : source.listFiles()){

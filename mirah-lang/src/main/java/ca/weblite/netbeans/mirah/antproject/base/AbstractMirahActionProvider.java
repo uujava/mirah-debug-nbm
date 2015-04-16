@@ -42,6 +42,7 @@
 
 package ca.weblite.netbeans.mirah.antproject.base;
 
+import ca.weblite.netbeans.mirah.LOG;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -52,7 +53,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.StringTokenizer;
-import java.util.logging.Logger;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.source.ui.ScanDialog;
@@ -98,8 +98,6 @@ public abstract class AbstractMirahActionProvider implements ActionProvider {
     private final Project project;
     private boolean overrideTestTarget = true;
 
-    
-    static Logger LOG = Logger.getLogger(AbstractMirahActionProvider.class.getCanonicalName());
     
     public AbstractMirahActionProvider(Project project) {
         this.project = project;
@@ -188,7 +186,7 @@ public abstract class AbstractMirahActionProvider implements ActionProvider {
     @Override
     public void invokeAction(final String command, final Lookup context) {
         //System.out.println("Invoking action "+command);
-        LOG.info("Invoking action "+command);
+        LOG.info(this,"Invoking action "+command);
         final Runnable action = new Runnable() {
             @Override
             public void run() {
@@ -430,7 +428,7 @@ public abstract class AbstractMirahActionProvider implements ActionProvider {
     }
 
     private String[] setupCompileSingle(Properties p, FileObject[] files) {
-//        LOG.info("setupCompileSingle Properties="+p);
+        LOG.info(this,"setupCompileSingle Properties="+p);
         
         FileObject[] testSrcPath = getTestSourceRoots(project);
         FileObject root = getRoot(testSrcPath, files[0]);

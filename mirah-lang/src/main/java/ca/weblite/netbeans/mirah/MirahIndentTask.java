@@ -7,7 +7,6 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Position;
@@ -34,8 +33,7 @@ import ca.weblite.netbeans.mirah.lexer.DocumentQuery;
  */
 public class MirahIndentTask implements IndentTask  {
     private Context context;
-    private static final Logger LOG = 
-            Logger.getLogger(MirahIndentTask.class.getCanonicalName());
+
     public MirahIndentTask(Context ctx){
         this.context = ctx;
         

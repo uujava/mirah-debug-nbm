@@ -74,8 +74,6 @@ import org.openide.util.NbBundle;
  */
 public class BreakpointsActionsProvider implements NodeActionsProviderFilter {
 
-    static Logger LOG = Logger.getLogger(BreakpointsActionsProvider.class.getCanonicalName());
-    
     private static final Action GO_TO_SOURCE_ACTION = Models.createAction (
         loc("CTL_Breakpoint_GoToSource_Label"), // NOI18N
         new Models.ActionPerformer () {
