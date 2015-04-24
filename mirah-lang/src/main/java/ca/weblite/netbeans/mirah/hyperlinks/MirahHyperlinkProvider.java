@@ -68,9 +68,22 @@ public class MirahHyperlinkProvider implements HyperlinkProviderExt  {
     }
 
     @Override
-    public void performClickAction(Document dcmnt, int i, HyperlinkType ht) {
+    public void performClickAction(Document doc, int offset, HyperlinkType type) {
         
-        LOG.info(this,"performClickAction doc="+dcmnt+" i="+i+" ht="+ht);
+        LOG.info(this,"performClickAction doc="+doc+" offset="+offset+" type="+type);
+        switch (type) {
+            case GO_TO_DECLARATION:
+//                GoToSupport.goTo(doc, offset, false);
+                break;
+            case ALT_HYPERLINK:
+//                JTextComponent focused = EditorRegistry.focusedComponent();
+//                
+//                if (focused != null && focused.getDocument() == doc) {
+//                    focused.setCaretPosition(offset);
+//                    GoToImplementation.goToImplementation(focused);
+//                }
+                break;
+        }         
     }
 
     @Override

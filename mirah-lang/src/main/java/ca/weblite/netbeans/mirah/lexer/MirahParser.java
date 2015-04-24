@@ -150,12 +150,11 @@ public class MirahParser extends Parser {
             getBlocks(result, newContent);
             
         }
-
     }
 
     public void reparse(Snapshot snapshot) throws ParseException {
         reparse(snapshot, snapshot.getText().toString());
-    }
+}
 
     private void copyIfChanged(File sourceRoot, File destRoot, File sourceFile) throws IOException {
         if (sourceFile.getName().endsWith(".class")) {
@@ -208,6 +207,8 @@ public class MirahParser extends Parser {
         if ( ast instanceof Node ){
             
             Node node = (Node)ast;
+            res.setRoot(node);
+
             node.accept(new NodeScanner(){
 
                 @Override
@@ -389,7 +390,7 @@ public class MirahParser extends Parser {
         result = parserResult;
         getBlocks(parserResult, content);
         
-        LOG.info(this,"REPARSE:\n"+content+"\n");
+//        LOG.info(this,"REPARSE:\n"+content+"\n");
         
         WLMirahCompiler compiler = new WLMirahCompiler();
         
@@ -403,16 +404,16 @@ public class MirahParser extends Parser {
 //        LOG.info(this,"WLMirahCompiler compiler location="+location);
         
         FileObject src = snapshot.getSource().getFileObject();
-        LOG.info(this,"src = " + src);
+//        LOG.info(this,"src = " + src);
 
         Project project = FileOwnerQuery.getOwner(src);
-        LOG.info(this,"reparse project = " + project);
+//        LOG.info(this,"reparse project = " + project);
 
         FileObject projectDirectory = project.getProjectDirectory();
         FileObject buildDir = projectDirectory.getFileObject("build");
         Preferences projPrefs = ProjectUtils.getPreferences(project, MirahExtenderImplementation.class, true);
         String projectType = projPrefs.get("project_type", "unknown");
-        LOG.info(this,"reparse project type is "+projectType);
+//        LOG.info(this,"reparse project type is "+projectType);
         if ( "maven".equals(projectType)){
             try {
                 // It's a maven project so we want to build our sources to a different location
@@ -464,7 +465,7 @@ public class MirahParser extends Parser {
             }
             srcClassPathStr = sb.substring(0, sb.length() - File.pathSeparator.length());
         }
-        LOG.info(this,"=> srcClassPathStr = " + srcClassPathStr);
+//        LOG.info(this,"=> srcClassPathStr = " + srcClassPathStr);
        
         compiler.setSourcePath(srcClassPathStr);
 
@@ -604,7 +605,8 @@ public class MirahParser extends Parser {
             
             if ("maven".equals(projectType)){
                 // If its a maven project, we need to copy the build files into 
-                LOG.info(this,"This is a MAVEN PROJECT");
+//                LOG.info(this,"This is a MAVEN PROJECT");
+//                LOG.putStack(null);
                 FileObject libDir = projectDirectory.getFileObject("lib");
                 if ( libDir == null ){
                     libDir = projectDirectory.createFolder("lib");
@@ -627,7 +629,7 @@ public class MirahParser extends Parser {
             ex.printStackTrace();
         }
 
-        LOG.info(this,"resolvedTypes = "+debugger.resolvedTypes.size());
+//        LOG.info(this,"resolvedTypes = "+debugger.resolvedTypes.size());
         
         synchronized (documentDebuggers) {
 
@@ -645,17 +647,17 @@ public class MirahParser extends Parser {
 
     private FileObject getRoot(FileObject file) {
         Project project = FileOwnerQuery.getOwner(file);
-        LOG.info(this,"getRoot file="+file+" project="+project);
+//        LOG.info(this,"getRoot file="+file+" project="+project);
         Sources sources = ProjectUtils.getSources(project);
         for (SourceGroup sourceGroup : sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
             FileObject root = sourceGroup.getRootFolder();
-            LOG.info(this,"getRoot root=" + root+" sourceGroup=" + sourceGroup);
+//            LOG.info(this,"getRoot root=" + root+" sourceGroup=" + sourceGroup);
 		    if (FileUtil.isParentOf(root, file) || root.equals(file)) {
 //                LOG.info(this, "getRoot RETURN-1 root=" + root);
 			    return root;
 		    }
 	    }
-        LOG.info(this, "getRoot RETURN-2 root=" + ClassPath.getClassPath(file, ClassPath.SOURCE).findOwnerRoot(file));
+//        LOG.info(this, "getRoot RETURN-2 root=" + ClassPath.getClassPath(file, ClassPath.SOURCE).findOwnerRoot(file));
         return ClassPath.getClassPath(file, ClassPath.SOURCE).findOwnerRoot(file);
     }
 
@@ -689,6 +691,7 @@ public class MirahParser extends Parser {
         private boolean valid = true;
         List<Error> errorList = new ArrayList<Error>();
         List<Block> blockList = new ArrayList<Block>();
+        Node rootNode;
 
         NBMirahParserResult(
                 Snapshot snapshot,
@@ -731,6 +734,15 @@ public class MirahParser extends Parser {
         
         public Block addBlock(Block parent, CharSequence function, int offset, int length, CharSequence extra, ElementKind kind){
             return parent.addBlock(function, offset, length, extra, kind);
+        }
+        
+        public void setRoot( Node root )
+        {
+            this.rootNode = root;
+        }
+        
+        public Node getRoot() {
+            return rootNode;
         }
         
         public class Error implements org.netbeans.modules.csl.api.Error {
@@ -1106,7 +1118,7 @@ public class MirahParser extends Parser {
     private void addToJar(File source, String sourceRoot, JarOutputStream jos) throws IOException {
         if ( source.getName().endsWith(".class")){
             String fileName = formatEntry(source, sourceRoot, false);
-            LOG.info(this,"Adding file "+fileName+" to jar ("+source+")");
+//            LOG.info(this,"Adding file "+fileName+" to jar ("+source+")");
             ZipEntry entry = new ZipEntry(fileName);
             jos.putNextEntry(entry);
             InputStream fis = null;
@@ -1115,7 +1127,7 @@ public class MirahParser extends Parser {
                 byte[] buf = new byte[4096];
                 int len;
                 while ( (len = fis.read(buf)) != -1 ){
-                    LOG.info(this,"Writing "+len+" bytes");
+//                    LOG.info(this,"Writing "+len+" bytes");
                     jos.write(buf, 0, len);
                 }
                 jos.closeEntry();
@@ -1128,7 +1140,7 @@ public class MirahParser extends Parser {
             }
         } else if ( source.isDirectory() ){
             String dirName = formatEntry(source, sourceRoot, true);
-            LOG.info(this,"Adding "+dirName+" to jar");
+//            LOG.info(this,"Adding "+dirName+" to jar");
             //ZipEntry entry = new ZipEntry(dirName);
             //jos.putNextEntry(entry);
             for ( File child : source.listFiles()){

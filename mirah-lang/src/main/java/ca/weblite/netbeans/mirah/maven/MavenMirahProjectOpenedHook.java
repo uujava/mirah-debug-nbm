@@ -42,14 +42,17 @@
 
 package ca.weblite.netbeans.mirah.maven;
 
+import ca.weblite.netbeans.mirah.LOG;
 import ca.weblite.netbeans.mirah.antproject.j2se.*;
 import ca.weblite.netbeans.mirah.RecompileQueue;
 import org.netbeans.api.project.Project;
 import ca.weblite.netbeans.mirah.antproject.common.BuildScriptHelper;
 import ca.weblite.netbeans.mirah.antproject.common.BuildScriptType;
 import ca.weblite.netbeans.mirah.support.spi.MirahExtenderImplementation;
+import java.net.URL;
 import java.util.prefs.Preferences;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.openide.filesystems.FileChangeAdapter;
@@ -78,10 +81,12 @@ public class MavenMirahProjectOpenedHook extends ProjectOpenedHook {
 
     @Override
     protected void projectOpened() {
+        LOG.info(this,"projectOpened project="+project);
         project.getProjectDirectory().addRecursiveListener(new FileChangeAdapter(){
 
             @Override
             public void fileChanged(FileEvent fe) {
+                LOG.info(MavenMirahProjectOpenedHook.this,"fileChanged path="+fe.getFile().getPath());
                 if ( fe.getFile().getPath().endsWith(".java")){
                     //System.out.println("Adding to compile queue "+fe.getFile());
                     RecompileQueue.getProjectQueue(project).addChanged(fe.getFile());
@@ -99,7 +104,11 @@ public class MavenMirahProjectOpenedHook extends ProjectOpenedHook {
         //}
         Preferences prefs = ProjectUtils.getPreferences(project, MirahExtenderImplementation.class, true);
         prefs.put("project_type", "maven");
-        System.out.println("Setting project type in prefs to maven");
+        LOG.info(this,"Setting project type in prefs to maven");
+
+        //svd - force maven project indexing
+        IndexingManager.getDefault().refreshIndex(project.getProjectDirectory().toURL(),null,false);
+        
     }
 
     @Override

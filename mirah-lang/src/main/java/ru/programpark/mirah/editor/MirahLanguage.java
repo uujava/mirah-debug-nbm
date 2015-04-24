@@ -38,9 +38,11 @@
  */
 package ru.programpark.mirah.editor;
 
+import ca.weblite.asm.LOG;
 import ca.weblite.netbeans.mirah.lexer.MirahParser;
 import ca.weblite.netbeans.mirah.lexer.MirahTokenId;
 import java.util.Set;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.core.spi.multiview.MultiViewElement;
@@ -58,9 +60,11 @@ import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.csl.spi.LanguageRegistration;
 import org.netbeans.modules.parsing.spi.indexing.PathRecognizerRegistration;
 import org.netbeans.modules.parsing.spi.Parser;
+import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory;
 import org.openide.filesystems.MIMEResolver;
 import org.openide.util.Lookup;
 import org.openide.windows.TopComponent;
+import ru.programpark.mirah.index.MirahIndexer;
 
 /**
  * Language/lexing configuration for Mirah
@@ -146,13 +150,13 @@ public class MirahLanguage extends DefaultLanguageConfig {
 
     @Override
     public Parser getParser() {
-//        LOG.info("--- getParser ---");
+//        LOG.info(this,"--- getParser ---");
         return new MirahParser();
     }
 
     @Override
     public SemanticAnalyzer getSemanticAnalyzer() {
-//        LOG.info("--- getSemanticAnalyzer ---");
+        LOG.info(this,"--- getSemanticAnalyzer ---");
         return null; //new MirahSemanticAnalyzer();
     }
 
@@ -163,7 +167,7 @@ public class MirahLanguage extends DefaultLanguageConfig {
 
     @Override
     public OccurrencesFinder getOccurrencesFinder() {
-//        LOG.info("--- getOccurrencesFinder ---");
+        LOG.info(this,"--- getOccurrencesFinder ---");
         return null; //new MirahOccurrencesFinder();
     }
 
@@ -174,32 +178,41 @@ public class MirahLanguage extends DefaultLanguageConfig {
 
     @Override
     public StructureScanner getStructureScanner() {
-//        LOG.info("--- getStructureScanner ---");
+        LOG.info(this,"--- getStructureScanner ---");
         return null; //new MirahStructureAnalyzer();
+    }
+
+    @CheckForNull
+    public EmbeddingIndexerFactory getIndexerFactory() {
+        
+//        LOG.info(this, "--- getIndexerFactory ---" );
+//        LOG.putStack(null);
+        return new MirahIndexer.Factory();
     }
 
     @Override
     public DeclarationFinder getDeclarationFinder() {
-//        LOG.info("--- getDeclarationFinder ---");
+        LOG.info(this,"--- getDeclarationFinder ---");
+        LOG.putStack(null);
 //        return new MirahDeclarationFinder();
         return null;
     }
 
     @Override
     public InstantRenamer getInstantRenamer() {
-//        LOG.info("--- getInstantRenamer ---");
+        LOG.info(this,"--- getInstantRenamer ---");
         return null; //new MirahInstantRenamer();
     }
 
     @Override
     public CodeCompletionHandler getCompletionHandler() {
-//        LOG.info("--- getCompletionHandler ---");
+        LOG.info(this,"--- getCompletionHandler ---");
         return null; //new MirahCodeCompletionHandler();
     }
 
     @Override
     public KeystrokeHandler getKeystrokeHandler() {
-//        LOG.info("--- getKeystrokeHandler ---");
+        LOG.info(this,"--- getKeystrokeHandler ---");
         return null; //new MirahKeystrokeHandler();
     }
 
@@ -210,7 +223,7 @@ public class MirahLanguage extends DefaultLanguageConfig {
 
     @Override
     public Formatter getFormatter() {
-//        LOG.info("--- getFormatter ---");
+        LOG.info(this,"--- getFormatter ---");
         return null; //new MirahFormatter();
     }
 
@@ -222,7 +235,8 @@ public class MirahLanguage extends DefaultLanguageConfig {
     // hintsProvider is registered in layer.xml under "csl-hints" folder
     @Override
     public HintsProvider getHintsProvider() {
-//        LOG.info("--- getHintsProvider ---");
+        LOG.info(this,"--- getHintsProvider ---");
+        LOG.putStack(null);
         return null; //new MirahHintsProvider();
     }
 //    @Override def getIndexerFactory = new MirahIndexer.Factory

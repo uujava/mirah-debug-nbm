@@ -24,6 +24,10 @@ import org.openide.windows.TopComponent;
 @Messages({
     "LBL_Mirah_LOADER=Files of Mirah"
 })
+@MIMEResolver.Registration(displayName="#LBL_Mirah_LOADER",
+       resource="MirahMimeResolver.xml",
+       position=100 
+)
 @MIMEResolver.ExtensionRegistration(
         displayName = "#LBL_Mirah_LOADER",
         mimeType = "text/x-mirah",

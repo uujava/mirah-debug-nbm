@@ -72,7 +72,7 @@ import org.openide.util.WeakListeners;
 *
 * @author   Jan Jancura
 */
-//@Registration(actions={"runToCursor"}, activateForMIMETypes={"text/x-mirah"})
+@Registration(actions={"runToCursor"}, activateForMIMETypes={"text/x-mirah"})
 public class RunToCursorActionProvider extends ActionsProviderSupport {
 
     private EditorContextDispatcher editorContext;

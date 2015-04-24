@@ -8,10 +8,14 @@ package ca.weblite.netbeans.mirah;
 
 
 import ca.weblite.netbeans.mirah.support.api.MirahExtender;
+import java.net.URL;
+import java.util.Vector;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.editor.NbEditorUtilities;
+import org.netbeans.modules.parsing.api.indexing.IndexingManager;
+import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
 import org.netbeans.spi.editor.document.OnSaveTask;
 import org.openide.filesystems.FileObject;
 
@@ -31,22 +35,31 @@ public class MirahOnSaveTask implements OnSaveTask {
     @Override
     public void performTask() {
         
-        //LOG.info("performTask!!!");
+//        RepositoryUpdater.getDefault().enforcedFileListUpdate(null, null);
+        
+//        LOG.info(this,"performTask!!!");
         FileObject fo = NbEditorUtilities.getFileObject(context.getDocument());
-        Project proj = FileOwnerQuery.getOwner(fo);
-        //LOG.info("fo = "+fo+" project = "+proj);
-        if (!MirahExtender.isActive(proj)) {
-            //LOG.info("MirahExtender.activate!!");
-            MirahExtender.activate(proj);
+        Project project = FileOwnerQuery.getOwner(fo);
+//        LOG.info(this,"fo = "+fo+" project = "+project);
+        if (!MirahExtender.isActive(project)) {
+//            LOG.info(this,"MirahExtender.activate!!");
+            MirahExtender.activate(project);
         }
-        System.out.println("About to check if mirah is current");
+//        LOG.info(this,"About to check if mirah is current");
         //LOG.info("About to check if mirah is current");
         
-        if (!MirahExtender.isCurrent(proj)){
-            System.out.println("Mirah is not current");
+        if (!MirahExtender.isCurrent(project)){
+//            LOG.info(this,"Mirah is not current");
             //LOG.info("Mirah is not current!!!");
-            MirahExtender.update(proj);
+            MirahExtender.update(project);
         }
+
+                
+        //svd - force file reindexing
+        Vector<URL> urls = new Vector<URL>();
+        urls.add(fo.toURL());
+        IndexingManager.getDefault().refreshIndex(project.getProjectDirectory().toURL(),urls,false);
+//        LOG.info(this, "------------------ end of save task --------------------");        
     }
 
     @Override

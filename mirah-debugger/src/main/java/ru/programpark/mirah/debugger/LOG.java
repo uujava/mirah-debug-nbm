@@ -21,7 +21,7 @@ public class LOG {
         String name = o.getClass().getSimpleName();
         if (o instanceof Class ) name = ((Class) o).getSimpleName();
         if (o instanceof String) name = (String) o;
-        logger.info("" + name + ":" + text);
+        logger.info("{" + Thread.currentThread().getName() + "} " + name + ":" + text);
     }
 
     public static void putStack(String text) {

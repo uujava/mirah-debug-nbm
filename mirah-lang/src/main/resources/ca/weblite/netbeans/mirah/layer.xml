@@ -32,6 +32,11 @@
                 </folder>
                 <!-- file name="ru-programpark-mirah-debugger-projects-HighlightsLayerFactoryImpl.instance" / -->
                 <file name="ca-weblite-netbeans-mirah-lexer-CodeHintsTaskFactory.instance"/>
+                <!-- folder name="BracesMatchers">
+                    <file name="ru-programpark-mirah-editor-MirahBracesMatcherFactory.instance">
+                        <attr name="position" intvalue="0"/>
+                    </file>
+                </folder -->
             </folder>
         </folder>
     </folder>
