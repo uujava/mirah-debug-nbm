@@ -19,11 +19,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.objectweb.asm.ClassReader;
-import org.objectweb.asm.Type;
-import org.objectweb.asm.tree.ClassNode;
-import org.objectweb.asm.tree.LocalVariableNode;
-import org.objectweb.asm.tree.MethodNode;
+import mirah.objectweb.asm.ClassReader;
+import mirah.objectweb.asm.Type;
+import mirah.objectweb.asm.tree.ClassNode;
+import mirah.objectweb.asm.tree.LocalVariableNode;
+import mirah.objectweb.asm.tree.MethodNode;
 import org.openide.filesystems.FileObject;
 
 /**

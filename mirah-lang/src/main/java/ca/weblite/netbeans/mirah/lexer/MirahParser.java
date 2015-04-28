@@ -591,7 +591,7 @@ public class MirahParser extends Parser {
 //        LOG.info(this,"relPath compileClassPath == "+compileClassPath);
         if ( compileClassPath != null )
 //            LOG.info(this,"relPath compileClassPath.getRoots() == "+compileClassPath.getRoots());
-            compiler.compile(new String[0]);
+            compiler.compile(new String[]{"-new-closures"});
             if (mirahDir != null) {
 //                LOG.info(this,"relPath mirahDir334r34 == "+mirahDir);
                 

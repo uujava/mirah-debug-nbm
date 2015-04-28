@@ -40,9 +40,9 @@ import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexer;
 import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexDocument;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexingSupport;
-import org.objectweb.asm.ClassWriter;
-import org.objectweb.asm.Opcodes;
-import org.objectweb.asm.tree.ClassNode;
+import mirah.objectweb.asm.ClassWriter;
+import mirah.objectweb.asm.Opcodes;
+import mirah.objectweb.asm.tree.ClassNode;
 
 public class MirahIndexer extends EmbeddingIndexer {
 
