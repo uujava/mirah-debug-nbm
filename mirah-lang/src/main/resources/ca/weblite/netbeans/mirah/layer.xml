@@ -5,11 +5,16 @@
         <folder name="text">
             <folder name="x-mirah">
                 
-                <file name="org-netbeans-modules-editor-NbEditorKit.instance"/>
+                <!-- file name="org-netbeans-modules-editor-NbEditorKit.instance"/ -->
                 <file name="language.instance">
                     <attr name="instanceCreate" methodvalue="ca.weblite.netbeans.mirah.lexer.MirahTokenId.getLanguage"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.api.lexer.Language"/>
                 </file>
+                <folder name="Preferences">
+                    <folder name="Defaults">
+                        <file name="ca-weblite-netbeans-mirah-preferences.xml" url="defaultPreferences.xml" />
+                    </folder>
+                </folder>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="ca.weblite.netbeans.mirah.Bundle"/>
                 <folder name="FontsColors">
                     <folder name="NetBeans">
@@ -22,13 +27,28 @@
                 </folder>
                 <file name="ca-weblite-netbeans-mirah-lexer-MirahParserFactory.instance"/>
                 <file name="ca-weblite-netbeans-mirah-lexer-SyntaxErrorsHighlightingTaskFactory.instance"/>
-                <folder name="SideBar">
+                <!-- folder name="SideBar">
                     <file name="org-netbeans-modules-csl-editor-GsfCodeFoldingSideBarFactory.instance">
                         <attr name="position" intvalue="1200"/>
                     </file>
-                </folder>
-                <folder name="FoldManager">
+                </folder -->
+                <folder name="SideBar">
+                    <file name="org-netbeans-modules-editor-fold-CodeFoldingSidebar.instance">
+                        <attr name="location" stringvalue="west"/>
+                        <!-- should be positioned after the current registrations, so they prevail -->
+                        <attr name="position" intvalue="1600"/>
+                        <attr name="instanceof" stringvalue="org.netbeans.spi.editor.SideBarFactory"/>
+                        <attr name="instanceCreate" newvalue="org.netbeans.modules.editor.fold.ui.CodeFoldingSideBar$Factory"/>
+                    </file>
+                </folder>                
+                <!-- folder name="FoldManager">
                     <file name="org-netbeans-modules-csl-editor-fold-GsfFoldManagerFactory.instance"/>
+                </folder -->
+                <folder name="FoldManager">
+                    <file name="org-netbeans-modules-csl-editor-fold-GsfFoldManagerFactory.instance">
+                        <!--org.netbeans.modules.scala.editor.ScalaLanguage-->
+                        <attr name="instanceClass" stringvalue="org.netbeans.modules.csl.editor.fold.GsfFoldManagerFactory"/>
+                    </file>
                 </folder>
                 <!-- file name="ru-programpark-mirah-debugger-projects-HighlightsLayerFactoryImpl.instance" / -->
                 <file name="ca-weblite-netbeans-mirah-lexer-CodeHintsTaskFactory.instance"/>
@@ -76,16 +96,15 @@
             </folder>
         </folder>
     </folder>
-    <folder name="CslPlugins"> 
+    <!-- folder name="CslPlugins"> 
         <folder name="text"> 
             <folder name="x-mirah">                
-                
                 <file name="structure.instance"> 
                     <attr name="instanceClass" stringvalue="ca.weblite.netbeans.mirah.MirahStructureAnalyzer"/> 
                 </file> 
             </folder> 
         </folder> 
-     </folder> 
+     </folder --> 
      
      <folder name="Navigator"> 
         <folder name="Panels"> 

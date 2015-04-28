@@ -174,7 +174,7 @@ public class MirahCodeCompleter implements CompletionProvider {
     
     @Override
     public CompletionTask createTask(int queryType, final JTextComponent jtc) {
-        LOG.info(this,"createTask queryType = " + queryType);
+//        LOG.info(this,"createTask queryType = " + queryType);
         if ( queryType != CompletionProvider.COMPLETION_QUERY_TYPE){
             
             return null;
@@ -182,7 +182,7 @@ public class MirahCodeCompleter implements CompletionProvider {
         final int initialOffset = jtc.getCaretPosition();
         try {
             int caretOffset = jtc.getCaretPosition();
-            LOG.info(this,"createTask caretOffset = " + caretOffset);
+//            LOG.info(this,"createTask caretOffset = " + caretOffset);
         
             int p = caretOffset-1;
             if ( p < 0 ){
@@ -220,7 +220,9 @@ public class MirahCodeCompleter implements CompletionProvider {
             boolean hasWhitespace = false;
             boolean hasIdentifier = false;
 
-            TokenSequence<MirahTokenId> toks3 = mirahTokenSequence(jtc.getDocument(), caretOffset, true);
+            // Печать списка токенов
+            /*
+            TokenSequence<MirahTokenId> toks3 = mirahTokenSequence(jtc.getDocument(), 0, true);
             while( true )
             {
                 String text = toks3.token().text().toString();
@@ -228,10 +230,11 @@ public class MirahCodeCompleter implements CompletionProvider {
                 LOG.info(this,"toks3: " + toks3.token().id().name()+" text:"+ text);
                 if ( ! toks3.moveNext() ) break;
             }
+            */
             while ( toks.token().id() == tIdentifier || toks.token().id() == tComment || toks.token().id() == tWhitespace || toks.token().id().ordinal() == MirahLanguageHierarchy.METHOD_DECLARATION || activators.contains(toks.token().id()) )
             {
                 Token<MirahTokenId> curr = toks.token();
-                LOG.info(this,"createTask curr = " + curr);
+//                LOG.info(this,"createTask curr = " + curr);
                 if ( curr.id() == tWhitespace || curr.id() == tComment){
                     hasWhitespace = true;
                 } else if ( curr.id() == tIdentifier || curr.id().ordinal() == MirahLanguageHierarchy.METHOD_DECLARATION ){
@@ -246,7 +249,7 @@ public class MirahCodeCompleter implements CompletionProvider {
                     break;
                 }
             }
-            LOG.info(this,"createTask activator = " + activator);
+//            LOG.info(this,"createTask activator = " + activator);
             if ( activator == null ){
                 return null;
             }

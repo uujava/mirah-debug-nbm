@@ -40,8 +40,22 @@ public class MirahStructureAnalyzer implements StructureScanner {
         NBMirahParserResult res = (NBMirahParserResult)pr;
         ArrayList<OffsetRange> ranges = new ArrayList<OffsetRange>();
         for ( NBMirahParserResult.Block block : res.getBlocks()){
-            ranges.add(new OffsetRange(block.getOffset(), block.getOffset()+block.getLength()));
-        }
+                LOG.info(this,"block = "+block);
+                //todo узел PACKAGE почему-то сделан родительским узлом всех блоков.
+                // из-за этого не работает фолдинг. Либо исправить размер, чтобы он охватывал 
+                // все подчиненные узлы, либо убрать из списка блоков. разобраться
+                if ( block.getKind() == ElementKind.PACKAGE )
+                {
+                    for( NBMirahParserResult.Block child : block.getChildren() )
+                    {
+                        ranges.add(new OffsetRange(child.getOffset(), child.getOffset()+child.getLength()));
+                    }
+                }
+                else
+                {
+                    ranges.add(new OffsetRange(block.getOffset(), block.getOffset()+block.getLength()));
+                }
+            }
         out.put("codeblocks", ranges);
         return out;
         

@@ -60,6 +60,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.TemplateWizard;
 import org.openide.util.NbBundle;
 
 /**
@@ -82,7 +83,7 @@ public abstract class AbstractMirahWizard extends AbstractFileWizard {
         strategy = findCorrectStrategy();
 
         super.initialize(wiz);
-    }
+            }
 
     private ProjectTypeStrategy findCorrectStrategy() {
         //FileObject pom = project.getProjectDirectory().getFileObject("pom.xml"); // NOI18N
@@ -104,11 +105,20 @@ public abstract class AbstractMirahWizard extends AbstractFileWizard {
         DataFolder dFolder = DataFolder.findFolder(targetFolder);
         DataObject dTemplate = DataObject.find(template);
 
+        DataFolder folder = DataFolder.findFolder(project.getProjectDirectory());
+
+		// создаю папку для исходников mirah
+        folder = DataFolder.create(folder,"src/main/mirah");
+        dFolder = folder;
+                
         String pkgName = getPackageName(targetFolder);
+
         DataObject dobj;
         if (pkgName == null) {
             dobj = dTemplate.createFromTemplate(dFolder, targetName);
         } else {
+			// создаю папку для пакета
+			dFolder = DataFolder.create(dFolder,pkgName.replace('.','/'));
             dobj = dTemplate.createFromTemplate(dFolder, targetName, Collections.singletonMap("package", pkgName)); // NOI18N
         }
 

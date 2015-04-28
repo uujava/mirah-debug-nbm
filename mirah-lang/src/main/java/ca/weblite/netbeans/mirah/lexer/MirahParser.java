@@ -39,10 +39,12 @@ import javax.swing.text.Document;
 import javax.tools.Diagnostic;
 import mirah.lang.ast.ClassDefinition;
 import mirah.lang.ast.FieldDeclaration;
+import mirah.lang.ast.Import;
 import mirah.lang.ast.InterfaceDeclaration;
 import mirah.lang.ast.MacroDefinition;
 import mirah.lang.ast.MethodDefinition;
 import mirah.lang.ast.Node;
+import mirah.lang.ast.NodeFilter;
 import mirah.lang.ast.NodeScanner;
 import mirah.lang.ast.Package;
 import mirah.lang.ast.Script;
@@ -95,7 +97,12 @@ public class MirahParser extends Parser {
     private static int count = 0;
 
     public static DocumentDebugger getDocumentDebugger(Document doc) {
-        return documentDebuggers.get(doc);
+        synchronized( documentDebuggers )
+        {
+            //LOG.info(MirahParser.class,"getDocumentDebugger doc="+doc);
+            //LOG.putStack(null);
+            return documentDebuggers.get(doc);
+        }
     }
 
     private static WeakHashMap<Document, Queue<Runnable>> parserCallbacks
@@ -136,8 +143,13 @@ public class MirahParser extends Parser {
         );
 
         String newContent = snapshot.getText().toString();
-
+        LOG.info(null,"===== PARSE: "+snapshot.getSource().getFileObject().getPath()+" ======");
+//        LOG.info(this, "newContent = "+newContent);
         boolean changed = oldContent == null || !oldContent.equals(newContent);
+//        LOG.info(this, "changed = " + changed);
+//        LOG.info(this, "sme = " + sme);
+//        LOG.info(this, "task = " + task);
+//        LOG.info(this, "sme.sourceChanged() = " + sme.sourceChanged());
 
         if (sme.sourceChanged() && changed) {
             lastContent.put(
@@ -153,8 +165,17 @@ public class MirahParser extends Parser {
     }
 
     public void reparse(Snapshot snapshot) throws ParseException {
+try
+{
         reparse(snapshot, snapshot.getText().toString());
 }
+catch( Exception ex )
+{
+    LOG.info(this, "####### PARSE EXCEPTION "+ex+" #######");
+    LOG.exception(this, ex);
+}
+
+    }
 
     private void copyIfChanged(File sourceRoot, File destRoot, File sourceFile) throws IOException {
         if (sourceFile.getName().endsWith(".class")) {
@@ -192,6 +213,55 @@ public class MirahParser extends Parser {
             }
         }
     }
+/*
+    void dumpNode( Node node, String indent )
+    {
+        LOG.info(this,indent+" node="+node);
+        if ( node == null ) return;
+        List children = node.findChildren(null);
+        if ( children != null )
+        {
+            for( Object c : children)
+            {
+                LOG.info(this,"c="+c);
+                if ( c instanceof Node ) dumpNode((Node)c,indent+".");
+            }
+        }
+    }
+*/    
+      private static void walkTree(Node node,String indent,NodeFilter filter){
+          
+        if ( node == null ) return;
+        
+        LOG.info(MirahParser.class, indent+" node33 ="+node);
+        List children = node.findChildren(filter);
+        LOG.info(MirahParser.class, indent+" children ="+children);
+        if ( children == null ) return;
+        for ( Object c : children ){
+            if ( c instanceof Node ){
+                walkTree((Node)c,indent+".",filter);
+            }
+        }
+        
+    }
+
+    void dumpNode( Node node )
+    {
+        NodeFilter filter = new NodeFilter(){
+            @Override
+            public boolean matchesNode(Node node) {
+//                LOG.info(MirahParser.class,"node = "+node);
+                return true;
+            }
+        };
+        try {            
+            walkTree(node,"",filter);
+        }
+        catch( Exception ex )
+        {
+            LOG.exception(this, ex);
+        }
+    }
 
     void getBlocks(final NBMirahParserResult res, String content){
         mirah.impl.MirahParser parser = new mirah.impl.MirahParser();
@@ -208,6 +278,7 @@ public class MirahParser extends Parser {
             
             Node node = (Node)ast;
             res.setRoot(node);
+//            dumpNode(node);
 
             node.accept(new NodeScanner(){
 
@@ -229,7 +300,9 @@ public class MirahParser extends Parser {
                     return super.exitClassDefinition(node, arg); //To change body of generated methods, choose Tools | Templates.
                 }
                 
-                
+                //todo - add folding to multiline comments
+                //todo - add folding for import statements
+                //todo - javadoc creation
 
                 @Override
                 public boolean enterMethodDefinition(MethodDefinition node, Object arg) {
@@ -343,9 +416,25 @@ public class MirahParser extends Parser {
                     blockStack.pop();
                     return super.exitFieldDeclaration(node, arg); //To change body of generated methods, choose Tools | Templates.
                 }
+                /*
+                @Override
+                public boolean enterImport(Import node, Object arg) {
+                    NBMirahParserResult.Block block = null;
+                    if (blockStack.isEmpty()){
+                        block = res.addBlock(node.name().identifier(), node.position().startChar(), node.position().endChar()-node.position().startChar(), "", ElementKind..INTERFACE);
+                    } else {
+                        block = blockStack.peek().addBlock(node.name().identifier(), node.position().startChar(), node.position().endChar()-node.position().startChar(), "", ElementKind.INTERFACE);
+                    }
+                    blockStack.push(block);
+                    return super.enterImport(node, arg); //To change body of generated methods, choose Tools | Templates.
+                }
                 
-                
-
+                @Override
+                public Object exitImport(Import node, Object arg) {
+                    blockStack.pop();
+                    return super.exitImport(node, arg); //To change body of generated methods, choose Tools | Templates.
+                }
+                */
                 @Override
                 public boolean enterMacroDefinition(MacroDefinition node, Object arg) {
                     NBMirahParserResult.Block block = null;
@@ -384,6 +473,8 @@ public class MirahParser extends Parser {
     public void reparse(Snapshot snapshot, String content)
             throws ParseException {
 
+        LOG.info(this, "reparse222 = " + snapshot.getSource().getFileObject().getPath());
+        LOG.putStack(null);
         this.snapshot = snapshot;
         diag = new MirahParseDiagnostics();
         NBMirahParserResult parserResult = new NBMirahParserResult(snapshot, diag);
@@ -404,16 +495,16 @@ public class MirahParser extends Parser {
 //        LOG.info(this,"WLMirahCompiler compiler location="+location);
         
         FileObject src = snapshot.getSource().getFileObject();
-//        LOG.info(this,"src = " + src);
+        LOG.info(this,"src = " + src);
 
         Project project = FileOwnerQuery.getOwner(src);
-//        LOG.info(this,"reparse project = " + project);
+        LOG.info(this,"reparse project = " + project);
 
         FileObject projectDirectory = project.getProjectDirectory();
         FileObject buildDir = projectDirectory.getFileObject("build");
         Preferences projPrefs = ProjectUtils.getPreferences(project, MirahExtenderImplementation.class, true);
         String projectType = projPrefs.get("project_type", "unknown");
-//        LOG.info(this,"reparse project type is "+projectType);
+        LOG.info(this,"reparse project type is "+projectType);
         if ( "maven".equals(projectType)){
             try {
                 // It's a maven project so we want to build our sources to a different location
@@ -435,7 +526,7 @@ public class MirahParser extends Parser {
             compileClassPathStr = compileClassPath.toString();
         }
         
-//        LOG.info(this,"=> compileClassPath = "+compileClassPath);
+        LOG.info(this,"=> compileClassPath = "+compileClassPath);
         
         ClassPath buildClassPath
                 = ClassPath.getClassPath(src, ClassPath.EXECUTE);
@@ -443,12 +534,12 @@ public class MirahParser extends Parser {
         if (buildClassPath != null) {
             buildClassPathStr = buildClassPath.toString();
         }
-//        LOG.info(this,"=> buildClassPath = " + buildClassPath);
+        LOG.info(this,"=> buildClassPath = " + buildClassPath);
 
         ClassPath srcClassPath = ClassPath.getClassPath(src, ClassPath.SOURCE);
         String srcClassPathStr = "";
 
-//        LOG.info(this,"=> srcClassPath = " + srcClassPath);
+        LOG.info(this,"=> srcClassPath = " + srcClassPath);
         
         if (srcClassPath != null) {
             srcClassPathStr = srcClassPath.toString();
@@ -465,7 +556,7 @@ public class MirahParser extends Parser {
             }
             srcClassPathStr = sb.substring(0, sb.length() - File.pathSeparator.length());
         }
-//        LOG.info(this,"=> srcClassPathStr = " + srcClassPathStr);
+        LOG.info(this,"=> srcClassPathStr = " + srcClassPathStr);
        
         compiler.setSourcePath(srcClassPathStr);
 
@@ -590,10 +681,9 @@ public class MirahParser extends Parser {
 //        LOG.info(this,"relPath mirahDir == "+mirahDir);
 //        LOG.info(this,"relPath compileClassPath == "+compileClassPath);
         if ( compileClassPath != null )
-//            LOG.info(this,"relPath compileClassPath.getRoots() == "+compileClassPath.getRoots());
-            compiler.compile(new String[]{"-new-closures"});
+            LOG.info(this,"relPath compileClassPath.getRoots() == "+compileClassPath.getRoots());
+            compiler.compile(new String[0]);
             if (mirahDir != null) {
-//                LOG.info(this,"relPath mirahDir334r34 == "+mirahDir);
                 
                 for (FileObject compileRoot : compileClassPath.getRoots()) {
 //                    LOG.info(this,"compileRoot = "+compileRoot);

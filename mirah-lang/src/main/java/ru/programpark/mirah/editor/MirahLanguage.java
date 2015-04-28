@@ -39,6 +39,7 @@
 package ru.programpark.mirah.editor;
 
 import ca.weblite.asm.LOG;
+import ca.weblite.netbeans.mirah.MirahStructureAnalyzer;
 import ca.weblite.netbeans.mirah.lexer.MirahParser;
 import ca.weblite.netbeans.mirah.lexer.MirahTokenId;
 import java.util.Set;
@@ -179,7 +180,8 @@ public class MirahLanguage extends DefaultLanguageConfig {
     @Override
     public StructureScanner getStructureScanner() {
         LOG.info(this,"--- getStructureScanner ---");
-        return null; //new MirahStructureAnalyzer();
+        //LOG.putStack(null);
+        return new MirahStructureAnalyzer();
     }
 
     @CheckForNull
