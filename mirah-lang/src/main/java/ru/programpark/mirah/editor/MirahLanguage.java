@@ -38,7 +38,7 @@
  */
 package ru.programpark.mirah.editor;
 
-import ca.weblite.asm.LOG;
+import ca.weblite.netbeans.mirah.LOG;
 import ca.weblite.netbeans.mirah.MirahStructureAnalyzer;
 import ca.weblite.netbeans.mirah.lexer.MirahParser;
 import ca.weblite.netbeans.mirah.lexer.MirahTokenId;
@@ -238,7 +238,7 @@ public class MirahLanguage extends DefaultLanguageConfig {
     @Override
     public HintsProvider getHintsProvider() {
         LOG.info(this,"--- getHintsProvider ---");
-        LOG.putStack(null);
+//        LOG.putStack(null);
         return null; //new MirahHintsProvider();
     }
 //    @Override def getIndexerFactory = new MirahIndexer.Factory

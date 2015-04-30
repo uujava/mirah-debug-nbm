@@ -25,6 +25,7 @@ public class MirahStructureAnalyzer implements StructureScanner {
 
     @Override
     public List<? extends StructureItem> scan(ParserResult pr) {
+        //LOG.info(this,"scan pr = "+pr);
         NBMirahParserResult res = (NBMirahParserResult)pr;
         
         ArrayList<StructureItem> out = new ArrayList<StructureItem>();
@@ -36,9 +37,11 @@ public class MirahStructureAnalyzer implements StructureScanner {
 
     @Override
     public Map<String, List<OffsetRange>> folds(ParserResult pr) {
+        //LOG.info(this,"folds pr = "+pr);
         Map<String,List<OffsetRange>> out =  new HashMap<String,List<OffsetRange>>();
         NBMirahParserResult res = (NBMirahParserResult)pr;
         ArrayList<OffsetRange> ranges = new ArrayList<OffsetRange>();
+        //LOG.info(this,"folds blocks = "+res.getBlocks().size());
         for ( NBMirahParserResult.Block block : res.getBlocks()){
                 LOG.info(this,"block = "+block);
                 //todo узел PACKAGE почему-то сделан родительским узлом всех блоков.

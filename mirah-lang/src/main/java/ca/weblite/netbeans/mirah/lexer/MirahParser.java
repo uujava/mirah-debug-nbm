@@ -159,6 +159,15 @@ public class MirahParser extends Parser {
             reparse(snapshot);
         } else if ( result == null ){
             result = new NBMirahParserResult(snapshot, diag);
+/*
+            List<NBMirahParserResult.Error> errors = result.getErrors();
+            for( NBMirahParserResult.Error error : errors )
+            {
+                LOG.info(this, "******************************** descr="+error.getDescription());
+                LOG.info(this, "******************************** name ="+error.getDisplayName());
+                LOG.info(this, "******************************** key  ="+error.getKey());
+            }
+*/
             getBlocks(result, newContent);
             
         }
@@ -261,6 +270,7 @@ catch( Exception ex )
         {
             LOG.exception(this, ex);
         }
+        LOG.info(this,"----- end of dump -----");
     }
 
     void getBlocks(final NBMirahParserResult res, String content){
@@ -681,7 +691,7 @@ catch( Exception ex )
 //        LOG.info(this,"relPath mirahDir == "+mirahDir);
 //        LOG.info(this,"relPath compileClassPath == "+compileClassPath);
         if ( compileClassPath != null )
-            LOG.info(this,"relPath compileClassPath.getRoots() == "+compileClassPath.getRoots());
+//            LOG.info(this,"relPath compileClassPath.getRoots() == "+compileClassPath.getRoots());
             compiler.compile(new String[0]);
             if (mirahDir != null) {
                 
@@ -719,8 +729,8 @@ catch( Exception ex )
             ex.printStackTrace();
         }
 
-//        LOG.info(this,"resolvedTypes = "+debugger.resolvedTypes.size());
-        
+        //LOG.info(this,"resolvedTypes = "+debugger.resolvedTypes.size());
+        //LOG.info(this,"-------------------------------------------------------------------------------------------------------------------");
         synchronized (documentDebuggers) {
 
             Document doc = snapshot.getSource().getDocument(true);

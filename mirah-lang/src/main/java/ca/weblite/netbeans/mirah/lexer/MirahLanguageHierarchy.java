@@ -83,10 +83,16 @@ public class MirahLanguageHierarchy extends LanguageHierarchy<MirahTokenId>{
         Tokens.tRedo,
         Tokens.tSelf,
         Tokens.tSuper,
-        Tokens.tInterface
-        
-        
-        
+        Tokens.tACC_ABSTRACT,
+        Tokens.tACC_PUBLIC,
+        Tokens.tACC_PRIVATE,
+        Tokens.tACC_PROTECTED,
+        Tokens.tACC_FINAL,
+        Tokens.tACC_VOLATILE,
+        Tokens.tACC_NATIVE,
+        Tokens.tACC_DEFAULT,
+        Tokens.tACC_TRANSIENT,
+//        Tokens.tACC_SYNCHRONIZED
            
     };
 
@@ -153,7 +159,18 @@ public class MirahLanguageHierarchy extends LanguageHierarchy<MirahTokenId>{
             Tokens.tDollar, Tokens.tInstVarBacktick, Tokens.tClassVarBacktick, Tokens.tComma, Tokens.tStar, Tokens.tStars, 
             Tokens.tAmper, Tokens.tAmpers, Tokens.tPipe, Tokens.tPipes, Tokens.tRocket, Tokens.tCharacter, Tokens.tEscape, 
             Tokens.tStringContent, Tokens.tStrEvBegin, Tokens.tRegexBegin, Tokens.tRegexEnd, Tokens.tHereDocId, 
-            Tokens.tHereDocBegin, Tokens.tHereDocEnd, Tokens.tUNKNOWN, Tokens.tEOF, Tokens.tComment, Tokens.tJavaDoc, Tokens.tWhitespace, Tokens.tPartialComment};
+            Tokens.tHereDocBegin, Tokens.tHereDocEnd, Tokens.tUNKNOWN, Tokens.tEOF, Tokens.tComment, Tokens.tJavaDoc, Tokens.tWhitespace, Tokens.tPartialComment,
+            Tokens.tACC_ABSTRACT,
+            Tokens.tACC_PUBLIC,
+            Tokens.tACC_PRIVATE,
+            Tokens.tACC_PROTECTED,
+            Tokens.tACC_FINAL,
+            Tokens.tACC_VOLATILE,
+            Tokens.tACC_NATIVE,
+            Tokens.tACC_DEFAULT,
+            Tokens.tACC_TRANSIENT,
+    //        Tokens.tACC_SYNCHRONIZED
+        };
         
         tokens = new ArrayList<MirahTokenId>();
         for ( Tokens t : toks ){
