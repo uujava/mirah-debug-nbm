@@ -6,6 +6,7 @@
 package ca.weblite.netbeans.mirah.lexer;
 
 import ca.weblite.netbeans.mirah.ImportFixList;
+import ca.weblite.netbeans.mirah.LOG;
 import ca.weblite.netbeans.mirah.lexer.MirahParser.MirahParseDiagnostics.SyntaxError;
 import java.io.File;
 import java.util.ArrayList;
@@ -45,9 +46,12 @@ class SyntaxErrorsHighlightingTask extends ParserResultTask {
     @Override
     public void run(Parser.Result t, SchedulerEvent se) {
         MirahParser.NBMirahParserResult result = (MirahParser.NBMirahParserResult) t;
+        
         if ( result == null || result.getMirahDiagnostics() == null ){
             return;
         }
+        LOG.info(this,"run diagnostics="+result.getMirahDiagnostics()+" errors="+result.getMirahDiagnostics().getErrors());
+        
         List<SyntaxError> syntaxErrors = result.getMirahDiagnostics().getErrors();
         Snapshot snapshot = result.getSnapshot();
         if ( snapshot == null ){
@@ -69,9 +73,9 @@ class SyntaxErrorsHighlightingTask extends ParserResultTask {
             try {
                 
                 if ( syntaxError.position != null ){
-                    //System.out.println("Syntax error position is not null: "+syntaxError.position);
+                    //LOG.info(this,"Syntax error position is not null: "+syntaxError.position);
                     String[] pieces = syntaxError.position.substring(0, syntaxError.position.lastIndexOf(":")).split(":");
-                    //System.out.println(Arrays.toString(pieces));
+                    //LOG.info(this,Arrays.toString(pieces));
                     String file = pieces[0];
                     File f = new File(file);
                     
@@ -79,7 +83,7 @@ class SyntaxErrorsHighlightingTask extends ParserResultTask {
                     // files instead of the file that was being parsed.  check
                     // for that here
                     if ( source.getFileObject() != null && !source.getFileObject().getName().equals(f.getName()) && !source.getFileObject().getNameExt().equals(f.getName())){
-                        //System.out.println(source.getFileObject().getName()+" -- "+f.getName());
+                        //LOG.info(this,source.getFileObject().getName()+" -- "+f.getName());
                     } else {
                         int idx = pieces.length;
                         while (--idx >0 && line == -1 ){
@@ -93,7 +97,7 @@ class SyntaxErrorsHighlightingTask extends ParserResultTask {
                         }
                     }
                 }  else {
-                    //System.out.println("Syntax error position is null");
+                    LOG.info(this,"Syntax error position is null");
                 }
                 if ( line == -1 ){
                     

@@ -180,11 +180,15 @@ public class SourceQuery implements List<Node>{
     public SourceQuery findClass(int offset){
         ClassDefinition cdef = null;
         int currRange = -1;
-        for ( Node n : findClasses(offset)){
-            if ( cdef == null
-                    || n.position().endChar()- n.position().startChar() < currRange ){
-                cdef = (ClassDefinition)n;
-                currRange = n.position().endChar()-n.position().startChar();
+        SourceQuery sq = findClasses(offset);
+        if ( sq != null )
+        {
+            for ( Node n : sq ){
+                if ( cdef == null
+                        || n.position().endChar()- n.position().startChar() < currRange ){
+                    cdef = (ClassDefinition)n;
+                    currRange = n.position().endChar()-n.position().startChar();
+                }
             }
         }
         List<Node> found = new ArrayList<Node>();

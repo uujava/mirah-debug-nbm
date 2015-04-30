@@ -171,6 +171,7 @@ public class MirahParser extends Parser {
             getBlocks(result, newContent);
             
         }
+        LOG.info(null,"----- Parsing End: "+snapshot.getSource().getFileObject().getPath()+" -----");
     }
 
     public void reparse(Snapshot snapshot) throws ParseException {
