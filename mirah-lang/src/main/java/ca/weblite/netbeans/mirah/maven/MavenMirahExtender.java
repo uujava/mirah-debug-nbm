@@ -53,10 +53,10 @@ import org.openide.util.Exceptions;
 )
 public class MavenMirahExtender implements MirahExtenderImplementation{
 
-    private static final String MIRAH_GROUP_ID = "ca.weblite"; // NOI18N
-    //SVD private static final String MIRAH_GROUP_ID = "org.mirah.maven"; //"ca.weblite"; // NOI18N
+
+    private static final String MIRAH_GROUP_ID = "org.mirah.maven"; // NOI18N
     private static final String MIRAH_ARTIFACT_ID = "maven-mirah-plugin";       // NOI18N
-    private static final String MIRAH_PLUGIN_VERSION = "1.0.1";
+    private static final String MIRAH_PLUGIN_VERSION = "1.2-SNAPSHOT";
     //SVD private static final String MIRAH_PLUGIN_VERSION = "1.0.beta";
     private final FileObject pom;
 
@@ -213,168 +213,8 @@ public class MavenMirahExtender implements MirahExtenderImplementation{
             if ( compilerPlugin == null ){
                 compilerPlugin = createMirahCompilerPlugin();
                 build.addPlugin(compilerPlugin);
-
-            } else {
-                Plugin newPlugin = createMirahCompilerPlugin();
-                build.removePlugin(compilerPlugin);
-                build.addPlugin(compilerPlugin);
             }
 
-            LOG.info(AddMirahCompilerPlugin.class,"hasModelDependency ="+hasModelDependency(model, "ca.weblite", "mirah-tmp-classes"));
-
-            if (!hasModelDependency(model, "ca.weblite", "mirah-tmp-classes" )) {
-                // Now create an empty mirah-tmp-classes jar
-                LOG.info(AddMirahCompilerPlugin.class,"About to create mirah-tmp-classes dir");
-                File libDir = new File(FileUtil.toFile(pom.getParent()), "lib");
-                File mirahTmpClassesDir = new File(libDir, "mirah-tmp-classes");
-                if ( !mirahTmpClassesDir.exists()){
-                    LOG.info(AddMirahCompilerPlugin.class,"Dir doesn't exist.. creating it");
-                    mirahTmpClassesDir.mkdirs();
-                } else {
-                    LOG.info(AddMirahCompilerPlugin.class,"Dir already existed");
-                }
-                File mirahTmpClassesJar = new File(libDir, "mirah-tmp-classes.jar");
-                if ( !mirahTmpClassesJar.exists() ){
-                    try {
-                        createJar(mirahTmpClassesDir, mirahTmpClassesDir.getPath(), mirahTmpClassesJar);
-                    } catch (IOException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
-                }
-
-                //Now add the dependency to the mirah classes jar (for code
-                //completion
-                Dependency dependency = new Dependency();
-                dependency.setArtifactId("mirah-tmp-classes");
-                dependency.setGroupId("ca.weblite");
-                dependency.setVersion("1.0-SNAPSHOT");
-                dependency.setScope("system");
-                dependency.setSystemPath("${basedir}/lib/mirah-tmp-classes.jar");
-                dependency.setOptional(true);
-                model.addDependency(dependency);
-            }
-
-            if (!hasModelDependency(model, "ca.weblite", "mirah-tmp-classes-test" )) {
-                File libDir = new File(FileUtil.toFile(pom.getParent()), "lib");
-                File mirahTmpClassesTestDir = new File(libDir, "mirah-tmp-classes-test");
-                if ( !mirahTmpClassesTestDir.exists()){
-                    mirahTmpClassesTestDir.mkdirs();
-                } else {
-                    LOG.info(AddMirahCompilerPlugin.class,"Dir2 already existed");
-                }
-                File mirahTmpClassesTestJar = new File(libDir, "mirah-tmp-classes-test.jar");
-                if ( !mirahTmpClassesTestJar.exists() ){
-                    try {
-                        createJar(mirahTmpClassesTestDir, mirahTmpClassesTestDir.getPath(), mirahTmpClassesTestJar);
-                    } catch (IOException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
-                }
-
-
-
-                Dependency dependency = new Dependency();
-                dependency.setArtifactId("mirah-tmp-classes-test");
-                dependency.setGroupId("ca.weblite");
-                dependency.setVersion("1.0-SNAPSHOT");
-                dependency.setScope("system");
-                dependency.setSystemPath("${basedir}/lib/mirah-tmp-classes-test.jar");
-                dependency.setOptional(true);
-
-                model.addDependency(dependency);
-
-            }
-
-
-
-
-
-
-
-
-        }
-
-
-        private void createJar(File source, String sourceRoot, File jarFile) throws IOException {
-        FileOutputStream fos = null;
-        JarOutputStream jos = null;
-        try {
-            fos = new FileOutputStream(jarFile);
-            jos = new JarOutputStream(fos);
-            jos.setLevel(0);
-
-            addToJar(source, sourceRoot, jos);
-        } finally {
-            try {
-                if ( jos != null ) jos.close();
-            } catch ( Throwable t ){}
-            try {
-                if ( fos != null ) fos.close();
-            } catch ( Throwable t){}
-        }
-
-
-
-    }
-        private void addToJar(File source, String sourceRoot, JarOutputStream jos) throws IOException {
-            if ( source.getName().endsWith(".class")){
-                String fileName = formatEntry(source, sourceRoot, false);
-                //System.out.println("Adding file "+fileName+" to jar ("+source+")");
-                ZipEntry entry = new ZipEntry(fileName);
-                jos.putNextEntry(entry);
-                InputStream fis = null;
-                try {
-                    fis = new FileInputStream(source);
-                    byte[] buf = new byte[4096];
-                    int len;
-                    while ( (len = fis.read(buf)) != -1 ){
-                        //System.out.println("Writing "+len+" bytes");
-                        jos.write(buf, 0, len);
-                    }
-                    jos.closeEntry();
-                } finally {
-                    try {
-                        if ( fis != null ){
-                            fis.close();
-                        }
-                    } catch ( Exception ex){}
-                }
-            } else if ( source.isDirectory() ){
-                String dirName = formatEntry(source, sourceRoot, true);
-                LOG.info(AddMirahCompilerPlugin.class,"Adding "+dirName+" to jar");
-                //ZipEntry entry = new ZipEntry(dirName);
-                //jos.putNextEntry(entry);
-                for ( File child : source.listFiles()){
-                    addToJar(child, sourceRoot, jos);
-                }
-                //jos.closeEntry();
-            }
-        }
-
-        private String formatEntry(File f, String sourceRoot, boolean directory){
-            if ( directory ){
-                String name = f.getPath().substring(sourceRoot.length());
-                name = name.replace("\\", "/");
-                if ( !name.endsWith("/")){
-                    name += "/";
-                }
-                if ( name.startsWith("/")){
-                    name = name.substring(1);
-                }
-                return name;
-            } else {
-                String name = f.getPath().substring(sourceRoot.length());
-                name = name.replace("\\", "/");
-
-                if ( name.startsWith("/")){
-                    name = name.substring(1);
-                }
-                return name;
-            }
-        }
-
-        private void updatePluginVersion(final Plugin plugin) {
-            plugin.setVersion(MIRAH_PLUGIN_VERSION);
         }
 
         private Plugin mirahCompilerPluginExists(final Build build) {
