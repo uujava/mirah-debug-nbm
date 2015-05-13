@@ -173,6 +173,11 @@ public class MirahTokenId implements TokenId {
     public Enum asEnum(){
         return enumMap.get(this);
     }
+
+    public boolean is( Tokens tok )
+    {
+        return id == tok.ordinal();
+    }
     
     
     public static Set<MirahTokenId> set(Tokens... toks){

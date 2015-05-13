@@ -1,5 +1,6 @@
 package ru.programpark.mirah.index;
 
+import ca.weblite.netbeans.mirah.LOG;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -8,8 +9,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import org.netbeans.modules.csl.api.Modifier;
@@ -26,7 +25,7 @@ import ru.programpark.mirah.index.elements.MethodElement;
 
 public final class MirahIndex {
 
-    private static final Logger LOG = Logger.getLogger(MirahIndex.class.getName());
+//    private static final Logger LOG = Logger.getLogger(MirahIndex.class.getName());
     private static final MirahIndex EMPTY = new MirahIndex(null);
     private static final String CLUSTER_URL = "cluster:"; // NOI18N
     private static String clusterUrl = null;
@@ -47,7 +46,8 @@ public final class MirahIndex {
                     MirahIndexer.Factory.VERSION,
                     roots.toArray(new FileObject[roots.size()])));
         } catch (IOException ioe) {
-            LOG.log(Level.WARNING, null, ioe);
+//            LOG.log(Level.WARNING, null, ioe);
+            LOG.exception(MirahIndex.class, ioe);
             return EMPTY;
         }
     }

@@ -6,8 +6,11 @@
 package ca.weblite.netbeans.mirah.lexer;
 
 import ca.weblite.netbeans.mirah.lexer.MirahTokenId;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.List;
 import javax.swing.text.Document;
+import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
@@ -19,6 +22,28 @@ import org.netbeans.modules.csl.api.OffsetRange;
  * @author savushkin
  */
 public class MirahLexerUtils {
+    
+    public static TokenSequence<MirahTokenId> mirahTokenSequence(String fileName, int caretOffset, boolean backwardBias) {
+        try {
+            String text = new String(Files.readAllBytes(Paths.get(fileName)));
+            Language<MirahTokenId> language = MirahTokenId.getLanguage();
+            TokenHierarchy<?> hi = TokenHierarchy.create(text, language); 
+            List<TokenSequence<?>> tsList = hi.embeddedTokenSequences(caretOffset, backwardBias);
+            // Go from inner to outer TSes
+            for (int i = tsList.size() - 1; i >= 0; i--) {
+                TokenSequence<?> ts = tsList.get(i);
+                if (ts.languagePath().innerLanguage() == MirahTokenId.getLanguage()) {
+                    TokenSequence<MirahTokenId> javaInnerTS = (TokenSequence<MirahTokenId>) ts;
+                    //bd.readUnlock();
+                    return javaInnerTS;
+                }
+            }
+        } 
+        catch( Exception e ) {
+            e.printStackTrace();
+        }
+        return null;
+    }
     
     public static TokenSequence<MirahTokenId> mirahTokenSequence(Document doc, int caretOffset, boolean backwardBias) {
         BaseDocument bd = (BaseDocument) doc;
