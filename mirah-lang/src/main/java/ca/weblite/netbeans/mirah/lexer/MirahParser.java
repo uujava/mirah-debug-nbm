@@ -97,7 +97,7 @@ public class MirahParser extends Parser {
     private static int count = 0;
 
     public static DocumentDebugger getDocumentDebugger(Document doc) {
-        synchronized( documentDebuggers )
+//        synchronized( documentDebuggers )
         {
             //LOG.info(MirahParser.class,"getDocumentDebugger doc="+doc);
             //LOG.putStack(null);
@@ -151,7 +151,7 @@ public class MirahParser extends Parser {
 //        LOG.info(this, "task = " + task);
 //        LOG.info(this, "sme.sourceChanged() = " + sme.sourceChanged());
 
-        if (sme.sourceChanged() && changed) {
+        if ( sme.sourceChanged() && changed ) {
             lastContent.put(
                     snapshot.getSource().getDocument(false),
                     newContent
@@ -496,7 +496,7 @@ catch( Exception ex )
         
         WLMirahCompiler compiler = new WLMirahCompiler();
         
-        //compiler.setPrecompileJavaStubs(false);
+        compiler.setPrecompileJavaStubs(false);
         
 //        LOG.info(this,"WLMirahCompiler compiler="+compiler);
         
@@ -732,7 +732,7 @@ catch( Exception ex )
 
         //LOG.info(this,"resolvedTypes = "+debugger.resolvedTypes.size());
         //LOG.info(this,"-------------------------------------------------------------------------------------------------------------------");
-        synchronized (documentDebuggers) {
+//        synchronized (documentDebuggers) {
 
             Document doc = snapshot.getSource().getDocument(true);
 
@@ -742,7 +742,7 @@ catch( Exception ex )
                 documentDebuggers.put(doc, debugger);
                 fireOnParse(doc);
             }
-        }
+//        }
 
     }
 
