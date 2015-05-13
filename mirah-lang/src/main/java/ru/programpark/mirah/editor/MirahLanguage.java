@@ -122,7 +122,7 @@ public class MirahLanguage extends DefaultLanguageConfig {
 
     @Override
     public String getLineCommentPrefix() {
-        return "//"; // NOI18N
+        return "#"; // NOI18N
     }
 
     @Override

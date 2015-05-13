@@ -65,7 +65,7 @@
             <cluster>${brandingToken}</cluster>
             <forcedVersion>${netbeans.version}</forcedVersion>
             <netbeansInstallDirectory>${nb.installation}</netbeansInstallDirectory>
-            <netbeansInstallation>${nb.installation}</netbeansInstallation>
+            <!--<netbeansInstallation>${nb.installation}</netbeansInstallation>-->
             <additionalArguments>${nbm.run.arguments}</additionalArguments>
             <keystore>${nbm.sign.keystore}</keystore>
             <keystorealias>${nbm.sign.keystorealias}</keystorealias>
