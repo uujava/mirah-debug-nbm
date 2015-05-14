@@ -17,10 +17,10 @@
     <brandingToken>mirah</brandingToken>
     <!-- netbeans.version>RELEASE721</netbeans.version -->
     <netbeans.version>RELEASE802</netbeans.version>
-    <mirah.debugger.projects.version>3.1</mirah.debugger.projects.version>
     <mirah.editor.version>3.1</mirah.editor.version>
-    <mirah.debugger.projects.version>2.1</mirah.debugger.projects.version>
     <bundle.namespace>${project.groupId}.${project.artifactId}</bundle.namespace>
+	<build.number>0</build.number>
+	<module.version>1.0.${build.number}</module.version>
   </properties>
     <repositories>
             <repository>
@@ -186,8 +186,17 @@
     <profile>
       <id>debug-ide</id>
       <properties>
-        <nbm.run.arguments>-J-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8888</nbm.run.arguments>
+        <nbm.run.arguments>-J-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8888</nbm.run.arguments>		
       </properties>
-    </profile>
+    </profile>	
+	<profile>
+	   <id>teamcity</id>
+	   <activation>
+		  <os><family>unix</family></os>
+		</activation>
+		<properties>
+			<build.number>${env.BUILD_NUMBER}</build.number>
+		</properties>
+	</profile>	
   </profiles>
 </project>
