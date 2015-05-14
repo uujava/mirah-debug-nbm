@@ -418,6 +418,8 @@
                     <publicPackages>
                         <publicPackage>ca.weblite.netbeans.mirah.lexer</publicPackage>
                         <publicPackage>mirah.lang.ast</publicPackage>
+                        <!-- publicPackage>ru.programpark.mirah.editor</publicPackage>
+                        <publicPackage>ru.programpark.mirah.index.elements</publicPackage -->
                     </publicPackages>
                 </configuration>
             </plugin>
