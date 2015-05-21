@@ -44,12 +44,24 @@
 
 package ca.weblite.netbeans.mirah.support.api;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.SourceGroupModifier;
+import org.netbeans.spi.project.support.GenericSources;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.ImageUtilities;
 
 /**
  * Constants useful for Mirah-based projects.
@@ -69,17 +81,59 @@ public class MirahSources {
      */
     public static final String SOURCES_TYPE_MIRAH = "mirah"; // NOI18N
 
+    private static final Map<Project, SourceGroup> SOURCE_GROUP_MIRAH = new HashMap<>();
+    private static final Map<Project, SourceGroup> TEST_GROUP_MIRAH = new HashMap<>();
     
+    private static SourceGroup createSourceGroup(Project project, String path, String name) {
+        try {
+            final File srcDir = new File(project.getProjectDirectory().getPath() + path);
+            srcDir.createNewFile();
+            FileObject mirahSrcDir = FileUtil.createFolder(srcDir);
+            Icon icon = new ImageIcon(ImageUtilities.loadImage(MIRAH_FILE_ICON_16x16));
+            SourceGroup srcGroup = GenericSources.group(project, mirahSrcDir, SOURCES_TYPE_MIRAH, name, icon, icon);
+            return srcGroup;
+        } catch (IOException ioe) {
+            ioe.printStackTrace();
+            return null;
+        }
+    }
+    
+    private static SourceGroup getSrcMainMirahGroup(Project project) {
+        SourceGroup group = SOURCE_GROUP_MIRAH.get(project);
+        if (group == null) {
+            group = createSourceGroup(project, "/src/main/mirah", "Исходные файлы Mirah");
+            SOURCE_GROUP_MIRAH.put(project, group);
+        }
+        return group; 
+    }
+    
+    private static SourceGroup getSrcTestMirahGroup(Project project) {
+        SourceGroup group = TEST_GROUP_MIRAH.get(project);
+        if (group == null) {
+            group = createSourceGroup(project, "/src/test/mirah", "Тестовые файлы Mirah");
+            TEST_GROUP_MIRAH.put(project, group);
+        }
+        return group; 
+    }
+
     /**
      * Searches for all source groups that can contain Mirah sources, including Grails
      * default folders and also folders added to Grails by plugins etc...
      */
-    public static List<SourceGroup> getMirahSourceGroups(Sources sources) {
-        List<SourceGroup> result = new ArrayList<SourceGroup>();
+    public static List<SourceGroup> getMirahSourceGroups(Sources sources, Project project) {
+        List<SourceGroup> result = new ArrayList<>();
         result.addAll(Arrays.asList(sources.getSourceGroups(MirahSources.SOURCES_TYPE_MIRAH)));
         result.addAll(Arrays.asList(sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)));
        
+        SourceGroup srcGroup = getSrcMainMirahGroup(project);
+        SourceGroup tstGroup = getSrcTestMirahGroup(project);
+        if (tstGroup != null) {
+            result.add(0, tstGroup);
+        }
+        if (srcGroup != null) {
+            result.add(0, srcGroup);
+        }
+        
         return result;
     }
-
 }
