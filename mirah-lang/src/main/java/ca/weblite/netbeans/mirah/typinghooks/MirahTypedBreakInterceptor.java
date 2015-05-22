@@ -9,6 +9,7 @@ package ca.weblite.netbeans.mirah.typinghooks;
 import ca.weblite.netbeans.mirah.lexer.DocumentQuery;
 import ca.weblite.netbeans.mirah.lexer.MirahTokenId;
 import java.awt.event.ActionEvent;
+import java.util.prefs.Preferences;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.TextAction;
@@ -17,9 +18,11 @@ import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.editor.mimelookup.MimeRegistrations;
+import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.editor.indent.api.Indent;
+import org.netbeans.modules.editor.indent.spi.CodeStylePreferences;
 import org.netbeans.spi.editor.typinghooks.TypedBreakInterceptor;
 import org.openide.util.Lookup;
 
@@ -56,19 +59,43 @@ public class MirahTypedBreakInterceptor implements TypedBreakInterceptor{
                 Indent.get(doc).indentNewLine(end);
             }
             context.getComponent().getCaret().setDot(dotPos);
-        } else if ( MirahTypingCompletion.isAddEnd(baseDoc, dotPos)){
-            boolean insert[] = {true};
-            int end = MirahTypingCompletion.getRowOrBlockEnd(baseDoc, dotPos, insert);
-            
-            if (insert[0]) {
-                
-                doc.insertString(end, "end", null); // NOI18N
-                //Indent.get(doc).reindent(end+1);
-                Indent.get(doc).indentNewLine(end);
-                
-                
+        } else if (MirahTypingCompletion.isAddEnd(baseDoc, dotPos)){
+            // Позиция начала строки для которой пытаемся добавить автозавершение end
+            int caretRowStartOffset = org.netbeans.editor.Utilities.getRowStart(baseDoc, dotPos);
+            TokenSequence<MirahTokenId> ts = DocumentQuery.mirahTokenSequence(doc, caretRowStartOffset, false);
+            Preferences prefs = CodeStylePreferences.get(doc).getPreferences();
+            // prefs.get(org.netbeans.api.editor.settings.SimpleValueNames.SPACES_PER_TAB, null); 
+            // Размер табуляции соответствует настройкам.
+            int spacesPerTab = prefs.getInt("spaces-per-tab", 2);
+            String indent;
+            // Токен пробелов\табуляций и т.п. до первого ключевого слова в обрабатываемой строке, к примеру, отступ перед def
+            if (ts.token().id().is(Tokens.tComment)) {
+                StringBuilder tab = new StringBuilder();
+                for (int i = 0; i < spacesPerTab; i++) {
+                    tab.append(' ');
+                }
+                Token<MirahTokenId> token = ts.token();
+                indent = token.text().toString();
+                // Чтобы правильно посчитать отступы
+                indent = indent.replaceAll("\t", tab.toString());
+            } else {
+                // Текст начинается с начала строки, к примеру в определении класса или интерфейса
+                indent = "";
+            }   
+            // Количество позиций на отступ
+            int length = indent.length();
+            StringBuilder text = new StringBuilder("\n");
+            for (int i = 0; i < length + spacesPerTab; i++) {
+                text.append(' ');
             }
-            context.getComponent().getCaret().setDot(dotPos);
+            int caretPosition = text.length();
+            text.append("\n");
+            for (int i = 0; i < length; i++) {
+                text.append(' ');
+            }
+            text.append("end");
+            // Одновременно выставляем позицию каретки
+            context.setText(text.toString(), 0, caretPosition);
         } else if (MirahTypingCompletion.blockCommentCompletion(context)) {
             blockCommentComplete(doc, dotPos, context);
         } else if ( inJavadoc ){

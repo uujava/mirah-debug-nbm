@@ -7,25 +7,18 @@
 package ca.weblite.netbeans.mirah.typinghooks;
 
 import ca.weblite.netbeans.mirah.lexer.DocumentQuery;
-import ca.weblite.netbeans.mirah.lexer.MirahLanguageHierarchy;
 import ca.weblite.netbeans.mirah.lexer.MirahTokenId;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.prefs.Preferences;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import mirah.impl.Tokens;
-import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.lexer.PartType;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
-import org.netbeans.modules.editor.indent.api.Indent;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.netbeans.spi.editor.typinghooks.DeletedTextInterceptor;
 import org.netbeans.spi.editor.typinghooks.TypedBreakInterceptor;
@@ -267,15 +260,13 @@ public class MirahTypingCompletion {
         if ( caretOffset <= 1){
             return false;
         }
-        int prevBOL = dq.getBOL(caretOffset-1);
-        
-        int nextBOL = dq.getBOL(caretOffset);
-        if ( dq.getIndent(prevBOL) < dq.getIndent(nextBOL)){
-            return false;
-        }
-        
-        
-        
+        // Издевательство над здравым смыслом. Замечание - акроним BOL по-видимому, образован по аналогии с EOL
+        // Парность в данном случае нужно определять по токенам, а не по размерам отступов...
+//        int prevBOL = dq.getBOL(caretOffset-1);
+//        int nextBOL = dq.getBOL(caretOffset);
+//        if ( dq.getIndent(prevBOL) < dq.getIndent(nextBOL)){
+//            return false;
+//        }
         
         MirahTokenId[] starts = new MirahTokenId[]{
              MirahTokenId.get(Tokens.tDo.ordinal()),
