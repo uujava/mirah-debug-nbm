@@ -3,13 +3,12 @@
     <parent>
         <groupId>ru.programpark.mirah</groupId>
         <artifactId>root</artifactId>
-        <version>1.0-SNAPSHOT</version >
+        <version>1.0-SNAPSHOT</version>
     </parent>
 
-    <groupId>ru-programpark</groupId>
     <artifactId>mirah-lang</artifactId>
-    <version>${module.version}</version>
     <name>mirah-lang</name>
+	
     <packaging>nbm</packaging>
 
     <dependencies>
@@ -333,12 +332,12 @@
         <dependency>
             <groupId>org.mirah</groupId>
             <artifactId>mirahc</artifactId>
-            <version>0.1.5-SNAPSHOT</version>
+            <version>0.1.5</version>
         </dependency>
         <dependency>
             <groupId>org.mirah</groupId>
             <artifactId>mirah-ant</artifactId>
-            <version>0.1.5-SNAPSHOT</version>
+            <version>0.1.5</version>
         </dependency>
         <dependency>
             <groupId>com.sun</groupId>
@@ -364,17 +363,11 @@
     <plugins>
         <plugin>
             <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-compiler-plugin</artifactId>
-            <version>3.0</version>
-            <configuration>
-                <source>1.7</source>
-                <target>1.7</target>
-            </configuration>
+            <artifactId>maven-compiler-plugin</artifactId>            
         </plugin>
-            <plugin>
+        <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>nbm-maven-plugin</artifactId>
-                <version>3.13.3</version> 
                 <extensions>true</extensions>
                 <configuration>
                     <author>Caoyuan Deng</author>
@@ -422,151 +415,13 @@
                         <publicPackage>ru.programpark.mirah.index.elements</publicPackage -->
                     </publicPackages>
                 </configuration>
-            </plugin>
-        
-      <!-- plugin>
-        <artifactId>maven-dependency-plugin</artifactId>
-        <version>2.10</version>
-        <executions>
-          <execution>
-            <id>unpack-dependencies</id>
-            <phase>package</phase>
-            <goals>
-              <goal>unpack-dependencies</goal>
-            </goals>
-            <configuration>
-              <excludeScope>system</excludeScope>
-              <excludeGroupIds>junit,org.mockito,org.hamcrest</excludeGroupIds>
-              <outputDirectory>${project.build.directory}/classes</outputDirectory>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin -->
-      <!-- plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>exec-maven-plugin</artifactId>
-        <version>1.2.1</version>
-        <executions>
-          <execution>
-            <id>unpack-dependencies</id>
-            <phase>package</phase>
-            <goals>
-              <goal>exec</goal>
-            </goals>
-            <configuration>
-              <executable>${java.home}/../bin/javafxpackager</executable>
-              <arguments>
-                <argument>-createjar</argument>
-                <argument>-nocss2bin</argument>
-                <argument>-appclass</argument>
-                <argument>${mainClass}</argument>
-                <argument>-srcdir</argument>
-                <argument>${project.build.directory}/classes</argument>
-                <argument>-outdir</argument>
-                <argument>${project.build.directory}</argument>
-                <argument>-outfile</argument>
-                <argument>${project.build.finalName}.jar</argument>
-              </arguments>
-            </configuration>
-          </execution>
-          <execution>
-            <id>default-cli</id>
-            <goals>
-              <goal>exec</goal>
-            </goals>
-            <configuration>
-              <executable>${java.home}/bin/java</executable>
-              <commandlineArgs>${runfx.args}</commandlineArgs>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin -->
-      <!-- plugin>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.1</version>
-        <configuration>
-          <source>1.7</source>
-          <target>1.7</target>
-          <encoding>utf-8</encoding>
-          <compilerArguments>
-            <bootclasspath>${sun.boot.class.path}${path.separator}${java.home}/lib/jfxrt.jar</bootclasspath>
-          </compilerArguments>
-        </configuration>
-      </plugin -->
-      
-               <plugin>
-                <!-- NetBeans 6.9+ requires JDK 6, starting NetBeans 7.4 source 1.7 will be required   -->
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.0</version>
-                <configuration>
-                    <source>1.7</source>
-                    <target>1.7</target>
-                    <encoding>utf-8</encoding>
-                    <compilerArguments>
-                        <!-- bootclasspath>${sun.boot.class.path}${path.separator}${java.home}/lib/jfxrt.jar</bootclasspath -->
-                    </compilerArguments>
-                </configuration>
-            </plugin>
-   
+            </plugin>                      
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
-                <version>2.4</version>
-                <configuration>
-                    <!-- to have the jar plugin pickup the nbm generated manifest -->
-                    <useDefaultManifestFile>true</useDefaultManifestFile>
-                </configuration>
-            </plugin>
-      
+            </plugin>      
         </plugins>
     </build>
-
-<!--    <profiles>
-        <profile>-->
-            <!-- The following code includes tools.jar for JDKs on Windows, Linux and Solaris (it is already included in the runtime for Mac OS X and some free JDKs). -->
-            <!-- @see http://maven.apache.org/general.html#tools-jar-dependency -->
-<!--            <id>dependency-of-default-tools-jar</id>
-            <activation>
-                <property>
-                    <name>java.vendor</name>
-                    <value>Sun Microsystems Inc.</value>
-                </property>
-            </activation>
-
-            <dependencies>
-                <dependency>
-                    <groupId>com.sun</groupId>
-                    <artifactId>tools</artifactId>
-                    <version>1.4.2</version>
-                    <scope>system</scope>
-                    <systemPath>${java.home}/../lib/tools.jar</systemPath>
-                </dependency>
-            </dependencies>
-        </profile>
-
-        <profile>-->
-            <!-- The following code includes tools.jar for JDKs on Windows, Linux and Solaris (it is already included in the runtime for Mac OS X and some free JDKs). -->
-            <!-- @see http://maven.apache.org/general.html#tools-jar-dependency -->
-<!--            <id>dependency-of-default-tools-jar-openjdk</id>
-            <activation>
-                <property>
-                    <name>java.vendor</name>
-                    <value>Oracle Corporation</value>
-                </property>
-            </activation>
-
-            <dependencies>
-                <dependency>
-                    <groupId>com.sun</groupId>
-                    <artifactId>tools</artifactId>
-                    <version>1.7</version>
-                    <scope>system</scope>
-                    <systemPath>${java.home}/../lib/tools.jar</systemPath>
-                </dependency>
-            </dependencies>
-        </profile>
-    </profiles>-->
         
 </project>
 

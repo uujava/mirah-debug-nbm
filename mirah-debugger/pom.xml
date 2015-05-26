@@ -6,9 +6,7 @@
         <artifactId>root</artifactId>
         <version>1.0-SNAPSHOT</version>
     </parent>
-    <artifactId>mirah-debugger</artifactId>
-    <version>${module.version}</version>
-    <groupId>ru-programpark</groupId>
+    <artifactId>mirah-debugger</artifactId>    
     <name>mirah-debugger</name>
     <packaging>nbm</packaging>
     <dependencies>
@@ -135,7 +133,7 @@
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>mirah-lang</artifactId>
-            <version>${module.version}</version>
+            <version>1.0-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.netbeans.api</groupId>
