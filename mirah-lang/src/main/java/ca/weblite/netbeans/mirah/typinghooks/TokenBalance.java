@@ -101,11 +101,14 @@ class TokenBalance implements TokenHierarchyListener {
              * добавление. Если отрицательная, значит тегов end больше необходимого - запрещаю добавление еще одного.
              * Весь процесс происходит в {@link ca.weblite.netbeans.mirah.typinghooks.MirahTypingCompletion.isAddEnd}
              */ 
-            final MirahTokenId tEnd = MirahTokenId.get(Tokens.tEnd);
             final Language<MirahTokenId> language = MirahTokenId.getLanguage();
             tb.addTokenPair(language, MirahTokenId.get(Tokens.tLParen), MirahTokenId.get(Tokens.tRParen));
-            tb.addTokenPair(language, MirahTokenId.get(Tokens.tLBrace), MirahTokenId.get(Tokens.tRBrace));
             tb.addTokenPair(language, MirahTokenId.get(Tokens.tLBrack), MirahTokenId.get(Tokens.tRBrack));
+            
+            tb.addTokenPair(language, MirahTokenId.get(Tokens.tLBrace), MirahTokenId.get(Tokens.tRBrace));
+            tb.addTokenPair(language, MirahTokenId.get(Tokens.tStrEvBegin), MirahTokenId.get(Tokens.tRBrace));
+
+            final MirahTokenId tEnd = MirahTokenId.get(Tokens.tEnd);
             tb.addTokenPair(language, MirahTokenId.get(Tokens.tDo), tEnd);
             tb.addTokenPair(language, MirahTokenId.get(Tokens.tClass), tEnd);
             tb.addTokenPair(language, MirahTokenId.get(Tokens.tInterface), tEnd);

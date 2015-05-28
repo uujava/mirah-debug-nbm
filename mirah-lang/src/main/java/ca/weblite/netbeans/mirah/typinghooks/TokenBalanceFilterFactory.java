@@ -18,6 +18,18 @@ public class TokenBalanceFilterFactory {
             case tIf:
             case tUnless:
             case tWhile:
+                /**
+                 * Задача - не учитывать в балансе токенов выражения вида
+                 * i = 0 if i < 0 # не учитываем
+                 * 
+                 * if i > 0 # учитываем
+                 *   puts i
+                 * end unless i == 33 # не учитываем
+                 * 
+                 * begin
+                 *   break
+                 * end while true # не учитываем
+                 */
                 return new TokenBalance.Filter<T>() {
                     @Override
                     public boolean apply(TokenSequence<?> ts) {
@@ -35,10 +47,33 @@ public class TokenBalanceFilterFactory {
                             prefixToken = ts.token().id();
                             break;
                         }
-                        // Восстанавливаем. ts.moveNext() нужен после вызова ts.move(offset)
+                        // Восстанавливаем. ts.moveNext() необходим после вызова ts.move(offset)
                         ts.move(offset);
                         ts.moveNext();
                         return prefixToken == null || MirahTypingCompletion.ASSIGNMENT_TOKENS.contains(prefixToken);
+                    }
+                };
+            case tClass:
+                /** Задача - не учитывать в балансе токенов выражения Object.class, self.class */
+                return new TokenBalance.Filter<T>() {
+                    @Override
+                    public boolean apply(TokenSequence<?> ts) {
+                        TokenId prefixToken = null;
+                        // Запоминаем, т.к. будем навигироваться по последовательности токенов
+                        int offset = ts.offset();
+                        while (ts.movePrevious() && ts.token().id() != MirahTokenId.NL) {
+                            // Приходится проверяться на сам токен, т.к. в качестве стартовой позиции для поиска может 
+                            // прийти как позиция собственно токена, так и позиция конца текущей строки
+                            if (MirahTokenId.get(token).equals(ts.token().id())) {
+                                continue;
+                            }
+                            prefixToken = ts.token().id();
+                            break;
+                        }
+                        // Восстанавливаем. ts.moveNext() необходим после вызова ts.move(offset)
+                        ts.move(offset);
+                        ts.moveNext();
+                        return !MirahTokenId.get(Tokens.tDot).equals(prefixToken);
                     }
                 };
             default:

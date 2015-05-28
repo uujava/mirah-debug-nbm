@@ -1,30 +1,21 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package ca.weblite.netbeans.mirah.typinghooks;
 
 import ca.weblite.netbeans.mirah.lexer.DocumentQuery;
 import ca.weblite.netbeans.mirah.lexer.MirahTokenId;
-import java.awt.event.ActionEvent;
 import java.util.prefs.Preferences;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import javax.swing.text.TextAction;
 import mirah.impl.Tokens;
-import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
-import org.netbeans.api.editor.mimelookup.MimeRegistrations;
-import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.editor.indent.api.Indent;
 import org.netbeans.modules.editor.indent.spi.CodeStylePreferences;
 import org.netbeans.spi.editor.typinghooks.TypedBreakInterceptor;
-import org.openide.util.Lookup;
+//import java.awt.event.ActionEvent;
+//import javax.swing.text.TextAction;
+//import org.openide.util.Lookup;
+//import org.netbeans.api.editor.mimelookup.MimeLookup;
 
 /**
  *
@@ -51,11 +42,8 @@ public class MirahTypedBreakInterceptor implements TypedBreakInterceptor{
         TokenSequence<MirahTokenId> seq = dq.getTokens(dotPos, false);
         BaseDocument baseDoc = (BaseDocument) context.getDocument();
         
-        if (MirahTypingCompletion.isAddRightBrace(baseDoc, dotPos)) {
-            int end = MirahTypingCompletion.getRowOrBlockEnd(baseDoc, dotPos);
-            doc.insertString(end, "}", null); // NOI18N
-            Indent.get(doc).indentNewLine(end);
-            context.getComponent().getCaret().setDot(dotPos);
+        if (MirahTypingCompletion.startTokenOffset(baseDoc, dotPos, Tokens.tLBrace) >= 0) {
+            completeByRightBrace(baseDoc, dotPos, context);
         } else if (MirahTypingCompletion.isStartToken(baseDoc, dotPos)) {
             completeByEnd(baseDoc, dotPos, context);
         } else if (MirahTypingCompletion.blockCommentCompletion(context)) {
@@ -94,10 +82,7 @@ public class MirahTypedBreakInterceptor implements TypedBreakInterceptor{
         }
         
         // Если же курсор находился уже внутри значимых тегов строки - обрабатываем.
-        Preferences prefs = CodeStylePreferences.get(doc).getPreferences();
-        // Размер табуляции соответствует настройкам.
-        // int spacesPerTab = prefs.get(org.netbeans.api.editor.settings.SimpleValueNames.SPACES_PER_TAB, null); 
-        int spacesPerTab = prefs.getInt("spaces-per-tab", 2);
+        int spacesPerTab = getSpacesPerTab(doc);
         StringBuilder sb = new StringBuilder();
         sb.append('\n');
         for (int j = 0; j < indent; j++) { sb.append(' '); }
@@ -115,7 +100,7 @@ public class MirahTypedBreakInterceptor implements TypedBreakInterceptor{
             int suffix = 0;
             for (int i = eol - 1; i > 0 && i > bol && Character.isWhitespace(doc.getText(i, 1).charAt(0)); i--, suffix++);
             if (eol - suffix <= dotPos) {
-                if (MirahTypingCompletion.isStartToken(doc, dotPos, Tokens.tBegin)) {
+                if (MirahTypingCompletion.startTokenOffset(doc, dotPos, Tokens.tBegin) >= 0) {
                     sb.append('\n');
                     for (int j = 0; j < indent; j++) { sb.append(' '); }
                     sb.append("rescue Exception => e\n");
@@ -132,6 +117,49 @@ public class MirahTypedBreakInterceptor implements TypedBreakInterceptor{
         }
         // Одновременно выставляем позицию каретки
         context.setText(sb.toString(), 0, cursorPos);
+    }
+
+    private void completeByRightBrace(BaseDocument doc, int dotPos, MutableContext context) throws BadLocationException {
+        DocumentQuery dq = new DocumentQuery(doc);
+        int bol = dq.getBOL(dotPos - 1);
+        int eol = dq.getEOL(bol);
+
+        // Отступ в пробелах от начала строки
+        int indent = 0;
+        for (int i = bol; i > 0 && i < eol && Character.isWhitespace(doc.getText(i, 1).charAt(0)); i++, indent++);
+        // Если курсор стоял в серии пробелов до начала значимого контента строки - ничего не делаем, работают 
+        // обычные правила переноса строки.
+        if (bol + indent >= dotPos) {
+            return;
+        }
+        
+        int spacesPerTab = getSpacesPerTab(doc);
+        StringBuilder sb = new StringBuilder();
+        sb.append('\n');
+        for (int j = 0; j < indent + spacesPerTab; j++) { sb.append(' '); }
+        int cursorPos = sb.length();
+        // Далее вопрос - либо автозавершение end с выставлением каретки в определенную позицию, либо только выставление 
+        // каретки. Метод возвращает true в случае нарушения баланса, однако не всегда при нарушенном балансе мы добавляем end.
+        if (MirahTypingCompletion.isAddRightBrace(doc, dotPos)) {
+            // Добавляем end только в случае, если Enter нажат в конце строки, возможно в блоке незначащих пробельных символов.
+            // Незначащие (пробельные) символы в конце строки.
+            int suffix = 0;
+            for (int i = eol - 1; i > 0 && i > bol && Character.isWhitespace(doc.getText(i, 1).charAt(0)); i--, suffix++);
+            if (eol - suffix <= dotPos) {
+                sb.append('\n');
+                for (int j = 0; j < indent; j++) { sb.append(' '); }
+                sb.append('}');
+            }
+        }
+        // Одновременно выставляем позицию каретки
+        context.setText(sb.toString(), 0, cursorPos);
+    }
+
+    private int getSpacesPerTab(BaseDocument doc) {
+        Preferences prefs = CodeStylePreferences.get(doc).getPreferences();
+        // Размер табуляции соответствует настройкам.
+        // int spacesPerTab = prefs.get(org.netbeans.api.editor.settings.SimpleValueNames.SPACES_PER_TAB, null);
+        return prefs.getInt("spaces-per-tab", 2);
     }
     
     private void createIndent(BaseDocument doc, int dotPos, MutableContext context) throws BadLocationException {
@@ -165,10 +193,7 @@ public class MirahTypedBreakInterceptor implements TypedBreakInterceptor{
             if (offset >= dotPos) {
                 return;
             }
-            Preferences prefs = CodeStylePreferences.get(doc).getPreferences();
-            // Размер табуляции соответствует настройкам.
-            // int spacesPerTab = prefs.get(org.netbeans.api.editor.settings.SimpleValueNames.SPACES_PER_TAB, null); 
-            int spacesPerTab = prefs.getInt("spaces-per-tab", 2);
+            int spacesPerTab = getSpacesPerTab(doc);
             for (int j = 0; j < spacesPerTab; j++) { sb.append(' '); }                
         }
         context.setText(sb.toString(), 0, sb.length());        
@@ -248,14 +273,14 @@ public class MirahTypedBreakInterceptor implements TypedBreakInterceptor{
        
     @Override
     public void afterInsert(Context context) throws BadLocationException {
-        /*if (isJavadocTouched) {
-                Lookup.Result<TextAction> res = MimeLookup.getLookup(MimePath.parse("text/x-javadoc")).lookupResult(TextAction.class); // NOI18N
-                ActionEvent newevt = new ActionEvent(context.getComponent(), ActionEvent.ACTION_PERFORMED, "fix-javadoc"); // NOI18N
-                for (TextAction action : res.allInstances()) {
-                    action.actionPerformed(newevt);
-                }
-                isJavadocTouched = false;
-            }*/
+//        if (isJavadocTouched) {
+//            Lookup.Result<TextAction> res = MimeLookup.getLookup(MimePath.parse("text/x-javadoc")).lookupResult(TextAction.class); // NOI18N
+//            ActionEvent newevt = new ActionEvent(context.getComponent(), ActionEvent.ACTION_PERFORMED, "fix-javadoc"); // NOI18N
+//            for (TextAction action : res.allInstances()) {
+//                action.actionPerformed(newevt);
+//            }
+//            isJavadocTouched = false;
+//        }
     }
 
     @Override
