@@ -167,24 +167,24 @@ public class MirahTypingCompletion {
         return false;
     }
 
-    static boolean isStartToken(BaseDocument doc, int caretOffset, Tokens token) throws BadLocationException {
+    static int startTokenOffset(BaseDocument doc, int caretOffset, Tokens token) throws BadLocationException {
         // Необходимо убедиться, что строка, в которой нажали <Enter>, содержит один из обрабатываемых токенов
         int caretRowStartOffset = org.netbeans.editor.Utilities.getRowStart(doc, caretOffset);
         int caretRowEndOffset = org.netbeans.editor.Utilities.getRowEnd(doc, caretOffset);
         TokenSequence<MirahTokenId> ts = mirahTokenSequence(doc, caretRowEndOffset, true);
         if (ts == null) {
-            return false;
+            return -1;
         }
         do {
             if (ts.offset() < caretRowStartOffset) {
-                return false;
+                return -1;
             }
             final MirahTokenId tokenId = ts.token().id();
             if (tokenId.equals(MirahTokenId.get(token))) {
-                return true;
+                return ts.offset();
             }
         } while (ts.movePrevious());
-        return false;
+        return -1;
     }
 
     /**
@@ -221,10 +221,18 @@ public class MirahTypingCompletion {
     static boolean isSkipEnd(BaseDocument doc, int caretOffset) throws BadLocationException {  
         DocumentQuery dq = new DocumentQuery(doc);
         if (caretOffset > 0) {
-            // Проверка на выражения, которые не должны завершаться токеном end, к примеру: begin end while true
+            // Проверка на выражения, которые не должны завершаться токеном end
             TokenSequence<MirahTokenId> seq = dq.getTokens(caretOffset - 1, false);
             for (Tokens token : singleTokens) {
-                if (isStartToken(doc, caretOffset, token)) {
+                int offset = startTokenOffset(doc, caretOffset, token);
+                if (offset >= 0) {
+                    // Выполнение условия означает, что в строке присутствует end. Более корректным было бы условие, 
+                    // что строка заканчивается end.
+                    if (token == Tokens.tEnd) {
+                        return true;
+                    }
+                    seq.move(offset);
+                    seq.moveNext();
                     // Здесь создаются одноразовые фильтры. Их можно закэшировать здесь или в фабрике.
                     final Filter filter = TokenBalanceFilterFactory.create(MirahTokenId.get(token));
                     if (filter != null && !filter.apply(seq)) {
@@ -259,9 +267,17 @@ public class MirahTypingCompletion {
     };
 
     private static final Tokens[] singleTokens = {
+        // i = 0 if i < 0
         Tokens.tIf,
         Tokens.tUnless,
-        Tokens.tWhile
+        // begin
+        // end while true
+        Tokens.tWhile,
+        // puts "#{self.class}"
+        Tokens.tClass,
+        // abstract def build:void;end
+        // instance.call_method_with_empty_block do end
+        Tokens.tEnd
     };
     
     public static final Set<MirahTokenId> ASSIGNMENT_TOKENS = MirahTokenId.set(
@@ -313,30 +329,12 @@ public class MirahTypingCompletion {
      *  or false if not.
      */
     static boolean isAddRightBrace(BaseDocument doc, int caretOffset) throws BadLocationException {
-        if (tokenBalance(doc, MirahTokenId.get(Tokens.tLBrace.ordinal())) <= 0) {
+        if (caretOffset <= 1) {
             return false;
         }
-        int caretRowStartOffset = org.netbeans.editor.Utilities.getRowStart(doc, caretOffset);
-        TokenSequence<MirahTokenId> ts = mirahTokenSequence(doc, caretOffset, true);
-        if (ts == null) {
-            return false;
-        }
-        boolean first = true;
-        
-        //MirahTokenId WHITESPACE = MirahTokenId.get(Tokens.tWhitespace.ordinal());
-        //MirahTokenId LINE_COMMENT = MirahTokenId.get(Tokens.t)
-        MirahTokenId LBRACE = MirahTokenId.get(Tokens.tLBrace.ordinal());
-        
-        do {
-            if (ts.offset() < caretRowStartOffset) {
-                return false;
-            }            
-            if ( ts.token().id().equals(LBRACE)){
-                return true;
-            }                        
-            first = false;
-        } while (ts.movePrevious());
-        return false;
+        int balance = tokenBalance(doc, MirahTokenId.get(Tokens.tLBrace));
+        balance += tokenBalance(doc, MirahTokenId.get(Tokens.tStrEvBegin));
+        return balance > 0;
     }
     
     /**
