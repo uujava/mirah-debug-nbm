@@ -100,6 +100,7 @@ public class MirahClassWizard extends AbstractMirahWizard {
             // Retrieve the source groups again, but now with a newly created /test/mirah folder
             sourceGroups = retrieveGroups();
         }
-        return strategy.moveSourceFolderAsFirst(sourceGroups);
+//        return strategy.moveSourceFolderAsFirst(sourceGroups);
+        return sourceGroups;
     }
 }
