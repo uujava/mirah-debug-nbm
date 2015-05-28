@@ -11,6 +11,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
@@ -47,10 +50,26 @@ public final class MirahIndex {
                     roots.toArray(new FileObject[roots.size()])));
         } catch (IOException ioe) {
 //            LOG.log(Level.WARNING, null, ioe);
-            LOG.exception(MirahIndex.class, ioe);
+//            LOG.exception(MirahIndex.class, ioe);
             return EMPTY;
         }
     }
+
+    public static MirahIndex get(FileObject fo) {
+        Collection<FileObject> coll = QuerySupport.findRoots(fo, Collections.singleton(ClassPath.SOURCE), null, null);
+        for( FileObject f1 : coll)
+        {
+            String n = f1.getPath();
+            int t = 0;
+        }
+        Project project = FileOwnerQuery.getOwner(fo);
+        if ( project != null ) coll.add(project.getProjectDirectory());
+
+        // FIXME index is broken when invoked on start
+//            this.index = MirahIndex.get(QuerySupport.findRoots(fo, Collections.singleton(ClassPath.SOURCE), null, null));
+        return MirahIndex.get(coll);
+    }
+
 
     /**
      * Returns all {@link IndexedClass}es that are located in the given package.
@@ -62,7 +81,7 @@ public final class MirahIndex {
         Set<IndexedClass> result = new HashSet<>();
 
         for (IndexedClass indexedClass : getAllClasses()) {
-            String pkgName = null; //GroovyUtils.getPackageName(indexedClass.getFqn());
+            String pkgName = MirahUtils.getPackageName(indexedClass.getFqn());
             if (packageName.equals(pkgName)) {
                 result.add(indexedClass);
             }
@@ -193,8 +212,10 @@ public final class MirahIndex {
             }
 
             String fqn = map.getValue(MirahIndexer.FQN_NAME);
-
-            classes.add(createClass(fqn, simpleName, map));
+            
+            IndexedClass newClass = createClass(fqn, simpleName, map);
+            newClass.setUrl(map.getValue(MirahIndexer.URL));
+            classes.add(newClass);
         }
 
         return classes;
@@ -327,6 +348,19 @@ public final class MirahIndex {
      */
     public Set<IndexedField> getAllFields(final String fqName) {
         return getFields(".*", fqName, QuerySupport.Kind.REGEXP); // NOI18N
+    }
+    
+    public IndexedClass findClassByFqn( String fqn )
+    {
+        Set<IndexedClass> classes = getAllClasses();
+        if ( classes == null ) return null;
+        
+        for( IndexedClass ic : classes )
+        {
+			String n = ic.getFqn();
+            if ( ic.getFqn().equals(fqn) ) return ic;
+        }
+        return null;
     }
 
     /**
@@ -548,7 +582,7 @@ public final class MirahIndex {
             clz = module + "." + clz; // NOI18N
         }
 
-        //String fqn = map.getValue(GroovyIndexer.FQN_NAME);
+        //String fqn = map.getValue(MirahIndexer.FQN_NAME);
 
         int typeIndex = signature.indexOf(';');
         String methodSignature = signature;
@@ -618,7 +652,7 @@ public final class MirahIndex {
             clz = module + "." + clz; // NOI18N
         }
 
-        //String fqn = map.getValue(GroovyIndexer.FQN_NAME);
+        //String fqn = map.getValue(MirahIndexer.FQN_NAME);
 
         int typeIndex = signature.indexOf(';');
         String name = signature;

@@ -50,10 +50,10 @@ import org.openide.filesystems.FileObject;
  *
  * @author shannah
  */
-@MimeRegistration(mimeType="text/x-mirah", service=CompletionProvider.class)
+//@MimeRegistration(mimeType="text/x-mirah", service=CompletionProvider.class)
 public class MirahCodeCompleter implements CompletionProvider {
     
-    static FieldDeclaration[] findFields(final DocumentDebugger dbg, final int rightEdge, final boolean isClassVar){
+    public static FieldDeclaration[] findFields(final DocumentDebugger dbg, final int rightEdge, final boolean isClassVar){
         final ArrayList<FieldDeclaration> foundNodes = new ArrayList<FieldDeclaration>();
         for( Object node : dbg.compiler.compiler().getParsedNodes() ){
             if ( node instanceof Node ){
@@ -79,21 +79,22 @@ public class MirahCodeCompleter implements CompletionProvider {
     }
     public static Node findNode(final DocumentDebugger dbg, final int rightEdge){
         final Node[] foundNode = new Node[1];
+
         for( Object node : dbg.compiler.compiler().getParsedNodes() ){
+            
             if ( node instanceof Node ){
                 ((Node)node).accept(new NodeScanner(){
 
                     @Override
                     public boolean enterDefault(Node node, Object arg) {
                         if ( node != null ){
-                            
                             Position nodePos = node.position();
                             ResolvedType type = dbg.getType(node);
                             
-                        if ( nodePos != null )
-                        LOG.info(MirahCodeCompleter.class,"enterDefault node = " + node + " ["+nodePos.startLine() +"," + nodePos.startChar()+"," + nodePos.startColumn()+"-"+nodePos.endLine()+","+nodePos.endChar()+"," + nodePos.endColumn()+"] type ="+type+" rightEdge="+rightEdge);
-                        else
-                        LOG.info(MirahCodeCompleter.class,"enterDefault node = " + node + " pos="+nodePos +" type ="+type+" rightEdge="+rightEdge);
+//                            if ( nodePos != null )
+//                            LOG.info(MirahCodeCompleter.class,"enterDefault node = " + node + " ["+nodePos.startLine() +"," + nodePos.startChar()+"," + nodePos.startColumn()+"-"+nodePos.endLine()+","+nodePos.endChar()+"," + nodePos.endColumn()+"] type ="+type+" rightEdge="+rightEdge);
+//                            else
+//                            LOG.info(MirahCodeCompleter.class,"enterDefault node = " + node + " pos="+nodePos +" type ="+type+" rightEdge="+rightEdge);
                             if ( type != null && nodePos != null && nodePos.endChar() == rightEdge ){
                                 foundNode[0] = node;
                             } else if ( nodePos != null && nodePos.endChar() == rightEdge ){
@@ -109,14 +110,15 @@ public class MirahCodeCompleter implements CompletionProvider {
 
             }
         };
-        LOG.info(MirahCodeCompleter.class,"findNode node[0] = " + foundNode[0]);
+//        LOG.info(MirahCodeCompleter.class,"findNode node[0] = " + foundNode[0]);
+        
         return foundNode[0];
     }
     
     //@Override
     public CompletionTask createTask2(int queryType, final JTextComponent jtc) {
         
-        LOG.info(this,"createTask2 queryType = " + queryType);
+//        LOG.info(this,"createTask2 queryType = " + queryType);
         
         if ( queryType == CompletionProvider.COMPLETION_QUERY_TYPE){
             //System.out.println("Request for completion query");
@@ -290,7 +292,7 @@ public class MirahCodeCompleter implements CompletionProvider {
         return 0;
     }
     
-    static Class findClass(FileObject o, String name){
+    static public Class findClass(FileObject o, String name){
         LOG.info(MirahCodeCompleter.class,"findClass o="+o+" name="+name);
         return findClass(o, name, true);
     }
@@ -313,7 +315,6 @@ public class MirahCodeCompleter implements CompletionProvider {
         for ( int i=0; i<paths.length; i++){
             ClassPath cp = paths[i];
             LOG.info(MirahCodeCompleter.class,"findClass cp["+i+"] =" + cp);
-            
             try {
                 
                 Class c = cp.getClassLoader(true).loadClass(name);
@@ -379,7 +380,7 @@ public class MirahCodeCompleter implements CompletionProvider {
     }
     
     
-     static TokenSequence<MirahTokenId> mirahTokenSequence(Document doc, int caretOffset, boolean backwardBias) {
+    public static TokenSequence<MirahTokenId> mirahTokenSequence(Document doc, int caretOffset, boolean backwardBias) {
         BaseDocument bd = (BaseDocument)doc;
         try {
             bd.readLock();
@@ -391,6 +392,15 @@ public class MirahCodeCompleter implements CompletionProvider {
                 if (ts.languagePath().innerLanguage() == MirahTokenId.getLanguage()) {
                     TokenSequence<MirahTokenId> javaInnerTS = (TokenSequence<MirahTokenId>) ts;
                     //bd.readUnlock();
+                    
+//                    while( true )
+//                    {
+//                        String text = javaInnerTS.token().text().toString();
+//                        if ( text != null ) text = text.replaceAll("\n","\\n");
+//                        LOG.info(MirahCodeCompleter.class,"toks3: " + javaInnerTS.token().id().name()+" offset="+javaInnerTS.token().offset(hi)+ " text:"+ text);
+//                        if ( ! javaInnerTS.moveNext() ) break;
+//                    }
+                    javaInnerTS.moveStart();
                     return javaInnerTS;
                 }
             }
@@ -400,15 +410,19 @@ public class MirahCodeCompleter implements CompletionProvider {
         return null;
     }
     
-     static int getEndOfLine(Document doc, int caretOffset){
+    public static int getEndOfLine(Document doc, int caretOffset){
         BaseDocument bd = (BaseDocument)doc;
         bd.readLock();
         try {
             TokenHierarchy<?> hi = TokenHierarchy.get(doc);
             TokenSequence<MirahTokenId> toks = mirahTokenSequence(doc, caretOffset, false);
+            toks.moveNext();
             MirahTokenId eol = MirahTokenId.get(Tokens.tNL.ordinal());
             MirahTokenId eof = MirahTokenId.get(Tokens.tEOF.ordinal());
             while ( !eol.equals(toks.token().id()) && !eof.equals(toks.token().id())){
+                String text = toks.token() == null ? null : toks.token().id().name();
+                String text2 = toks.token() == null ? null : toks.token().text().toString();
+
                 if ( !toks.moveNext() ){
                     break;
                 }
@@ -422,7 +436,7 @@ public class MirahCodeCompleter implements CompletionProvider {
         
     }
     
-     static int getBeginningOfLine(Document doc, int caretOffset){
+    public static int getBeginningOfLine(Document doc, int caretOffset){
         BaseDocument bd = (BaseDocument)doc;
         bd.readLock();
         
@@ -431,9 +445,12 @@ public class MirahCodeCompleter implements CompletionProvider {
         try {
             TokenHierarchy<?> hi = TokenHierarchy.get(doc);
             TokenSequence<MirahTokenId> toks = mirahTokenSequence(doc, caretOffset, true);
+            toks.moveNext();
             MirahTokenId eol = MirahTokenId.get(Tokens.tNL.ordinal());
             //MirahTokenId eof = MirahTokenId.get(Tokens.tEOF.ordinal());
             while ( !eol.equals(toks.token().id())){
+                String text = toks.token() == null ? null : toks.token().id().name();
+                String text2 = toks.token() == null ? null : toks.token().text().toString();
                 if ( !toks.movePrevious() ){
                     break;
                 }

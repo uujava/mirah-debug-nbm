@@ -13,7 +13,7 @@ import org.openide.filesystems.FileObject;
 public abstract class MirahElement implements ElementHandle {
 
     /**
-     * Name of the element where this Groovy element lies. This might be package
+     * Name of the element where this Mirah element lies. This might be package
      * name in case of class element, class name in case of field element, etc.
      */
     protected String in;

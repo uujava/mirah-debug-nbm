@@ -68,16 +68,7 @@ public class SourceQuery implements List<Node>{
         this.results = new ArrayList<Node>();
         this.results.add(root);
     }
-    /*
-    public static void putStack(String text) {
 
-        for (StackTraceElement ste : Thread.currentThread().getStackTrace()) {
-            if (LOG != null) {
-                LOG.info("STACK: " + text + "-> " + ste);
-            }
-        }
-    }
-    */
     public String findPackage() {
         List<Node> list = results;
         if ( list == null )

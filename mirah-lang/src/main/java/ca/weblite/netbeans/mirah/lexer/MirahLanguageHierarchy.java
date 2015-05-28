@@ -59,6 +59,7 @@ public class MirahLanguageHierarchy extends LanguageHierarchy<MirahTokenId>{
         Tokens.tElsif,
         Tokens.tEnd,
         Tokens.tIn,
+        Tokens.tInterface,
         Tokens.tRescue,
         Tokens.tRetry,
         Tokens.tReturn,

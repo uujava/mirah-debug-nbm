@@ -60,7 +60,7 @@ public class MethodCompletionQuery extends AsyncCompletionQuery {
     @Override
     protected boolean canFilter(JTextComponent component) {
         
-        LOG.info(this,"canFilter component="+component);
+//        LOG.info(this,"canFilter component="+component);
         
         if ( currentType == null ){
             return false;
@@ -94,7 +94,7 @@ public class MethodCompletionQuery extends AsyncCompletionQuery {
     @Override
     protected void filter(CompletionResultSet resultSet) {
         //System.out.println("Filter "+filter);
-        LOG.info(this,"Filter "+filter);
+//        LOG.info(this,"Filter "+filter);
         for ( Method m : currentType.getMethods()){
             if ( m.getName().toLowerCase().indexOf(filter.toLowerCase()) == 0 && isStatic == Modifier.isStatic(m.getModifiers()) ){
                 resultSet.addItem(new MirahMethodCompletionItem(file, m, initialOffset, filter.length(), currentType));
@@ -153,8 +153,8 @@ public class MethodCompletionQuery extends AsyncCompletionQuery {
                 Token<MirahTokenId> subjectToken = null;
                 Token<MirahTokenId> thisTok = toks.token();
                 
-                LOG.info(this,"query subjectToken=" + subjectToken);
-                LOG.info(this,"query thisTok=" + thisTok);
+//                LOG.info(this,"query subjectToken=" + subjectToken);
+//                LOG.info(this,"query thisTok=" + thisTok);
                 if ( thisTok != null ){
                     MirahTokenId thisTokType = thisTok.id();
 

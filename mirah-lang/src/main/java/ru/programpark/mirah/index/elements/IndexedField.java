@@ -5,6 +5,7 @@ import java.util.Set;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
+import ru.programpark.mirah.editor.utils.MirahUtils;
 
 public class IndexedField extends IndexedElement {
 
@@ -16,7 +17,7 @@ public class IndexedField extends IndexedElement {
     private IndexedField(String typeName, String fieldName, IndexResult result, String classFqn,
             String attributes, int flags) {
         super(result, classFqn, attributes, flags);
-        this.typeName = null; ///GroovyUtils.stripPackage(typeName);
+        this.typeName = MirahUtils.stripPackage(typeName);
         this.fieldName = fieldName;
     }
 

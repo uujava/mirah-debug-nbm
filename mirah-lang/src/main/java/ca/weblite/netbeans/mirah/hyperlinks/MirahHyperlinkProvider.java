@@ -12,6 +12,8 @@ import ca.weblite.netbeans.mirah.lexer.MirahLanguageHierarchy;
 import ca.weblite.netbeans.mirah.lexer.MirahParser;
 import ca.weblite.netbeans.mirah.lexer.MirahTokenId;
 import ca.weblite.netbeans.mirah.lexer.SourceQuery;
+import java.io.File;
+import java.util.Collection;
 import java.util.EnumSet;
 import java.util.Set;
 import javax.swing.text.Document;
@@ -23,9 +25,14 @@ import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkType;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.Lookup;
 
 /**
  *
@@ -66,14 +73,30 @@ public class MirahHyperlinkProvider implements HyperlinkProviderExt  {
             return null;
         }
     }
+    static String project_dir = "c:\\mirah-debug\\mavenproject1";
 
     @Override
     public void performClickAction(Document doc, int offset, HyperlinkType type) {
         
+//    Collection<? extends ProjectFactory> f = Lookup.getDefault().lookupAll(ProjectFactory.class);
+//    Object[] o = f.toArray();
+//    for( int i = 0 ; i < o.length ; i++ )
+//        System.out.println("o["+i+"] ="+o[i]);
+//        
+//    Project p1 = null;
+//    try {
+//        FileObject fo = FileUtil.createFolder(new File(project_dir));
+//        p1 = ProjectManager.getDefault().findProject(fo);
+//    }
+//    catch( Exception e )
+//    {
+//        e.printStackTrace();
+//    }
+//        
         LOG.info(this,"performClickAction doc="+doc+" offset="+offset+" type="+type);
         switch (type) {
             case GO_TO_DECLARATION:
-//                GoToSupport.goTo(doc, offset, false);
+                GoToSupport.goTo(doc, offset, false);
                 break;
             case ALT_HYPERLINK:
 //                JTextComponent focused = EditorRegistry.focusedComponent();
@@ -122,14 +145,6 @@ public class MirahHyperlinkProvider implements HyperlinkProviderExt  {
         }
         return null;
     }
-    
-    
-    
-
-   
-    
-    
-
     
     
     public void resetState(){

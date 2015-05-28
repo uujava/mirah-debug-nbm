@@ -428,7 +428,7 @@ public abstract class AbstractMirahActionProvider implements ActionProvider {
     }
 
     private String[] setupCompileSingle(Properties p, FileObject[] files) {
-        LOG.info(this,"setupCompileSingle Properties="+p);
+//        LOG.info(this,"setupCompileSingle Properties="+p);
         
         FileObject[] testSrcPath = getTestSourceRoots(project);
         FileObject root = getRoot(testSrcPath, files[0]);

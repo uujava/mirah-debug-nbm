@@ -159,32 +159,37 @@ public class MirahParser extends Parser {
             reparse(snapshot);
         } else if ( result == null ){
             result = new NBMirahParserResult(snapshot, diag);
-/*
-            List<NBMirahParserResult.Error> errors = result.getErrors();
-            for( NBMirahParserResult.Error error : errors )
-            {
-                LOG.info(this, "******************************** descr="+error.getDescription());
-                LOG.info(this, "******************************** name ="+error.getDisplayName());
-                LOG.info(this, "******************************** key  ="+error.getKey());
-            }
-*/
             getBlocks(result, newContent);
+            try {            
+                DocumentDebugger dbg = getDocumentDebugger(snapshot.getSource().getDocument(false));
+                if ( dbg != null )
+                {
+                    // сохраняю карту распознанныч типов
+                    result.setResolvedTypes(dbg.resolvedTypes);
+                    // Сохраняю дерево разбора - это список List<Node>
+                    if ( dbg.compiler != null && dbg.compiler.compiler() != null )
+                    result.setParsedNodes(dbg.compiler.compiler().getParsedNodes());
+                }
+            }
+            catch( Exception e )
+            {
+                LOG.exception(this,e);
+            }
             
         }
         LOG.info(null,"----- Parsing End: "+snapshot.getSource().getFileObject().getPath()+" -----");
     }
 
     public void reparse(Snapshot snapshot) throws ParseException {
-try
-{
-        reparse(snapshot, snapshot.getText().toString());
-}
-catch( Exception ex )
-{
-    LOG.info(this, "####### PARSE EXCEPTION "+ex+" #######");
-    LOG.exception(this, ex);
-}
-
+        try
+        {
+            reparse(snapshot, snapshot.getText().toString());
+        }
+        catch( Exception ex )
+        {
+            LOG.info(this, "####### PARSE EXCEPTION "+ex+" #######");
+//            LOG.exception(this, ex);
+        }
     }
 
     private void copyIfChanged(File sourceRoot, File destRoot, File sourceFile) throws IOException {
@@ -223,55 +228,17 @@ catch( Exception ex )
             }
         }
     }
-/*
-    void dumpNode( Node node, String indent )
-    {
-        LOG.info(this,indent+" node="+node);
-        if ( node == null ) return;
-        List children = node.findChildren(null);
-        if ( children != null )
-        {
-            for( Object c : children)
-            {
-                LOG.info(this,"c="+c);
-                if ( c instanceof Node ) dumpNode((Node)c,indent+".");
-            }
-        }
-    }
-*/    
       private static void walkTree(Node node,String indent,NodeFilter filter){
           
         if ( node == null ) return;
         
-        LOG.info(MirahParser.class, indent+" node33 ="+node);
         List children = node.findChildren(filter);
-        LOG.info(MirahParser.class, indent+" children ="+children);
         if ( children == null ) return;
         for ( Object c : children ){
             if ( c instanceof Node ){
                 walkTree((Node)c,indent+".",filter);
             }
         }
-        
-    }
-
-    void dumpNode( Node node )
-    {
-        NodeFilter filter = new NodeFilter(){
-            @Override
-            public boolean matchesNode(Node node) {
-//                LOG.info(MirahParser.class,"node = "+node);
-                return true;
-            }
-        };
-        try {            
-            walkTree(node,"",filter);
-        }
-        catch( Exception ex )
-        {
-            LOG.exception(this, ex);
-        }
-        LOG.info(this,"----- end of dump -----");
     }
 
     void getBlocks(final NBMirahParserResult res, String content){
@@ -288,7 +255,9 @@ catch( Exception ex )
         if ( ast instanceof Node ){
             
             Node node = (Node)ast;
-            res.setRoot(node);
+//            res.setRoot(node);
+            
+//            res.setParsedNodes();
 //            dumpNode(node);
 
             node.accept(new NodeScanner(){
@@ -333,9 +302,6 @@ catch( Exception ex )
                     return super.exitMethodDefinition(node, arg); //To change body of generated methods, choose Tools | Templates.
                 }
                 
-                
-
-                
                 @Override
                 public boolean enterInterfaceDeclaration(InterfaceDeclaration node, Object arg) {
                     NBMirahParserResult.Block block = null;
@@ -353,8 +319,6 @@ catch( Exception ex )
                     blockStack.pop();
                     return super.exitInterfaceDeclaration(node, arg); //To change body of generated methods, choose Tools | Templates.
                 }
-                
-                
 
                 @Override
                 public boolean enterStaticMethodDefinition(StaticMethodDefinition node, Object arg) {
@@ -464,18 +428,6 @@ catch( Exception ex )
                     return super.exitMacroDefinition(node, arg); //To change body of generated methods, choose Tools | Templates.
                 }
                 
-                
-                
-                
-                
-                
-                
-                
-                
-                
-                
-                
-                
             }, null);
         }
         
@@ -484,14 +436,13 @@ catch( Exception ex )
     public void reparse(Snapshot snapshot, String content)
             throws ParseException {
 
-        LOG.info(this, "reparse222 = " + snapshot.getSource().getFileObject().getPath());
-        LOG.putStack(null);
+//        LOG.info(this, "reparse222 = " + snapshot.getSource().getFileObject().getPath());
+//        LOG.putStack(null);
         this.snapshot = snapshot;
         diag = new MirahParseDiagnostics();
         NBMirahParserResult parserResult = new NBMirahParserResult(snapshot, diag);
         result = parserResult;
         getBlocks(parserResult, content);
-        
 //        LOG.info(this,"REPARSE:\n"+content+"\n");
         
         WLMirahCompiler compiler = new WLMirahCompiler();
@@ -506,16 +457,16 @@ catch( Exception ex )
 //        LOG.info(this,"WLMirahCompiler compiler location="+location);
         
         FileObject src = snapshot.getSource().getFileObject();
-        LOG.info(this,"src = " + src);
+//        LOG.info(this,"src = " + src);
 
         Project project = FileOwnerQuery.getOwner(src);
-        LOG.info(this,"reparse project = " + project);
+//        LOG.info(this,"reparse project = " + project);
 
         FileObject projectDirectory = project.getProjectDirectory();
         FileObject buildDir = projectDirectory.getFileObject("build");
         Preferences projPrefs = ProjectUtils.getPreferences(project, MirahExtenderImplementation.class, true);
         String projectType = projPrefs.get("project_type", "unknown");
-        LOG.info(this,"reparse project type is "+projectType);
+//        LOG.info(this,"reparse project type is "+projectType);
         if ( "maven".equals(projectType)){
             try {
                 // It's a maven project so we want to build our sources to a different location
@@ -528,8 +479,7 @@ catch( Exception ex )
                 Exceptions.printStackTrace(ex);
             }
         }
-        
-
+  
         ClassPath compileClassPath
                 = ClassPath.getClassPath(src, ClassPath.COMPILE);
         String compileClassPathStr = "";
@@ -537,7 +487,7 @@ catch( Exception ex )
             compileClassPathStr = compileClassPath.toString();
         }
         
-        LOG.info(this,"=> compileClassPath = "+compileClassPath);
+//        LOG.info(this,"=> compileClassPath = "+compileClassPath);
         
         ClassPath buildClassPath
                 = ClassPath.getClassPath(src, ClassPath.EXECUTE);
@@ -545,12 +495,12 @@ catch( Exception ex )
         if (buildClassPath != null) {
             buildClassPathStr = buildClassPath.toString();
         }
-        LOG.info(this,"=> buildClassPath = " + buildClassPath);
+//        LOG.info(this,"=> buildClassPath = " + buildClassPath);
 
         ClassPath srcClassPath = ClassPath.getClassPath(src, ClassPath.SOURCE);
         String srcClassPathStr = "";
 
-        LOG.info(this,"=> srcClassPath = " + srcClassPath);
+//        LOG.info(this,"=> srcClassPath = " + srcClassPath);
         
         if (srcClassPath != null) {
             srcClassPathStr = srcClassPath.toString();
@@ -567,7 +517,7 @@ catch( Exception ex )
             }
             srcClassPathStr = sb.substring(0, sb.length() - File.pathSeparator.length());
         }
-        LOG.info(this,"=> srcClassPathStr = " + srcClassPathStr);
+//        LOG.info(this,"=> srcClassPathStr = " + srcClassPathStr);
        
         compiler.setSourcePath(srcClassPathStr);
 
@@ -610,7 +560,6 @@ catch( Exception ex )
         for (String path : paths) {
             classPath.append(path);
             classPath.append(File.pathSeparator);
-
         }
 
         String macroPath = new StringBuilder()
@@ -646,7 +595,6 @@ catch( Exception ex )
             }
         }
         
-        
         if (macroPath.length() >= 1) {
             macroPath = macroPath.substring(0, macroPath.length() - 1);
         }
@@ -658,8 +606,6 @@ catch( Exception ex )
         compiler.setClassPath(macroPath + File.pathSeparator + cp);
 
         compiler.setMacroClassPath(macroPath);
-        
-        
         
         DocumentDebugger debugger = new DocumentDebugger();
 
@@ -678,7 +624,7 @@ catch( Exception ex )
 //        LOG.info(this,"fakeFileRoot == "+fakeFileRoot);
         if ( fakeFileRoot == null )
         {
-            LOG.info(this,"fakeFileRoot == NULL for src = " + src);
+//            LOG.info(this,"fakeFileRoot == NULL for src = " + src);
             return;
         }
         String relPath = FileUtil.getRelativePath(fakeFileRoot, src);
@@ -688,14 +634,9 @@ catch( Exception ex )
         FileChangeAdapter fileChangeListener = null;
         try {
 
-//        LOG.info(this,"relPath compiler == "+compiler);
-//        LOG.info(this,"relPath mirahDir == "+mirahDir);
-//        LOG.info(this,"relPath compileClassPath == "+compileClassPath);
-        if ( compileClassPath != null )
-//            LOG.info(this,"relPath compileClassPath.getRoots() == "+compileClassPath.getRoots());
-            compiler.compile(new String[0]);
+            compiler.compile(new String[] { "--new-closures" });
             if (mirahDir != null) {
-                
+
                 for (FileObject compileRoot : compileClassPath.getRoots()) {
 //                    LOG.info(this,"compileRoot = "+compileRoot);
                     if (!compileRoot.getPath().endsWith(".jar") && compileRoot.isFolder() && !mirahDir.equals(compileRoot)) {
@@ -703,62 +644,50 @@ catch( Exception ex )
                     }
                 }
             }
-            
             if ("maven".equals(projectType)){
                 // If its a maven project, we need to copy the build files into 
-//                LOG.info(this,"This is a MAVEN PROJECT");
-//                LOG.putStack(null);
                 FileObject libDir = projectDirectory.getFileObject("lib");
                 if ( libDir == null ){
                     libDir = projectDirectory.createFolder("lib");
-                    
                 }
-                //LOG.info("libDir = "+libDir);
                 FileObject mirahTmpClassesDir = libDir.getFileObject("mirah-tmp-classes");
-                //LOG.info("mirahTmpClassesDir = " + mirahTmpClassesDir);
                 if ( mirahTmpClassesDir == null ){
                     mirahTmpClassesDir = libDir.createFolder("mirah-tmp-classes");
                 }
-                
                 File jarFile = new File(FileUtil.toFile(libDir), "mirah-tmp-classes.jar");
                 FileUtils.copyDirectoryStructureIfModified(new File(dest), FileUtil.toFile(mirahTmpClassesDir));
                 createJar(FileUtil.toFile(mirahTmpClassesDir), FileUtil.toFile(mirahTmpClassesDir).getPath(), jarFile);
             }
-
         } catch (Exception ex) {
             LOG.info(this,"REPARSE ex = "+ex);
-            ex.printStackTrace();
+//            ex.printStackTrace();
+        }
+        Document doc = snapshot.getSource().getDocument(true);
+        if ( debugger != null && result != null )
+        {
+            // сохраняю карту распознанныч типов
+            result.setResolvedTypes(debugger.resolvedTypes);
         }
 
-        //LOG.info(this,"resolvedTypes = "+debugger.resolvedTypes.size());
-        //LOG.info(this,"-------------------------------------------------------------------------------------------------------------------");
-//        synchronized (documentDebuggers) {
-
-            Document doc = snapshot.getSource().getDocument(true);
-
-            if (debugger.resolvedTypes.size() > 0) {
-                debugger.compiler = compiler.getMirahc();
-//LOG.putStack("8");
-                documentDebuggers.put(doc, debugger);
-                fireOnParse(doc);
-            }
-//        }
-
+        if (debugger.resolvedTypes.size() > 0) {
+            debugger.compiler = compiler.getMirahc();
+            documentDebuggers.put(doc, debugger);
+            // Сохраняю дерево разбора - это список List<Node>
+            if ( debugger.compiler.compiler() != null )
+            result.setParsedNodes(debugger.compiler.compiler().getParsedNodes());
+            fireOnParse(doc);
+        }
     }
 
     private FileObject getRoot(FileObject file) {
         Project project = FileOwnerQuery.getOwner(file);
-//        LOG.info(this,"getRoot file="+file+" project="+project);
         Sources sources = ProjectUtils.getSources(project);
         for (SourceGroup sourceGroup : sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
             FileObject root = sourceGroup.getRootFolder();
-//            LOG.info(this,"getRoot root=" + root+" sourceGroup=" + sourceGroup);
-		    if (FileUtil.isParentOf(root, file) || root.equals(file)) {
-//                LOG.info(this, "getRoot RETURN-1 root=" + root);
-			    return root;
-		    }
-	    }
-//        LOG.info(this, "getRoot RETURN-2 root=" + ClassPath.getClassPath(file, ClassPath.SOURCE).findOwnerRoot(file));
+            if (FileUtil.isParentOf(root, file) || root.equals(file)) {
+                    return root;
+            }
+        }
         return ClassPath.getClassPath(file, ClassPath.SOURCE).findOwnerRoot(file);
     }
 
@@ -793,6 +722,8 @@ catch( Exception ex )
         List<Error> errorList = new ArrayList<Error>();
         List<Block> blockList = new ArrayList<Block>();
         Node rootNode;
+        List parsedNodes;
+        HashMap<Node, ResolvedType> resolvedTypes = null;
 
         NBMirahParserResult(
                 Snapshot snapshot,
@@ -837,13 +768,45 @@ catch( Exception ex )
             return parent.addBlock(function, offset, length, extra, kind);
         }
         
-        public void setRoot( Node root )
+//        public void setRoot( Node root )
+//        {
+//            this.rootNode = root;
+//        }
+//        
+        public Node getRoot() {
+            if ( parsedNodes == null ) return null;
+            for( Object node : parsedNodes )
+            {
+                if ( node instanceof Node ) return (Node)node;
+            }
+            return null;
+//            return rootNode;
+        }
+
+        public void setParsedNodes( List parsed )
         {
-            this.rootNode = root;
+            this.parsedNodes = parsed;
         }
         
-        public Node getRoot() {
-            return rootNode;
+        public  List getParsedNodes()
+        {
+            return parsedNodes;
+        }
+        
+        public void setResolvedTypes( HashMap<Node, ResolvedType> resolvedTypes )
+        {
+            this.resolvedTypes = resolvedTypes;
+        }
+        
+        public  HashMap<Node, ResolvedType> getResolvedTypes()
+        {
+            return resolvedTypes;
+        }
+        
+        public ResolvedType getResolvedType( Node node )
+        {
+            if ( resolvedTypes == null ) return null;
+            return resolvedTypes.get(node);
         }
         
         public class Error implements org.netbeans.modules.csl.api.Error {
@@ -1089,6 +1052,10 @@ catch( Exception ex )
             return resolvedTypes.get(node);
         }
 
+        public HashMap<Node, ResolvedType> getResolvedTypes() {
+            return resolvedTypes;
+        }
+        
         public SortedSet<PositionType> findPositionsWithRightEdgeInRange(
                 int start,
                 int end) {

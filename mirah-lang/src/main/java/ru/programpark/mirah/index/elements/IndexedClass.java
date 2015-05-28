@@ -10,6 +10,10 @@ public final class IndexedClass extends IndexedElement implements ClassElement {
 
     private final String simpleName;
 
+    private String url = null; // файл с описанием класса
+    
+    private int offset = 0; // смещение описания класса в файле
+    
     protected IndexedClass(IndexResult result, String fqn, String simpleName, String attributes, int flags) {
         super(result, fqn, attributes, flags);
         this.simpleName = simpleName;
@@ -32,6 +36,21 @@ public final class IndexedClass extends IndexedElement implements ClassElement {
         return simpleName;
     }
 
+    public String getUrl() {
+        return url;
+    }
+
+    public void setUrl(String url) {
+        int index = url.lastIndexOf(':');
+        this.url = index == -1 ? url : url.substring(0, index);
+        this.offset = index == -1 ? 0 : Integer.parseInt(url.substring(index+1));
+    }
+
+    public int getOffset()
+    {
+        return offset;
+    }
+    
     @Override
     public ElementKind getKind() {
         return (flags & MODULE) != 0 ? ElementKind.MODULE : ElementKind.CLASS;

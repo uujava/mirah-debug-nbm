@@ -14,18 +14,26 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import mirah.lang.ast.Arguments;
 import mirah.lang.ast.ClassDefinition;
+import mirah.lang.ast.ConstructorDefinition;
+import mirah.lang.ast.FieldAssign;
+import mirah.lang.ast.FieldDeclaration;
 import mirah.lang.ast.Import;
 import mirah.lang.ast.InterfaceDeclaration;
+import mirah.lang.ast.MacroDefinition;
 import mirah.lang.ast.MethodDefinition;
+import mirah.lang.ast.ModifierList;
 import mirah.lang.ast.Node;
 import mirah.lang.ast.NodeScanner;
+import mirah.lang.ast.RequiredArgument;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.editor.BaseDocument;
@@ -64,6 +72,8 @@ public class MirahIndexer extends EmbeddingIndexer {
     // field
     static final String FIELD_NAME = "field"; //NOI18N
 
+    static final String URL = "url"; //NOI18N
+    
     /** Attributes: "i" -> private, "o" -> protected, ", "s" - static/notinstance, "d" - documented */
     //static final String ATTRIBUTE_NAME = "attribute"; //NOI18N
 
@@ -121,92 +131,50 @@ public class MirahIndexer extends EmbeddingIndexer {
     protected void index(Indexable indexable, Result parserResult, Context context) {
         long indexerThisStartTime = System.currentTimeMillis();
 
-try
-{
-//        LOG.info(this,"----------------------- Start indexing -----------------------");
-//        LOG.info(this,"root="+context.getRoot().getPath());
-//        LOG.info(this,"file="+parserResult.getSnapshot().getSource().getFileObject().getPath());
-//        LOG.putStack(null);
-        
-        if (indexerFirstRun == 0) {
-            indexerFirstRun = indexerThisStartTime;
-        }
-
-//        WLMirahCompiler compiler = new WLMirahCompiler();
-//        LOG.info(this, "compiler=" + compiler);
-/*        
-        compiler.setup();
-//        compiler.getDebugger().
-        //MirahClassIndex classIndexer = new MirahClassIndex();
-        LOG.info(this, "classIndexer=" + compiler.getIndex());
-        
-        compiler.getIndex().indexFile(parserResult.getSnapshot().getSource().getFileObject().getPath());
-        MirahParser parser = new MirahParser();
-        LOG.info(this,"parser="+parser);
-        LOG.info(this,"parserResult.getSnapshot()="+parserResult.getSnapshot());
-//        parser.reparse(parserResult.getSnapshot());
-//        
-//        Object ast = parser.getResult(null);
-        
-        Node ast = parser.prepareAst(parserResult.getSnapshot());
-        LOG.info(this, "ast=" + ast);
-        
-        if (ast != null && ast instanceof Node) {
-
-            LOG.info(this,"|||||||||||||||||||||||||||||||||||||||||||||||||||||||||");
-//            this.prepareIndex((Node)ast);
-        }
-        
-        
-/*
-        GroovyParserResult r = (GroovyParserResult) ASTUtils.getParseResult(parserResult);
-        ASTNode root = ASTUtils.getRoot(r);
-
-        if (root == null) {
-            return;
-        }
-*/
-        
-        Node ast = null; 
-        if ( parserResult instanceof MirahParser.NBMirahParserResult )
+        try
         {
-            ast = ((MirahParser.NBMirahParserResult)parserResult).getRoot();
+            if (indexerFirstRun == 0) {
+                indexerFirstRun = indexerThisStartTime;
+            }
+            Node ast = null; 
+            if ( parserResult instanceof MirahParser.NBMirahParserResult )
+            {
+                ast = ((MirahParser.NBMirahParserResult)parserResult).getRoot();
+            }
+            if ( ast != null )
+            {
+                IndexingSupport support;
+                try {
+                    support = IndexingSupport.getInstance(context);
+                } catch (IOException ioe) {
+    //                LOG.exception(this, ioe);
+                    return;
+                }
+                IndexScanner scanner = new IndexScanner(parserResult.getSnapshot(),support,indexable);
+                scanner.analyze(ast);
+                for (IndexDocument doc : scanner.getDocuments()) {
+                    support.addDocument(doc);
+                }
+            }
+            filesIndexed++;
+            long indexerThisStopTime = System.currentTimeMillis();
+            long indexerThisRunTime = indexerThisStopTime - indexerThisStartTime;
+            indexerRunTime += indexerThisRunTime;
+
+            LOG.info(this, "---------------------------------------------------------------------------------");
+            LOG.info(this,"Indexed File                : "+parserResult.getSnapshot().getSource().getFileObject().getPath());
+            LOG.info(this,"Indexing time (ms)          : "+indexerThisRunTime);
+            LOG.info(this,"Number of files indexed     : "+filesIndexed);
+            LOG.info(this,"Time spend indexing (ms)    : "+indexerRunTime);
+            LOG.info(this,"Avg indexing time/file (ms) : "+indexerRunTime/filesIndexed);
+            LOG.info(this,"Time betw. 1st and Last idx : "+(indexerThisStopTime - indexerFirstRun));
+            LOG.info(this, "---------------------------------------------------------------------------------");
         }
-        if ( ast != null )
+        catch( Exception e )
         {
-            IndexingSupport support;
-            try {
-                support = IndexingSupport.getInstance(context);
-            } catch (IOException ioe) {
-                LOG.exception(this, ioe);
-                return;
-            }
-//            LOG.info(this,"support = "+support);
-
-            IndexScanner scanner = new IndexScanner(parserResult.getSnapshot(),support,indexable);
-            scanner.analyze(ast);
-            for (IndexDocument doc : scanner.getDocuments()) {
-                support.addDocument(doc);
-            }
+//            LOG.exception(this, e);
+            e.printStackTrace();
         }
-        filesIndexed++;
-        long indexerThisStopTime = System.currentTimeMillis();
-        long indexerThisRunTime = indexerThisStopTime - indexerThisStartTime;
-        indexerRunTime += indexerThisRunTime;
-
-        LOG.info(this, "---------------------------------------------------------------------------------");
-        LOG.info(this,"Indexed File                : "+parserResult.getSnapshot().getSource().getFileObject().getPath());
-        LOG.info(this,"Indexing time (ms)          : "+indexerThisRunTime);
-        LOG.info(this,"Number of files indexed     : "+filesIndexed);
-        LOG.info(this,"Time spend indexing (ms)    : "+indexerRunTime);
-        LOG.info(this,"Avg indexing time/file (ms) : "+indexerRunTime/filesIndexed);
-        LOG.info(this,"Time betw. 1st and Last idx : "+(indexerThisStopTime - indexerFirstRun));
-        LOG.info(this, "---------------------------------------------------------------------------------");
-}
-catch( Exception ee )
-{
-    LOG.exception(this, ee);
-}
     }
 
     public FileObject getPreindexedDb() {
@@ -297,19 +265,22 @@ catch( Exception ee )
         }
         
     }
-
-    public static class IndexScanner extends NodeScanner
+    public class IndexScanner extends NodeScanner
     {
+
         private final FileObject file;
         private final IndexingSupport support;
         private final Indexable indexable;
         private final List<IndexDocument> documents = new ArrayList<IndexDocument>();
+        private IndexDocument document = null;
         private String packageName = null;
         private ClassNode lastFoundClass = null;
 
+        private HashMap fields = new HashMap();
+
         public IndexScanner( Snapshot snapshot, IndexingSupport support, Indexable indexable )
         {
-//            this.result = result;
+    //            this.result = result;
             this.file = snapshot.getSource().getFileObject();
             this.support = support;
             this.indexable = indexable;
@@ -319,7 +290,7 @@ catch( Exception ee )
         {
             return documents;
         }
-        
+
         public void analyze( Node node )
         {
             node.accept(this, null);
@@ -328,11 +299,20 @@ catch( Exception ee )
         @Override
         public boolean enterMethodDefinition( MethodDefinition node, Object arg )
         {
-//            LOG.info(MirahIndexer.class, "enterMethodDefinition name=" + node.name().identifier()+" file="+file.getName()+" node="+node);
+            StringBuilder sb = new StringBuilder(); //ASTUtils.getDefSignature(childNode));
+            sb.append(node.name().identifier());
+    //            sb.append(';').append(org.netbeans.modules.groovy.editor.java.Utilities.translateClassLoaderTypeName(
+    //                    childNode.getReturnType().getName()));
+            prepareModifiers(node.modifiers(), sb);
+            prepareArguments(node.arguments(), sb);
+            prepareLocation(node, sb);
+            if ( document != null ) document.addPair(METHOD_NAME, sb.toString(), true, true);
+    //      LOG.info(MirahIndexer.class, "enterMethodDefinition name=" + node.name().identifier()+" file="+file.getName()+" node="+node);
+            System.out.println("METHOD_NAME="+sb.toString());
             return true;
-//            return enterMethodDefinition(node, arg);
+    //            return enterMethodDefinition(node, arg);
         }
-        
+
         @Override
         public boolean enterPackage( mirah.lang.ast.Package node, Object arg )
         {
@@ -340,18 +320,18 @@ catch( Exception ee )
                 return true;
             }
             packageName = node.name().identifier();
-//            LOG.info(MirahIndexer.class, "enterClassDefinition packageName=" + packageName);
-//                ClassFinder scope = new ClassFinder(
-//                        context.get(ca.weblite.asm.ClassLoader.class),
-//                        null
-//                );
-//                if (packageName != null) {
-//                    scope.addImport(packageName + ".*");
-//                }
-//                if (!scopeStack.isEmpty()) {
-//                    scopeStack.pop();
-//                }
-//                scopeStack.push(scope);
+    //            LOG.info(MirahIndexer.class, "enterClassDefinition packageName=" + packageName);
+    //                ClassFinder scope = new ClassFinder(
+    //                        context.get(ca.weblite.asm.ClassLoader.class),
+    //                        null
+    //                );
+    //                if (packageName != null) {
+    //                    scope.addImport(packageName + ".*");
+    //                }
+    //                if (!scopeStack.isEmpty()) {
+    //                    scopeStack.pop();
+    //                }
+    //                scopeStack.push(scope);
             return super.enterPackage(node, arg);
         }
 
@@ -372,15 +352,31 @@ catch( Exception ee )
                     + node.name().identifier()
                     : node.name().identifier();
 
-//            LOG.info(MirahIndexer.class, "enterClassDefinition className=" + className);
-            
-            IndexDocument document = support.createDocument(indexable);
+    //        LOG.info(MirahIndexer.class, "enterClassDefinition className=" + className);
+
+            fields.clear();
+    /*        
+            document = support.createDocument(indexable);
             documents.add(document);
 
             document.addPair(FQN_NAME, className, true, true);
             document.addPair(CLASS_NAME, node.name().identifier(), true, true);
-            document.addPair(CONSTRUCTOR, "ctor()", true, true);            
-            
+    //        document.addPair(CONSTRUCTOR, "ctor()", true, true);            
+            document.addPair(URL, file.getPath(), true, true);            
+    */
+            document = support != null ? support.createDocument(indexable) : null;
+            if ( document != null )
+            {
+                documents.add(document);
+                document.addPair(FQN_NAME, className, true, true);
+                document.addPair(CLASS_NAME, node.name().identifier(), true, true);
+                document.addPair(URL, file.getPath()+":"+node.position().startLine(), true, true);
+            }
+            System.out.println("FQN_NAME="+className);
+            System.out.println("CLASS_NAME="+node.name().identifier());
+    //        System.out.println("FQN_NAME="+className);
+    //        prepareLocation(node, sb);
+
             //document.addPair(CASE_INSENSITIVE_CLASS_NAME, name.toLowerCase(), true, true);
             return super.enterClassDefinition(node, arg);
         }
@@ -394,18 +390,179 @@ catch( Exception ee )
         @Override
         public boolean enterImport( Import node, Object arg ) 
         {
-//          if (scopeStack.isEmpty()) {
-//             ClassFinder scope = new ClassFinder(
-//             context.get(ca.weblite.asm.ClassLoader.class),
-//             null
-//          );
-//          scopeStack.push(scope);
-//          }
-//          scopeStack.peek().addImport(node.fullName().identifier());
-            //System.out.println("Entering import: "+node.fullName().identifier());
+    //          if (scopeStack.isEmpty()) {
+    //             ClassFinder scope = new ClassFinder(
+    //             context.get(ca.weblite.asm.ClassLoader.class),
+    //             null
+    //          );
+    //          scopeStack.push(scope);
+    //          }
+    //          scopeStack.peek().addImport(node.fullName().identifier());
+            System.out.println("Entering import: "+node.fullName().identifier());
             return super.enterImport(node, arg);
+        }
+    //    public boolean enterAnnotation(Annotation node, Object arg) {
+    //    public boolean enterAnnotationList(AnnotationList node, Object arg) {
+    //    @Override
+    //    public boolean enterArguments(Arguments node, Object arg) {
+    //        
+    //        return super.enterArguments(node, arg);
+    //    }
+    //    public boolean enterBlock(Block node, Object arg) {
+    //    public boolean enterBlockArgument(BlockArgument node, Object arg) {
+    //    public boolean enterBlockPass(BlockPass node, Object arg) {
+    //    public boolean enterClosureDefinition(ClosureDefinition node, Object arg) {
+        @Override
+        public boolean enterConstructorDefinition(ConstructorDefinition node, Object arg) 
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.append(node.name().identifier());
+            sb.append(';');
+
+    //            for( int i = 0 ; i < node.arguments().required().size() ; i++ )
+    //            {
+    //                RequiredArgument a = node.arguments().required().get(i);
+    //                sb.append(a.name());
+    //                sb.append(':');
+    //                sb.append(a.type().typeref().name());
+    //            }
+
+            prepareModifiers(node.modifiers(), sb);
+            prepareArguments(node.arguments(), sb);
+            prepareLocation(node, sb);
+    //            List<String> params = node.constructor.getParameterTypes();
+    //            if (!params.isEmpty()) {
+    //                for (String paramName : params) {
+    //                    sb.append(paramName);
+    //                    sb.append(",");
+    //                }
+    //
+    //                // Removing last ","
+    //                sb.deleteCharAt(sb.length() - 1);
+    //            }
+
+    //            Set<Modifier> modifiers = constructor.getModifiers();
+    //
+    //            int flags = getMethodModifiersFlag(modifiers);
+    //            if (flags != 0) {
+    //                sb.append(';');
+    //                sb.append(IndexedElement.flagToFirstChar(flags));
+    //                sb.append(IndexedElement.flagToSecondChar(flags));
+    //            }
+
+            System.out.println("CONSTRUCTOR="+sb.toString());
+            if ( document != null ) document.addPair(CONSTRUCTOR, sb.toString(), true, true);
+            return super.enterConstructorDefinition(node, arg);
+        }
+    //    public boolean enterFieldAccess(FieldAccess node, Object arg) {
+        public boolean enterFieldAssign(FieldAssign node, Object arg) {
+
+            if ( ! fields.containsKey(node.name().identifier()) )
+            {
+                StringBuilder sb = new StringBuilder(node.name().identifier());
+                sb.append(';');
+                prepareModifiers(node.modifiers(), sb);
+                prepareLocation(node, sb);
+                System.out.println("FIELD_ASSIGN="+sb.toString());
+
+                // TODO - gather documentation on fields? naeh
+                if ( document != null ) document.addPair(FIELD_NAME, sb.toString(), true, true);
+                fields.put(node.name().identifier(), null);
+            }
+            return super.enterFieldAssign(node, arg);
+        }
+
+        @Override
+        public boolean enterFieldDeclaration(FieldDeclaration node, Object arg) 
+        {
+            StringBuilder sb = new StringBuilder(node.name().identifier());
+
+    //        sb.append(';').append(org.netbeans.modules.groovy.editor.java.Utilities.translateClassLoaderTypeName(
+    //                node.getType().getName()));
+
+            prepareModifiers(node.modifiers(), sb);
+            prepareLocation(node, sb);
+
+    //            int flags = getFieldModifiersFlag(child.getModifiers());
+    //            if (flags != 0 || child.isProperty()) {
+    //                sb.append(';');
+    //                sb.append(IndexedElement.flagToFirstChar(flags));
+    //                sb.append(IndexedElement.flagToSecondChar(flags));
+    //            }
+    //
+    //            if (child.isProperty()) {
+    //                sb.append(';');
+    //                sb.append(child.isProperty());
+    //            }
+                System.out.println("FIELD_NAME="+sb.toString());
+
+            // TODO - gather documentation on fields? naeh
+            if ( document != null ) document.addPair(FIELD_NAME, sb.toString(), true, true);
+            return super.enterFieldDeclaration(node, arg);
+        }
+    //    public boolean enterInclude(Include node, Object arg) {
+        @Override
+        public boolean enterMacroDefinition(MacroDefinition node, Object arg) 
+        {
+            return super.enterMacroDefinition(node, arg);
+        }
+    //    public boolean enterModifier(Modifier node, Object arg) {
+    //    public boolean enterOptionalArgument(OptionalArgument node, Object arg) {
+    //    public boolean enterOptionalArgumentList(OptionalArgumentList node, Object arg) {
+    //    public boolean enterRequiredArgument(RequiredArgument node, Object arg) {
+    //    public boolean enterRequiredArgumentList(RequiredArgumentList node, Object arg) {
+    //    @Override
+    //    public boolean enterStaticMethodDefinition(StaticMethodDefinition node, Object arg) 
+    //    {
+    //        return super.enterStaticMethodDefinition(node, arg);
+    //    }
+        private void prepareLocation(Node node, StringBuilder sb)
+        {
+    //        sb.append(file.getPath());
+    //        sb.append(':');
+            sb.append(node.position().startLine());
+            sb.append(';');
+        }
+
+        private void prepareArguments(Arguments arguments, StringBuilder sb)
+        {
+    //        sb.append('(');
+            for( int i = 0 ; i < arguments.required().size() ; i++ )
+            {
+                RequiredArgument a = arguments.required().get(i);
+                sb.append(a.name().identifier());
+                sb.append(':');
+                sb.append(a.type().typeref().name());
+                sb.append(',');
+            }
+            // Removing last ","
+            if ( arguments.required().size() > 0 ) sb.deleteCharAt(sb.length() - 1);
+            sb.append(";");
+        }
+        private void prepareModifiers(ModifierList modifiers, StringBuilder sb)
+        {
+            for( int i = 0 ; i < modifiers.size() ; i++ )
+            {
+                mirah.lang.ast.Modifier m = modifiers.get(i);
+                sb.append(m.value());
+                sb.append(',');
+    //            System.out.println("mody = "+mody.value());
+                // Removing last ","
+            }
+            if ( modifiers.size() > 0 ) sb.deleteCharAt(sb.length() - 1);
+            sb.append(';');
+
+    //        int flags = modifiers.contains(Modifier.STATIC) ? Opcodes.ACC_STATIC : 0;
+    //        if (modifiers.contains(Modifier.PRIVATE)) {
+    //            flags |= Opcodes.ACC_PRIVATE;
+    //        } else if (modifiers.contains(Modifier.PROTECTED)) {
+    //            flags |= Opcodes.ACC_PROTECTED;
+    //        }
+    //
+    //        return flags;
         }
 
     }
+
     
 }

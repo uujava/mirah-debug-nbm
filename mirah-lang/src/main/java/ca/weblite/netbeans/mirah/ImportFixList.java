@@ -88,7 +88,7 @@ public class ImportFixList  implements LazyFixList, Runnable {
         ClassIndex idx = new ClassIndex();
         ClassIndex.CompoundQuery q = new ClassIndex.CompoundQuery(0);
 
-        LOG.info(this,"In ImportFixList.run() fo="+fo);
+//        LOG.info(this,"In ImportFixList.run() fo="+fo);
         
         ClassPath[] classPaths = new ClassPath[]{
             ClassPath.getClassPath(fo, ClassPath.SOURCE),
@@ -97,10 +97,10 @@ public class ImportFixList  implements LazyFixList, Runnable {
             ClassPath.getClassPath(fo, ClassPath.BOOT)
         };
         
-        LOG.info(this,"ClassPath.SOURCE ="+ClassPath.getClassPath(fo, ClassPath.SOURCE));
-        LOG.info(this,"ClassPath.EXECUTE =" + ClassPath.getClassPath(fo, ClassPath.EXECUTE));
-        LOG.info(this,"ClassPath.COMPILE =" + ClassPath.getClassPath(fo, ClassPath.COMPILE));
-        LOG.info(this,"ClassPath.BOOT =" + ClassPath.getClassPath(fo, ClassPath.BOOT));
+//        LOG.info(this,"ClassPath.SOURCE ="+ClassPath.getClassPath(fo, ClassPath.SOURCE));
+//        LOG.info(this,"ClassPath.EXECUTE =" + ClassPath.getClassPath(fo, ClassPath.EXECUTE));
+//        LOG.info(this,"ClassPath.COMPILE =" + ClassPath.getClassPath(fo, ClassPath.COMPILE));
+//        LOG.info(this,"ClassPath.BOOT =" + ClassPath.getClassPath(fo, ClassPath.BOOT));
         
         int priority = 10;
         for ( ClassPath cp : classPaths){
@@ -120,7 +120,7 @@ public class ImportFixList  implements LazyFixList, Runnable {
                 Set<String> matches = new HashSet<String>();
                 matches.addAll(this.getMatches());
                 for ( String match : matches ){
-                    LOG.info(ClassIndex.class,"match ==> " + match);
+//                    LOG.info(ClassIndex.class,"match ==> " + match);
                     Fix fix = new ImportFix(match);
                     synchronized(fixes){
                         fixes.add(fix);
