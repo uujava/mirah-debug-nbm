@@ -4,13 +4,12 @@
         <groupId>ru.programpark.mirah</groupId>
         <artifactId>root</artifactId>
         <version>1.0-SNAPSHOT</version>
+        <relativePath>..</relativePath>
     </parent>
-
+    <groupId>ru.programpark.mirah</groupId>
     <artifactId>mirah-lang</artifactId>
     <name>mirah-lang</name>
-	
     <packaging>nbm</packaging>
-
     <dependencies>
         <dependency>
             <groupId>org.netbeans.api</groupId>
