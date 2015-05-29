@@ -69,8 +69,10 @@ public class MirahTestActions {
         node.accept(new NodeScanner(){
           @Override
             public boolean enterDefault(Node node, Object arg) {
-                if ( node != null )
-                io.getOut().println(":"+node+"["+node.position().startChar()+","+node.position().endChar()+"] "+node.parent());
+                if ( node != null && node.position() != null )
+                    io.getOut().println(":"+node+"["+node.position().startChar()+","+node.position().endChar()+"] "+node.parent());
+                else
+                    io.getOut().println(":"+node+" pos = null "+node.parent());
                 return super.enterDefault(node, arg);
             }
         }, null);
