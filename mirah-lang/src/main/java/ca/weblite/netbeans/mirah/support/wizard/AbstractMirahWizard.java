@@ -39,7 +39,6 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-
 package ca.weblite.netbeans.mirah.support.wizard;
 
 import java.io.IOException;
@@ -60,7 +59,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
-import org.openide.loaders.TemplateWizard;
 import org.openide.util.NbBundle;
 
 /**
@@ -72,10 +70,8 @@ public abstract class AbstractMirahWizard extends AbstractFileWizard {
 
     protected ProjectTypeStrategy strategy;
 
-
     protected AbstractMirahWizard() {
     }
-
 
     @Override
     public void initialize(WizardDescriptor wiz) {
@@ -83,14 +79,11 @@ public abstract class AbstractMirahWizard extends AbstractFileWizard {
         strategy = findCorrectStrategy();
 
         super.initialize(wiz);
-            }
+    }
 
     private ProjectTypeStrategy findCorrectStrategy() {
         //FileObject pom = project.getProjectDirectory().getFileObject("pom.xml"); // NOI18N
-
-       
-            return new AntProjectTypeStrategy(project);
-        
+        return new AntProjectTypeStrategy(project);
     }
 
     @Override
@@ -105,32 +98,24 @@ public abstract class AbstractMirahWizard extends AbstractFileWizard {
         DataFolder dFolder = DataFolder.findFolder(targetFolder);
         DataObject dTemplate = DataObject.find(template);
 
-        DataFolder folder = DataFolder.findFolder(project.getProjectDirectory());
-
-		// создаю папку для исходников mirah
-        folder = DataFolder.create(folder,"src/main/mirah");
-        dFolder = folder;
-                
         String pkgName = getPackageName(targetFolder);
 
         DataObject dobj;
         if (pkgName == null) {
             dobj = dTemplate.createFromTemplate(dFolder, targetName);
         } else {
-			// создаю папку для пакета
-			dFolder = DataFolder.create(dFolder,pkgName.replace('.','/'));
             dobj = dTemplate.createFromTemplate(dFolder, targetName, Collections.singletonMap("package", pkgName)); // NOI18N
         }
 
         FileObject createdFile = dobj.getPrimaryFile();
-        
+
         Project proj = Templates.getProject(wiz);
         if (!MirahExtender.isActive(proj)) {
             MirahExtender.activate(proj);
         }
         System.out.println("About to check if mirah is current");
-        
-        if (!MirahExtender.isCurrent(proj)){
+
+        if (!MirahExtender.isCurrent(proj)) {
             System.out.println("Mirah is not current");
             MirahExtender.update(proj);
         }
@@ -141,8 +126,8 @@ public abstract class AbstractMirahWizard extends AbstractFileWizard {
 
     /**
      * Return template that should be used for file creation. By default it uses
-     * {@link Templates#getTemplate(org.openide.WizardDescriptor)} method, but it
-     * is possible to override this behavior in subclasses.
+     * {@link Templates#getTemplate(org.openide.WizardDescriptor)} method, but it is possible to override this behavior
+     * in subclasses.
      *
      * @return file template
      */
@@ -163,6 +148,6 @@ public abstract class AbstractMirahWizard extends AbstractFileWizard {
     }
 
     protected List<SourceGroup> retrieveGroups() {
-        return MirahSources.getMirahSourceGroups(ProjectUtils.getSources(project));
+        return MirahSources.getMirahSourceGroups(ProjectUtils.getSources(project), project);
     }
 }

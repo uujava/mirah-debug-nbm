@@ -43,11 +43,14 @@
  */
 package ca.weblite.netbeans.mirah.typinghooks;
 
+import ca.weblite.netbeans.mirah.lexer.DocumentQuery;
+import ca.weblite.netbeans.mirah.lexer.MirahTokenId;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.swing.text.Document;
+import mirah.impl.Tokens;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenChange;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -63,29 +66,75 @@ import org.netbeans.api.lexer.TokenSequence;
 class TokenBalance implements TokenHierarchyListener {
 
     public static <T extends TokenId> TokenBalance get(Document doc) {
-        TokenBalance tb = (TokenBalance)doc.getProperty(TokenBalance.class);
+        TokenBalance tb = (TokenBalance) doc.getProperty(TokenBalance.class);
         if (tb == null) {
             tb = new TokenBalance(doc);
             doc.putProperty(TokenBalance.class, tb);
+            /** 
+             * Здесь тонкий момент. В оригинале данные пары токенов добавлялись каждый раз при попытке проверки на 
+             * необходимость добавить автозавершение end в {@link MirahTypingCompletion#tokenBalance}. Такое передобавление
+             * приводило к выставлению {@link TokenBalance#scanDone} в false и в дальнейшем баланс данного токена
+             * пересчитывался с нуля.
+             * Собственно пересчет с нуля не являлся необходимым, т.к. здесь же на документ навешивается слушатель, который,
+             * в общем то корректно обрабатывает события вставки-удаления токенов, соответствующим образом изменяя баланс.
+             * Во всей идее и реализации присутствовало несколько просчетов:
+             * Во-первых, само передобавление и полный перерасчет при попытке обработки любого из стартовых токенов.
+             * Во-вторых, при добавлении пары [SomeLeft, tEnd], создаваемый новый TokenIdPair добавлялся как по ключу 
+             * SomeLeft, так и по ключу tEnd в Map. Соответственно для ключа tEnd такое добавление происходит 11 раз, а
+             * в карте остается только последний TokenIdPair, соответствующий tBegin, т.к. пара tBegin-tEnd здесь добавляется
+             * последней.
+             * В-третьих, эти пары в отличие от обработки разного вида скобочек, для которых существует единственный вариант
+             * SomeLeft, в реальности не накапливают результат в TokenIdPair#balance по совокупности открытий и закрытий
+             * пары, т.к. ключ tEnd оказывается один для всех случаев открытия пары, и кроме того, в соответствие с алгоритмом,
+             * в TokenIdPair вообще накапливаются только значения, соответствующие ключу в Map - т.е. суммируются открывающие
+             * теги данного типа.
+             * Ну и в четвертых - не верно интерпретировался результат. Брался один из обрабатываемых открывающих тегов,
+             * проверялся его баланс, который при наличии хотя бы одного такого тега оказывался всегда положительным, т.к. tEnd
+             * учитывался в другой паре TokenIdPair и в соответствии с этим результатом добавлялся еще один end, очевидно,
+             * почти всегда лишний.
+             * 
+             * Изменяю реализацию следующим образом: 
+             * Пары добавляю один раз - при создании TokenBalance для данного Document.
+             * При запросе по одному из тегов, завершающихся tEnd, суммирую балансы всех таких тегов. Собственно
+             * тег tEnd отдельно не обрабатываю - подсчет его значений ведется в паре, добавляемой последней - tBegin.
+             * Если такая сумма окажется равной нулю - добавлять новый end нет необходимости. Если положительная - разрешаю
+             * добавление. Если отрицательная, значит тегов end больше необходимого - запрещаю добавление еще одного.
+             * Весь процесс происходит в {@link ca.weblite.netbeans.mirah.typinghooks.MirahTypingCompletion.isAddEnd}
+             */ 
+            final Language<MirahTokenId> language = MirahTokenId.getLanguage();
+            tb.addTokenPair(language, MirahTokenId.get(Tokens.tLParen), MirahTokenId.get(Tokens.tRParen));
+            tb.addTokenPair(language, MirahTokenId.get(Tokens.tLBrack), MirahTokenId.get(Tokens.tRBrack));
+            
+            tb.addTokenPair(language, MirahTokenId.get(Tokens.tLBrace), MirahTokenId.get(Tokens.tRBrace));
+            tb.addTokenPair(language, MirahTokenId.get(Tokens.tStrEvBegin), MirahTokenId.get(Tokens.tRBrace));
+
+            final MirahTokenId tEnd = MirahTokenId.get(Tokens.tEnd);
+            tb.addTokenPair(language, MirahTokenId.get(Tokens.tDo), tEnd);
+            tb.addTokenPair(language, MirahTokenId.get(Tokens.tClass), tEnd);
+            tb.addTokenPair(language, MirahTokenId.get(Tokens.tInterface), tEnd);
+            tb.addTokenPair(language, MirahTokenId.get(Tokens.tDef), tEnd);
+            tb.addTokenPair(language, MirahTokenId.get(Tokens.tCase), tEnd);
+            tb.addTokenPair(language, MirahTokenId.get(Tokens.tWhile), tEnd);
+            tb.addTokenPair(language, MirahTokenId.get(Tokens.tBegin), tEnd);
+            tb.addTokenPair(language, MirahTokenId.get(Tokens.tUnless), tEnd);
+            tb.addTokenPair(language, MirahTokenId.get(Tokens.tIf), tEnd);
         }
         return tb;
     }
 
     private final Document doc;
-
     private final Map<Language<?>,LanguageHandler<?>> lang2handler;
-
     private boolean scanDone;
 
     private TokenBalance(Document doc) {
         this.doc = doc;
-        lang2handler = new HashMap<Language<?>, LanguageHandler<?>>();
+        lang2handler = new HashMap<>();
         TokenHierarchy hi = TokenHierarchy.get(doc);
         hi.addTokenHierarchyListener(this);
     }
 
     public boolean isTracked(Language<?> language) {
-        return (handler(language, false) != null);
+        return handler(language, false) != null;
     }
 
     public <T extends TokenId> void addTokenPair(Language<T> language, T left, T right) {
@@ -95,12 +144,10 @@ class TokenBalance implements TokenHierarchyListener {
         }
     }
 
-    public void tokenHierarchyChanged(TokenHierarchyEvent evt) {
-        
+    @Override
+    public void tokenHierarchyChanged(TokenHierarchyEvent evt) {        
         synchronized (lang2handler) {
-            if (evt.type() == TokenHierarchyEventType.ACTIVITY ||
-                    evt.type() == TokenHierarchyEventType.REBUILD)
-            {
+            if (evt.type() == TokenHierarchyEventType.ACTIVITY || evt.type() == TokenHierarchyEventType.REBUILD) {
                 scanDone = false;
             } else {
                 if (scanDone) { // Only update if the full scan was already done
@@ -124,16 +171,15 @@ class TokenBalance implements TokenHierarchyListener {
         synchronized (lang2handler) {
             checkScanDone();
             LanguageHandler<T> handler = handler(language, false);
-            return (handler != null) ? handler.balance(left) : Integer.MAX_VALUE;
+            return handler == null ? Integer.MAX_VALUE : handler.balance(left);
         }
     }
     
     private <T extends TokenId> LanguageHandler<T> handler(Language<T> language, boolean forceCreation) {
         // Should always be called under lang2handler sync section
-        @SuppressWarnings("unchecked")
         LanguageHandler<T> handler = (LanguageHandler<T>) lang2handler.get(language);
         if (handler == null && forceCreation) {
-            handler = new LanguageHandler<T>(language);
+            handler = new LanguageHandler<>(language);
             lang2handler.put(language, handler);
         }
         return handler;
@@ -144,25 +190,25 @@ class TokenBalance implements TokenHierarchyListener {
         synchronized (lang2handler) {
             vals.addAll(lang2handler.values());
         }
-        if (!scanDone) {
-            TokenHierarchy hi = TokenHierarchy.get(doc);
-            for (LanguageHandler<?> handler : vals) {
-                handler.scan(hi);
-            }
-            scanDone = true;
+        if (scanDone) {
+            return;
+        }        
+        TokenHierarchy hi = TokenHierarchy.get(doc);
+        for (LanguageHandler<?> handler : vals) {
+            handler.scan(hi);
         }
-        
+        scanDone = true;
     }
     
-    private static final class LanguageHandler<T extends TokenId> {
-        
+    private static final class LanguageHandler<T extends TokenId> {        
         private final Language<T> language;
-
         private final Map<T, TokenIdPair<T>> id2Pair;
+        private final Map<T, Filter<T>> id2Filter;
 
         LanguageHandler(Language<T> language) {
             this.language = language;
-            id2Pair = new HashMap<T, TokenIdPair<T>>();
+            id2Pair = new HashMap<>();
+            id2Filter = new HashMap<>();
         }
         
         public final Language<T> language() {
@@ -174,6 +220,8 @@ class TokenBalance implements TokenHierarchyListener {
             synchronized (id2Pair) {
                 id2Pair.put(left, pair);
                 id2Pair.put(right, pair);
+                final Filter<T> filter = TokenBalanceFilterFactory.create(left);
+                id2Filter.put(left, filter);
             }
         }
 
@@ -186,24 +234,29 @@ class TokenBalance implements TokenHierarchyListener {
             if (ts != null) {
                 processTokenSequence(ts, ts.tokenCount(), true, +1);
             }
-
         }
+
+        static final MirahTokenId ifId = MirahTokenId.get(Tokens.tIf);
 
         public void processTokenSequence(TokenSequence<?> ts, int tokenCount, boolean checkEmbedded, int diff) {
             while (--tokenCount >= 0) {
-                boolean moved = ts.moveNext();
-                assert (moved);
+                ts.moveNext();
                 if (ts.language() == language) {
-                    T id = (T)ts.token().id();
+                    T id = (T) ts.token().id();
+                    // Т.к. обрабатываем токены, то корректно пропускаем токены, содержащиеся в комментариях.
                     TokenIdPair pair = id2Pair.get(id);
                     if (pair != null) {
-                        pair.updateBalance(id, diff);
+                        Filter<T> filter = id2Filter.get(id);
+                        if (filter == null || filter.apply(ts)) {
+                            pair.updateBalance(id, diff);                            
+                        }
                     }
                 }
                 if (checkEmbedded) {
                     TokenSequence<?> embeddedTS = ts.embedded();
-                    if (embeddedTS != null)
+                    if (embeddedTS != null) {
                         processTokenSequence(embeddedTS, embeddedTS.tokenCount(), true, diff);
+                    }    
                 }
             }
         }
@@ -221,15 +274,16 @@ class TokenBalance implements TokenHierarchyListener {
 
         public int balance(T left) {
             TokenIdPair pair = id2Pair.get(left);
-            if ( pair == null ){
+            if (pair == null) {
                 return 0;
             }
-            return (pair.left == left) ? pair.balance : Integer.MAX_VALUE;
+            return pair.left == left ? pair.balance : Integer.MAX_VALUE;
         }
 
         private List<TokenChange<T>> collectTokenChanges(TokenChange<?> change, List<TokenChange<T>> changes) {
-            if (change.language() == language)
+            if (change.language() == language) {
                 changes.add((TokenChange<T>)change);
+            }
             for (int i = 0; i < change.embeddedChangeCount(); i++) {
                 collectTokenChanges(change.embeddedChange(i), changes);
             }
@@ -238,11 +292,8 @@ class TokenBalance implements TokenHierarchyListener {
     } 
 
     private static final class TokenIdPair<T extends TokenId> {
-
         T left;
-
         T right;
-
         int balance;
 
         public TokenIdPair(T left, T right) {
@@ -258,7 +309,10 @@ class TokenBalance implements TokenHierarchyListener {
                 balance -= diff;
             }
         }
-
     }
-
+    
+    public static interface Filter<T extends TokenId> {
+        
+        boolean apply(TokenSequence<?> seq);
+    }
 }
