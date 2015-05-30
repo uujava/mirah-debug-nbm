@@ -126,7 +126,7 @@ public abstract class AbstractNodeVisitor implements NodeVisitor {
     }
 
     @Override
-    public Object visitCall(Call call, Object o) {
+    public Object visitCall(Call call, Object o) { 
         return null;
     }
 

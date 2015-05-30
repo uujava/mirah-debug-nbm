@@ -1,6 +1,5 @@
 package ca.weblite.netbeans.mirah;
 
-import ca.weblite.netbeans.mirah.lexer.Block;
 import ca.weblite.netbeans.mirah.lexer.MirahParser.NBMirahParserResult;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -18,13 +17,14 @@ import org.netbeans.modules.csl.spi.ParserResult;
  *
  * @author shannah
  */
-public class MirahStructureAnalyzer implements StructureScanner {
+public class MirahStructureAnalyzer implements StructureScanner { 
 
     @Override
     public List<? extends StructureItem> scan(ParserResult pr) {
         NBMirahParserResult res = (NBMirahParserResult) pr;
+
         ArrayList<StructureItem> out = new ArrayList<>();
-        for (Block block : res.getBlocks()) {
+        for (NBMirahParserResult.Block block : res.getBlocks()) {
             out.add(new MirahStructureItem(res.getSnapshot(), block));
         }
         return out;
@@ -32,15 +32,18 @@ public class MirahStructureAnalyzer implements StructureScanner {
 
     @Override
     public Map<String, List<OffsetRange>> folds(ParserResult pr) {
+        //LOG.info(this,"folds pr = "+pr);
         Map<String, List<OffsetRange>> out = new HashMap<>();
         NBMirahParserResult res = (NBMirahParserResult) pr;
         ArrayList<OffsetRange> ranges = new ArrayList<>();
-        for (Block block : res.getBlocks()) {
+        //LOG.info(this,"folds blocks = "+res.getBlocks().size());
+        for (NBMirahParserResult.Block block : res.getBlocks()) {
             LOG.info(this, "block = " + block);
-            // todo узел PACKAGE почему-то сделан родительским узлом всех блоков. из-за этого не работает фолдинг. 
-            // Либо исправить размер, чтобы он охватывал все подчиненные узлы, либо убрать из списка блоков. разобраться
+            // todo узел PACKAGE почему-то сделан родительским узлом всех блоков.
+            // из-за этого не работает фолдинг. Либо исправить размер, чтобы он охватывал 
+            // все подчиненные узлы, либо убрать из списка блоков. разобраться
             if (block.getKind() == ElementKind.PACKAGE) {
-                for (Block child : block.getChildren()) {
+                for (NBMirahParserResult.Block child : block.getChildren()) {
                     ranges.add(new OffsetRange(child.getOffset(), child.getOffset() + child.getLength()));
                 }
             } else {

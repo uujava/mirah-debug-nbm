@@ -1,6 +1,6 @@
 package ca.weblite.netbeans.mirah.lexer;
 
-import java.util.ArrayList;
+import java.util.ArrayList; 
 import java.util.Collections;
 import java.util.List;
 import mirah.lang.ast.Node;

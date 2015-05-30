@@ -1,6 +1,6 @@
 package ca.weblite.netbeans.mirah;
 
-import ca.weblite.netbeans.mirah.lexer.Block;
+import ca.weblite.netbeans.mirah.lexer.MirahParser.NBMirahParserResult;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.Iterator;
@@ -9,11 +9,9 @@ import java.util.Set;
 import javax.swing.ImageIcon;
 import mirah.lang.ast.Annotated;
 import mirah.lang.ast.Annotation;
-import mirah.lang.ast.Assignment;
 import mirah.lang.ast.ClassDefinition;
 import mirah.lang.ast.Constant;
-import mirah.lang.ast.ConstantAssign;
-import mirah.lang.ast.FieldAssign;
+import mirah.lang.ast.FieldDeclaration;
 import mirah.lang.ast.Identifier;
 import mirah.lang.ast.MethodDefinition;
 import mirah.lang.ast.Node;
@@ -37,7 +35,7 @@ import org.openide.filesystems.FileObject;
 
 /**
  * Элемент, отображаемый в окне навигатора.
- *
+ * 
  * @author shannah
  */
 public class MirahStructureItem implements StructureItem, ElementHandle {
@@ -58,9 +56,9 @@ public class MirahStructureItem implements StructureItem, ElementHandle {
                 return Modifier.ABSTRACT;
             default:
                 return null;
-        }
+        } 
     }
-
+    
     private static boolean isDeprecated(Annotated annotated) {
         for (Iterator<Annotation> list = annotated.annotations().iterator(); list.hasNext();) {
             Annotation annotation = list.next();
@@ -79,126 +77,66 @@ public class MirahStructureItem implements StructureItem, ElementHandle {
         }
         return false;
     }
-
+    
     Snapshot snapshot;
-    Block block;
+    NBMirahParserResult.Block block;
     List<MirahStructureItem> children = null;
-
-    public MirahStructureItem(Snapshot snapshot, Block item) {
+    
+    public MirahStructureItem(Snapshot snapshot, NBMirahParserResult.Block item){
         this.snapshot = snapshot;
         this.block = item;
     }
-
+    
     public Node getNode() {
         return block.getNode();
     }
-
-    // todo: перетащить из HTML
+    
     @Override
     public String getName() {
-        StringBuilder f = new StringBuilder();
         if (block.getNode() instanceof MethodDefinition) {
             MethodDefinition method = (MethodDefinition) block.getNode();
-            f.append(block.getDescription().toString());
             RequiredArgumentList args = method.arguments().required();
-            OptionalArgumentList opts = method.arguments().optional();
-            if (args.size() + opts.size() > 0) {
-                f.append(" (");
+            StringBuilder argString = new StringBuilder();
+            if (args.size() > 0) {
+                argString.append(" (");
             }
             for (int i = 0; i < args.size(); i++) {
                 if (i > 0) {
-                    f.append(", ");
+                    argString.append(", ");
                 }
                 RequiredArgument argument = args.get(i);
-                f.append(argument.name().identifier());
+                argString.append(argument.name().identifier());
                 TypeName type = argument.type();
-                if (type instanceof Identifier) {
-                    Identifier identifier = (Identifier) type;
-                    f.append(":");
-                    f.append(identifier.identifier());
-                } else if (type instanceof TypeRefImpl) {
-                    TypeRefImpl typeRef = (TypeRefImpl) type;
-                    f.append(":");
-                    f.append(typeRef.name());
-                    if (typeRef.isArray()) {
-                        f.append("[]");
-                    }
-                }
+                if (type instanceof Constant) {
+                    Constant constant = (Constant) type;
+                    argString.append(':').append(constant.identifier());
+                }                
             }
-            for (int i = 0; i < opts.size(); i++) {
-                if (i > 0 || args.size() > 0) {
-                    f.append(", ");
-                }
-                OptionalArgument argument = opts.get(i);
-                f.append(argument.name().identifier());
-                TypeName type = argument.type();
-                if (type instanceof Identifier) {
-                    Identifier identifier = (Identifier) type;
-                    f.append(":");
-                    f.append(identifier.identifier());
-                } else if (type instanceof TypeRefImpl) {
-                    TypeRefImpl typeRef = (TypeRefImpl) type;
-                    f.append(":");
-                    f.append(typeRef.name());
-                    if (typeRef.isArray()) {
-                        f.append("[]");
-                    }
-                }
-            }
-            if (args.size() + opts.size() > 0) {
-                f.append(")");
+            if (args.size() > 0) {
+                argString.append(')');
             }
             TypeName type = method.type();
             if (type instanceof Identifier) {
                 Identifier identifier = (Identifier) type;
-                f.append(" : ");
-                f.append(identifier.identifier());
+                return block.getDescription() + argString.toString() + " : " + identifier.identifier();
+            } else {
+                return block.getDescription() + argString.toString() + " : Object";                
             }
-            return f.toString();
         } else if (block.getNode() instanceof ClassDefinition) {
             ClassDefinition clazz = (ClassDefinition) block.getNode();
-            f.append(block.getDescription().toString());
-            TypeName superClass = clazz.superclass();
-            if (superClass instanceof Constant) {
-                Constant constant = (Constant) superClass;
-                f.append(" < ");
-                f.append(constant.identifier());
-            }
-            TypeNameList list = clazz.interfaces();
-            for (int i = 0; i < list.size(); i++) {
-                if (i == 0) {
-                    f.append(" :: ");
-                } else {
-                    f.append(", ");
-                }
-                TypeName ifs = list.get(i);
-                if (ifs instanceof Constant) {
-                    Constant constant = (Constant) ifs;
-                    f.append(constant.identifier());
-                } else if (ifs instanceof TypeRefImpl) {
-                    TypeRefImpl typeRef = (TypeRefImpl) ifs;
-                    f.append(typeRef.name());
-                }
-            }
-            return f.toString();
-        } else if (block.getNode() instanceof FieldAssign || block.getNode() instanceof ConstantAssign) {
-            f.append(block.getDescription().toString());
-            Node value = ((Assignment) block.getNode()).value();
-            if (value != null) {
-                String type = (String) value.accept(new TypeNodeVisitor(), null);
-                if (type != null) {
-                    f.append(" : ");
-                    f.append(type);
-                }
-            }
-            return f.toString();
-        } else {
-            return block.getDescription().toString();
+            TypeName type = clazz.superclass();
+            if (type instanceof Constant) {
+                Constant constant = (Constant) type;
+                return block.getDescription() + " :: " + constant.identifier();
+            } 
+            // todo: интерфейсы
         }
+        return block.getDescription().toString();
     }
 
     @Override
     public String getSortText() {
+        // todo: возможно, стоит сортировать отдельно родные и унаследованные методы, либо в зависимости от режима
         return getName();
     }
 
@@ -262,17 +200,19 @@ public class MirahStructureItem implements StructureItem, ElementHandle {
                         }
                     }
                     f.deprecated(false);
-                }
+                }                
                 if (args.size() + opts.size() > 0) {
                     f.parameters(false);
                     f.appendHtml(")");
                 }
                 TypeName type = method.type();
+                f.appendHtml(" : ");
+                f.parameters(true);
                 if (type instanceof Identifier) {
                     Identifier identifier = (Identifier) type;
-                    f.appendHtml(" : ");
-                    f.parameters(true);
                     f.appendText(identifier.identifier());
+                } else {
+                    f.appendText("Object");
                 }
                 f.parameters(false);
                 return f.getText();
@@ -284,7 +224,7 @@ public class MirahStructureItem implements StructureItem, ElementHandle {
                 }
                 f.emphasis(true);
                 f.appendText(block.getDescription().toString());
-                f.emphasis(false);
+                f.emphasis(false);                
                 if (deprecated) {
                     f.deprecated(false);
                 }
@@ -299,7 +239,7 @@ public class MirahStructureItem implements StructureItem, ElementHandle {
                 TypeNameList list = clazz.interfaces();
                 for (int i = 0; i < list.size(); i++) {
                     if (i == 0) {
-                        f.appendHtml(" :: ");
+                        f.appendHtml(" :: ");                        
                     } else {
                         f.appendHtml(", ");
                     }
@@ -307,34 +247,18 @@ public class MirahStructureItem implements StructureItem, ElementHandle {
                     TypeName ifs = list.get(i);
                     if (ifs instanceof Constant) {
                         Constant constant = (Constant) ifs;
-                        f.appendText(constant.identifier());
+                        f.appendText(constant.identifier());                        
                     } else if (ifs instanceof TypeRefImpl) {
                         TypeRefImpl typeRef = (TypeRefImpl) ifs;
                         f.appendText(typeRef.name());
                     }
                     f.type(false);
                 }
+                // todo: интерфейсы
                 return f.getText();
-            } else if (block.getNode() instanceof FieldAssign || block.getNode() instanceof ConstantAssign) {
-                boolean deprecated = isDeprecated((Annotated) block.getNode());
-                if (deprecated) {
-                    f.deprecated(true);
-                }
-                f.appendText(block.getDescription().toString());
-                if (deprecated) {
-                    f.deprecated(false);
-                }
-                Node value = ((Assignment) block.getNode()).value();
-                if (value != null) {
-                    String type = (String) value.accept(new TypeNodeVisitor(), null);
-                    if (type != null) {
-                        f.appendHtml(" : ");
-                        f.parameters(true);
-                        f.appendText(type);
-                        f.parameters(false);
-                    }
-                }
-                return f.getText();
+            } else if (block.getNode() instanceof FieldDeclaration) {
+                FieldDeclaration field = (FieldDeclaration) block.getNode();
+                return getName();
             } else {
                 return getName();
             }
@@ -357,7 +281,7 @@ public class MirahStructureItem implements StructureItem, ElementHandle {
     public Set<Modifier> getModifiers() {
         Set<Modifier> result = EnumSet.noneOf(Modifier.class);
         if (block.getNode() instanceof MethodDefinition) {
-            // сюда же попадает ConstructorDefinition, StaticMethodDefinition.
+            // todo: по идее, сюда же должен попадать случай ConstructorDefinition, но методы initialize пока не видны.
             // видны статические методы self.initialize
             MethodDefinition method = (MethodDefinition) block.getNode();
             for (Iterator<mirah.lang.ast.Modifier> it = method.modifiers().iterator(); it.hasNext();) {
@@ -370,6 +294,9 @@ public class MirahStructureItem implements StructureItem, ElementHandle {
             if (block.getNode() instanceof StaticMethodDefinition) {
                 result.add(Modifier.STATIC);
             }
+            if (isDeprecated(method)) {
+                result.add(Modifier.DEPRECATED);                
+            }
         } else if (block.getNode() instanceof ClassDefinition) {
             ClassDefinition clazz = (ClassDefinition) block.getNode();
             for (Iterator<mirah.lang.ast.Modifier> it = clazz.modifiers().iterator(); it.hasNext();) {
@@ -379,31 +306,24 @@ public class MirahStructureItem implements StructureItem, ElementHandle {
                 }
                 result.add(modifier);
             }
-        } else if (block.getNode() instanceof FieldAssign) {
-            FieldAssign field = (FieldAssign) block.getNode();
+            if (isDeprecated(clazz)) {
+                result.add(Modifier.DEPRECATED);
+            }
+        } else if (block.getNode() instanceof FieldDeclaration) {
+            FieldDeclaration field = (FieldDeclaration) block.getNode();
             for (Iterator<mirah.lang.ast.Modifier> it = field.modifiers().iterator(); it.hasNext();) {
                 Modifier modifier = getModifier(it.next());
                 if (modifier == null) {
                     continue;
                 }
                 result.add(modifier);
-            }
+            }            
             if (field.isStatic()) {
                 result.add(Modifier.STATIC);
             }
-        } else if (block.getNode() instanceof ConstantAssign) {
-            ConstantAssign field = (ConstantAssign) block.getNode();
-            for (Iterator<mirah.lang.ast.Modifier> it = field.modifiers().iterator(); it.hasNext();) {
-                Modifier modifier = getModifier(it.next());
-                if (modifier == null) {
-                    continue;
-                }
-                result.add(modifier);
+            if (isDeprecated(field)) {
+                result.add(Modifier.DEPRECATED);
             }
-            result.add(Modifier.STATIC);
-        }
-        if (isDeprecated((Annotated) block.getNode())) {
-            result.add(Modifier.DEPRECATED);
         }
         return result;
     }
@@ -418,7 +338,7 @@ public class MirahStructureItem implements StructureItem, ElementHandle {
         // todo: унаследованные элементы
         if (children == null) {
             children = new ArrayList<>();
-            for (Block child : block.getChildren()) {
+            for (NBMirahParserResult.Block child : block.getChildren()) {
                 children.add(new MirahStructureItem(snapshot, child));
             }
         }
@@ -454,7 +374,7 @@ public class MirahStructureItem implements StructureItem, ElementHandle {
     public String getIn() {
         return getName();
     }
-
+    
     @Override
     public boolean signatureEquals(ElementHandle eh) {
         if (!(eh instanceof MirahStructureItem)) {
@@ -466,5 +386,5 @@ public class MirahStructureItem implements StructureItem, ElementHandle {
     @Override
     public OffsetRange getOffsetRange(ParserResult result) {
         return new OffsetRange(block.getOffset(), block.getOffset() + block.getLength());
-    }
+    }        
 }

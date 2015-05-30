@@ -66,7 +66,7 @@ public class TypeNodeVisitor extends AbstractNodeVisitor {
 
     @Override
     public Object visitHash(Hash hash, Object o) {
-        for (int i = 0; i < hash.size(); i++) {
+        for (int i = 0; i < hash.size(); i++) { 
             Object result = hash.get(i).accept(this, 0);
             if (result != null) {
                 return result;

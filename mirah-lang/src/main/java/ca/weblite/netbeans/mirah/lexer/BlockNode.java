@@ -1,6 +1,6 @@
 package ca.weblite.netbeans.mirah.lexer;
 
-import mirah.lang.ast.Node;
+import mirah.lang.ast.Node; 
 import org.netbeans.modules.csl.api.ElementKind;
 
 /**
