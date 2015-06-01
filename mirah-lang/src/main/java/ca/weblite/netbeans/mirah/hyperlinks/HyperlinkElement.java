@@ -11,6 +11,7 @@ package ca.weblite.netbeans.mirah.hyperlinks;
  */
 public class HyperlinkElement {
     
+    String fqn;
     String url;
     int offset;
     
@@ -26,5 +27,13 @@ public class HyperlinkElement {
     public int getOffset()
     {
         return offset;
+    }
+    public void setFqn( String fqn )
+    {
+        this.fqn = fqn;
+    }
+    public String getFqn()
+    {
+        return fqn;
     }
 }

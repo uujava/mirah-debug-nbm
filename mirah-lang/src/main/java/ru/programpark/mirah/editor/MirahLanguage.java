@@ -197,8 +197,8 @@ public class MirahLanguage extends DefaultLanguageConfig {
     public DeclarationFinder getDeclarationFinder() {
 //        LOG.info(this,"--- getDeclarationFinder ---");
 //        LOG.putStack(null);
-//        return new MirahDeclarationFinder();
-        return null;
+        return new MirahDeclarationFinder();
+//        return null;
     }
 
     @Override

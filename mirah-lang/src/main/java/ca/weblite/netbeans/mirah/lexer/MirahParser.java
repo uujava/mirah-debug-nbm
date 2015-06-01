@@ -187,8 +187,8 @@ public class MirahParser extends Parser {
         }
         catch( Exception ex )
         {
-            LOG.info(this, "####### PARSE EXCEPTION "+ex+" #######");
-//            LOG.exception(this, ex);
+            LOG.info(this, "####### PARSE EXCEPTION File: "+snapshot.getSource().getFileObject().getName()+" ex: "+ex+" #######");
+            LOG.exception(this, ex);
         }
     }
 

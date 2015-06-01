@@ -520,6 +520,7 @@ public class MirahIndexer extends EmbeddingIndexer {
         {
     //        sb.append(file.getPath());
     //        sb.append(':');
+            if ( node.position() != null )
             sb.append(node.position().startLine());
             sb.append(';');
         }
@@ -531,9 +532,12 @@ public class MirahIndexer extends EmbeddingIndexer {
             {
                 RequiredArgument a = arguments.required().get(i);
                 sb.append(a.name().identifier());
-                sb.append(':');
-                sb.append(a.type().typeref().name());
-                sb.append(',');
+                if ( a.type() != null )
+                {
+                    sb.append(':');
+                    sb.append(a.type().typeref().name());
+                    sb.append(',');
+                }
             }
             // Removing last ","
             if ( arguments.required().size() > 0 ) sb.deleteCharAt(sb.length() - 1);

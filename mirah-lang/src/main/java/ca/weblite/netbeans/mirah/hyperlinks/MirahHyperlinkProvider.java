@@ -38,7 +38,7 @@ import org.openide.util.Lookup;
  *
  * @author shannah
  */
-@MimeRegistration(mimeType = "text/x-mirah", service = HyperlinkProviderExt.class)
+//@MimeRegistration(mimeType = "text/x-mirah", service = HyperlinkProviderExt.class)
 public class MirahHyperlinkProvider implements HyperlinkProviderExt  {
 
     

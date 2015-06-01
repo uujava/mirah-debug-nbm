@@ -64,13 +64,15 @@ public class MirahTestActions {
 //    static String project_dir = "c:/mirah-debug/mirah-dsl-parent/jfx-controller-framework-test/";
 //    static String mirah_file_name = "c:\\mirah-debug\\mirah-dsl-parent\\jfx-controller-framework-test\\src\\main\\mirah\\ru\\programpark\\vector\\jfx\\controller\\framework\\BaseController.mirah";
     
-    private static void dumpNodes( Node node, final InputOutput io )
+    private static void dumpNodes( final MirahParser.NBMirahParserResult pres, final InputOutput io )
     {
-        node.accept(new NodeScanner(){
+        Node root = pres.getRoot();
+        root.accept(new NodeScanner(){
           @Override
             public boolean enterDefault(Node node, Object arg) {
+                ResolvedType type = pres.getResolvedType(node);
                 if ( node != null && node.position() != null )
-                    io.getOut().println(":"+node+"["+node.position().startChar()+","+node.position().endChar()+"] "+node.parent());
+                    io.getOut().println(":"+node+"["+node.position().startChar()+","+node.position().endChar()+"] "+node.parent()+" type="+type);
                 else
                     io.getOut().println(":"+node+" pos = null "+node.parent());
                 return super.enterDefault(node, arg);
@@ -140,8 +142,8 @@ public class MirahTestActions {
                     if ( res instanceof MirahParser.NBMirahParserResult )
                     {
                        MirahParser.NBMirahParserResult pres = (MirahParser.NBMirahParserResult)res;
-                       Node node = pres.getRoot();
-                       dumpNodes(node,io);
+//                       Node node = pres.getRoot();
+                       dumpNodes(pres,io);
                        dumpResolvedTypes(pres,io);
                     }
                 }
