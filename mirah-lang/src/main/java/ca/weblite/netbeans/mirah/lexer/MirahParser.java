@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package ca.weblite.netbeans.mirah.lexer;
 
 import ca.weblite.asm.WLMirahCompiler;
@@ -15,10 +10,8 @@ import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -38,8 +31,9 @@ import javax.swing.event.ChangeListener;
 import javax.swing.text.Document;
 import javax.tools.Diagnostic;
 import mirah.lang.ast.ClassDefinition;
-import mirah.lang.ast.FieldDeclaration;
-import mirah.lang.ast.Import;
+import mirah.lang.ast.ConstantAssign;
+import mirah.lang.ast.ConstructorDefinition;
+import mirah.lang.ast.FieldAssign;
 import mirah.lang.ast.InterfaceDeclaration;
 import mirah.lang.ast.MacroDefinition;
 import mirah.lang.ast.MethodDefinition;
@@ -47,10 +41,8 @@ import mirah.lang.ast.Node;
 import mirah.lang.ast.NodeFilter;
 import mirah.lang.ast.NodeScanner;
 import mirah.lang.ast.Package;
-import mirah.lang.ast.Script;
 import mirah.lang.ast.StaticMethodDefinition;
 import mirah.lang.ast.StringCodeSource;
-import mirah.lang.ast.Super;
 import org.codehaus.plexus.util.FileUtils;
 import org.mirah.jvm.mirrors.debug.DebuggerInterface;
 import org.mirah.tool.Mirahc;
@@ -67,7 +59,6 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.csl.api.ElementKind;
-import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.api.Severity;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.api.Snapshot;
@@ -76,7 +67,6 @@ import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.SourceModificationEvent;
 import org.openide.filesystems.FileChangeAdapter;
-import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -87,10 +77,8 @@ import org.openide.util.Exceptions;
  */
 public class MirahParser extends Parser {
 
-    private static WeakHashMap<Document, DocumentDebugger> documentDebuggers
-            = new WeakHashMap<Document, DocumentDebugger>();
-    private static WeakHashMap<Document, String> lastContent
-            = new WeakHashMap<Document, String>();
+    private static WeakHashMap<Document, DocumentDebugger> documentDebuggers = new WeakHashMap<>();
+    private static WeakHashMap<Document, String> lastContent = new WeakHashMap<>();
     private Snapshot snapshot;
     private MirahParseDiagnostics diag;
     private NBMirahParserResult result;
@@ -143,7 +131,7 @@ public class MirahParser extends Parser {
         );
 
         String newContent = snapshot.getText().toString();
-        LOG.info(null,"===== PARSE: "+snapshot.getSource().getFileObject().getPath()+" ======");
+        LOG.info(null, "===== PARSE: " + snapshot.getSource().getFileObject().getPath() + " ======");
 //        LOG.info(this, "newContent = "+newContent);
         boolean changed = oldContent == null || !oldContent.equals(newContent);
 //        LOG.info(this, "changed = " + changed);
@@ -151,13 +139,13 @@ public class MirahParser extends Parser {
 //        LOG.info(this, "task = " + task);
 //        LOG.info(this, "sme.sourceChanged() = " + sme.sourceChanged());
 
-        if ( sme.sourceChanged() && changed ) {
+        if (sme.sourceChanged() && changed) {
             lastContent.put(
                     snapshot.getSource().getDocument(false),
                     newContent
             );
             reparse(snapshot);
-        } else if ( result == null ){
+        } else if (result == null) {
             result = new NBMirahParserResult(snapshot, diag);
             getBlocks(result, newContent);
             try {            
@@ -177,7 +165,7 @@ public class MirahParser extends Parser {
             }
             
         }
-        LOG.info(null,"----- Parsing End: "+snapshot.getSource().getFileObject().getPath()+" -----");
+        LOG.info(null, "----- Parsing End: " + snapshot.getSource().getFileObject().getPath() + " -----");
     }
 
     public void reparse(Snapshot snapshot) throws ParseException {
@@ -239,17 +227,34 @@ public class MirahParser extends Parser {
                 walkTree((Node)c,indent+".",filter);
             }
         }
+        
     }
 
-    void getBlocks(final NBMirahParserResult res, String content){
+    void dumpNode(Node node) {
+        NodeFilter filter = new NodeFilter() {
+            @Override
+            public boolean matchesNode(Node node) {
+//                LOG.info(MirahParser.class,"node = "+node);
+                return true;
+            }
+        };
+        try {
+            walkTree(node, "", filter);
+        } catch (Exception ex) {
+            LOG.exception(this, ex);
+        }
+        LOG.info(this, "----- end of dump -----");
+    }
+
+    void getBlocks(final NBMirahParserResult res, String content) {
         mirah.impl.MirahParser parser = new mirah.impl.MirahParser();
-        
-        final LinkedList<NBMirahParserResult.Block> blockStack = new LinkedList<NBMirahParserResult.Block>();
-        Object ast = null;
+
+        final LinkedList<Block> blockStack = new LinkedList<>();
+        Object ast;
         try {
             ast = parser.parse(new StringCodeSource(snapshot.getSource().getFileObject().getName(), content));
-        } catch ( Throwable ex){
-            //ex.printStackTrace();
+        } catch (Throwable ex) {
+            // ex.printStackTrace();
             return;
         }
         if ( ast instanceof Node ){
@@ -260,181 +265,161 @@ public class MirahParser extends Parser {
 //            res.setParsedNodes();
 //            dumpNode(node);
 
-            node.accept(new NodeScanner(){
+            //todo - add folding to multiline comments
+            //todo - add folding for import statements
+            //todo - javadoc creation
+            node.accept(new NodeScanner() {
+
+                @Override
+                public boolean enterPackage(Package node, Object arg) {
+                    if (!blockStack.isEmpty()) {
+                        blockStack.pop();
+                    }
+                    final BlockNode parent = blockStack.isEmpty() ? res : blockStack.peek();
+                    blockStack.push(parent.addBlock(node, node.name().identifier(), node.position().startChar(), node.position().endChar() - node.position().startChar(), "", ElementKind.PACKAGE));
+                    return super.enterPackage(node, arg);
+                }
 
                 @Override
                 public boolean enterClassDefinition(ClassDefinition node, Object arg) {
-                    NBMirahParserResult.Block block = null;
-                    if ( blockStack.isEmpty()){
-                        block = res.addBlock(node.name().identifier(), node.position().startChar(), node.position().endChar()-node.position().startChar(), "", ElementKind.CLASS);
-                    } else {
-                        block = blockStack.peek().addBlock(node.name().identifier(), node.position().startChar(), node.position().endChar()-node.position().startChar(), "", ElementKind.CLASS);
-                    }
-                    blockStack.push(block);
-                    return super.enterClassDefinition(node, arg); 
+                    final BlockNode parent = blockStack.isEmpty() ? res : blockStack.peek();
+                    blockStack.push(parent.addBlock(node, node.name().identifier(), node.position().startChar(), node.position().endChar() - node.position().startChar(), "", ElementKind.CLASS));
+                    return super.enterClassDefinition(node, arg);
                 }
 
                 @Override
                 public Object exitClassDefinition(ClassDefinition node, Object arg) {
                     blockStack.pop();
-                    return super.exitClassDefinition(node, arg); //To change body of generated methods, choose Tools | Templates.
+                    return super.exitClassDefinition(node, arg);
                 }
-                
-                //todo - add folding to multiline comments
-                //todo - add folding for import statements
-                //todo - javadoc creation
 
                 @Override
                 public boolean enterMethodDefinition(MethodDefinition node, Object arg) {
-                    NBMirahParserResult.Block block = null;
-                    if (blockStack.isEmpty()){
-                        block = res.addBlock(node.name().identifier(), node.position().startChar(), node.position().endChar()-node.position().startChar(), "", ElementKind.METHOD);
-                    } else {
-                        block = blockStack.peek().addBlock(node.name().identifier(), node.position().startChar(), node.position().endChar()-node.position().startChar(), "", ElementKind.METHOD);
-                    }
-                    blockStack.push(block);
-                    return super.enterMethodDefinition(node, arg); //To change body of generated methods, choose Tools | Templates.
+                    final BlockNode parent = blockStack.isEmpty() ? res : blockStack.peek();
+                    blockStack.push(parent.addBlock(node, node.name().identifier(), node.position().startChar(), node.position().endChar() - node.position().startChar(), "", ElementKind.METHOD));
+                    return super.enterMethodDefinition(node, arg);
                 }
 
                 @Override
                 public Object exitMethodDefinition(MethodDefinition node, Object arg) {
                     blockStack.pop();
-                    return super.exitMethodDefinition(node, arg); //To change body of generated methods, choose Tools | Templates.
+                    return super.exitMethodDefinition(node, arg);
                 }
                 
+                
+
+                
+                @Override
+                public boolean enterConstructorDefinition(ConstructorDefinition node, Object arg) {
+                    final BlockNode parent = blockStack.isEmpty() ? res : blockStack.peek();
+                    blockStack.push(parent.addBlock(node, node.name().identifier(), node.position().startChar(), node.position().endChar() - node.position().startChar(), "", ElementKind.CONSTRUCTOR));
+                    return super.enterConstructorDefinition(node, arg);
+                }
+
+                @Override
+                public Object exitConstructorDefinition(ConstructorDefinition node, Object arg) {
+                    blockStack.pop();
+                    return super.exitConstructorDefinition(node, arg);
+                }
+
                 @Override
                 public boolean enterInterfaceDeclaration(InterfaceDeclaration node, Object arg) {
-                    NBMirahParserResult.Block block = null;
-                    if (blockStack.isEmpty()){
-                        block = res.addBlock(node.name().identifier(), node.position().startChar(), node.position().endChar()-node.position().startChar(), "", ElementKind.INTERFACE);
-                    } else {
-                        block = blockStack.peek().addBlock(node.name().identifier(), node.position().startChar(), node.position().endChar()-node.position().startChar(), "", ElementKind.INTERFACE);
-                    }
-                    blockStack.push(block);
-                    return super.enterInterfaceDeclaration(node, arg); //To change body of generated methods, choose Tools | Templates.
+                    final BlockNode parent = blockStack.isEmpty() ? res : blockStack.peek();
+                    blockStack.push(parent.addBlock(node, node.name().identifier(), node.position().startChar(), node.position().endChar() - node.position().startChar(), "", ElementKind.INTERFACE));
+                    return super.enterInterfaceDeclaration(node, arg);
                 }
 
                 @Override
                 public Object exitInterfaceDeclaration(InterfaceDeclaration node, Object arg) {
                     blockStack.pop();
-                    return super.exitInterfaceDeclaration(node, arg); //To change body of generated methods, choose Tools | Templates.
+                    return super.exitInterfaceDeclaration(node, arg);
                 }
 
                 @Override
                 public boolean enterStaticMethodDefinition(StaticMethodDefinition node, Object arg) {
-                    NBMirahParserResult.Block block = null;
-                    if (blockStack.isEmpty()){
-                        block = res.addBlock(node.name().identifier(), node.position().startChar(), node.position().endChar()-node.position().startChar(), "", ElementKind.METHOD);
-                    } else {
-                        block = blockStack.peek().addBlock(node.name().identifier(), node.position().startChar(), node.position().endChar()-node.position().startChar(), "", ElementKind.METHOD);
-                    }
-                    blockStack.push(block);
-                    return super.enterStaticMethodDefinition(node, arg); //To change body of generated methods, choose Tools | Templates.
+                    final BlockNode parent = blockStack.isEmpty() ? res : blockStack.peek();
+                    blockStack.push(parent.addBlock(node, node.name().identifier(), node.position().startChar(), node.position().endChar() - node.position().startChar(), "", ElementKind.METHOD));
+                    return super.enterStaticMethodDefinition(node, arg);
                 }
 
                 @Override
                 public Object exitStaticMethodDefinition(StaticMethodDefinition node, Object arg) {
                     blockStack.pop();
-                    return super.exitStaticMethodDefinition(node, arg); //To change body of generated methods, choose Tools | Templates.
+                    return super.exitStaticMethodDefinition(node, arg);
                 }
 
-                
                 /*
+                 @Override
+                 public boolean enterScript(Script node, Object arg) {
+                 Block block = res.addBlock("Mirah File", node.position().startChar(), node.position().endChar()-node.position().startChar(), "", ElementKind.OTHER);
+                 blockStack.push(block);
+                 return super.enterScript(node, arg);
+                 }
+
+                 @Override
+                 public Object exitScript(Script node, Object arg) {
+                 blockStack.pop();
+                 return super.exitScript(node, arg);
+                 }
+                 */
                 @Override
-                public boolean enterScript(Script node, Object arg) {
-                    NBMirahParserResult.Block block = res.addBlock("Mirah File", node.position().startChar(), node.position().endChar()-node.position().startChar(), "", ElementKind.OTHER);
-                    blockStack.push(block);
-                    return super.enterScript(node, arg); //To change body of generated methods, choose Tools | Templates.
+                public boolean enterFieldAssign(FieldAssign node, Object arg) {
+                    final BlockNode parent = blockStack.isEmpty() ? res : blockStack.peek();
+                    blockStack.push(parent.addBlock(node, node.name().identifier(), node.position().startChar(), node.position().endChar() - node.position().startChar(), "", ElementKind.FIELD));
+                    return super.enterFieldAssign(node, arg);
                 }
 
                 @Override
-                public Object exitScript(Script node, Object arg) {
+                public Object exitFieldAssign(FieldAssign node, Object arg) {
                     blockStack.pop();
-                    return super.exitScript(node, arg); //To change body of generated methods, choose Tools | Templates.
-                }
-                
-                */
-
-                @Override
-                public boolean enterPackage(Package node, Object arg) {
-                    if ( !blockStack.isEmpty() ){
-                        blockStack.pop();
-                    }
-                    NBMirahParserResult.Block block = null;
-                    if (blockStack.isEmpty()){
-                        block = res.addBlock(node.name().identifier(), node.position().startChar(), node.position().endChar()-node.position().startChar(), "", ElementKind.PACKAGE);
-                    } else {
-                        block = blockStack.peek().addBlock(node.name().identifier(), node.position().startChar(), node.position().endChar()-node.position().startChar(), "", ElementKind.PACKAGE);
-                    }
-                    blockStack.push(block);
-                    return super.enterPackage(node, arg); //To change body of generated methods, choose Tools | Templates.
-                }
-
-                
-                
-                
-
-                @Override
-                public boolean enterFieldDeclaration(FieldDeclaration node, Object arg) {
-                    NBMirahParserResult.Block block = null;
-                    if (blockStack.isEmpty()){
-                        block = res.addBlock(node.name().identifier(), node.position().startChar(), node.position().endChar()-node.position().startChar(), "", ElementKind.FIELD);
-                    } else {
-                        block = blockStack.peek().addBlock(node.name().identifier(), node.position().startChar(), node.position().endChar()-node.position().startChar(), "", ElementKind.FIELD);
-                    }
-                    blockStack.push(block);
-                    return super.enterFieldDeclaration(node, arg); //To change body of generated methods, choose Tools | Templates.
+                    return super.exitFieldAssign(node, arg);
                 }
 
                 @Override
-                public Object exitFieldDeclaration(FieldDeclaration node, Object arg) {
+                public boolean enterConstantAssign(ConstantAssign node, Object arg) {
+                    final BlockNode parent = blockStack.isEmpty() ? res : blockStack.peek();
+                    blockStack.push(parent.addBlock(node, node.name().identifier(), node.position().startChar(), node.position().endChar() - node.position().startChar(), "", ElementKind.CONSTANT));
+                    return super.enterConstantAssign(node, arg);
+                }
+
+                @Override
+                public Object exitConstantAssign(ConstantAssign node, Object arg) {
                     blockStack.pop();
-                    return super.exitFieldDeclaration(node, arg); //To change body of generated methods, choose Tools | Templates.
+                    return super.exitConstantAssign(node, arg);
                 }
+
                 /*
-                @Override
-                public boolean enterImport(Import node, Object arg) {
-                    NBMirahParserResult.Block block = null;
-                    if (blockStack.isEmpty()){
-                        block = res.addBlock(node.name().identifier(), node.position().startChar(), node.position().endChar()-node.position().startChar(), "", ElementKind..INTERFACE);
-                    } else {
-                        block = blockStack.peek().addBlock(node.name().identifier(), node.position().startChar(), node.position().endChar()-node.position().startChar(), "", ElementKind.INTERFACE);
-                    }
-                    blockStack.push(block);
-                    return super.enterImport(node, arg); //To change body of generated methods, choose Tools | Templates.
-                }
+                 @Override
+                 public boolean enterImport(Import node, Object arg) {
+                 final BlockNode parent = blockStack.isEmpty() ? res : blockStack.peek();
+                 blockStack.push(parent.addBlock(node, node.name().identifier(), node.position().startChar(), node.position().endChar() - node.position().startChar(), "", ElementKind.INTERFACE));
+                 return super.enterImport(node, arg);
+                 }
                 
-                @Override
-                public Object exitImport(Import node, Object arg) {
-                    blockStack.pop();
-                    return super.exitImport(node, arg); //To change body of generated methods, choose Tools | Templates.
-                }
-                */
+                 @Override
+                 public Object exitImport(Import node, Object arg) {
+                 blockStack.pop();
+                 return super.exitImport(node, arg);
+                 }
+                 */
                 @Override
                 public boolean enterMacroDefinition(MacroDefinition node, Object arg) {
-                    NBMirahParserResult.Block block = null;
-                    if (blockStack.isEmpty()){
-                        block = res.addBlock(node.name().identifier(), node.position().startChar(), node.position().endChar()-node.position().startChar(), "", ElementKind.METHOD);
-                    } else {
-                        block = blockStack.peek().addBlock(node.name().identifier(), node.position().startChar(), node.position().endChar()-node.position().startChar(), "", ElementKind.METHOD);
-                    }
-                    blockStack.push(block);
-                    return super.enterMacroDefinition(node, arg); //To change body of generated methods, choose Tools | Templates.
+                    final BlockNode parent = blockStack.isEmpty() ? res : blockStack.peek();
+                    blockStack.push(parent.addBlock(node, node.name().identifier(), node.position().startChar(), node.position().endChar() - node.position().startChar(), "", ElementKind.METHOD));
+                    return super.enterMacroDefinition(node, arg);
                 }
 
                 @Override
                 public Object exitMacroDefinition(MacroDefinition node, Object arg) {
                     blockStack.pop();
-                    return super.exitMacroDefinition(node, arg); //To change body of generated methods, choose Tools | Templates.
+                    return super.exitMacroDefinition(node, arg);
                 }
                 
             }, null);
         }
-        
     }
 
-    public void reparse(Snapshot snapshot, String content)
-            throws ParseException {
+    public void reparse(Snapshot snapshot, String content) throws ParseException {
 
 //        LOG.info(this, "reparse222 = " + snapshot.getSource().getFileObject().getPath());
 //        LOG.putStack(null);
@@ -443,19 +428,17 @@ public class MirahParser extends Parser {
         NBMirahParserResult parserResult = new NBMirahParserResult(snapshot, diag);
         result = parserResult;
         getBlocks(parserResult, content);
+        
 //        LOG.info(this,"REPARSE:\n"+content+"\n");
-        
         WLMirahCompiler compiler = new WLMirahCompiler();
-        
+
         compiler.setPrecompileJavaStubs(false);
-        
+
 //        LOG.info(this,"WLMirahCompiler compiler="+compiler);
-        
         //URL location = compiler.getClass().getResource('/' + compiler.getClass().getName().replace('.', '/') + ".class");
 //        LOG.info(this,"WLMirahCompiler compiler location="+location);
 //        URL location = compiler.getClass().getResource('/' + compiler.getClass().getName().replace('.', '/') + ".class");
 //        LOG.info(this,"WLMirahCompiler compiler location="+location);
-        
         FileObject src = snapshot.getSource().getFileObject();
 //        LOG.info(this,"src = " + src);
 
@@ -467,19 +450,20 @@ public class MirahParser extends Parser {
         Preferences projPrefs = ProjectUtils.getPreferences(project, MirahExtenderImplementation.class, true);
         String projectType = projPrefs.get("project_type", "unknown");
 //        LOG.info(this,"reparse project type is "+projectType);
-        if ( "maven".equals(projectType)){
+        if ("maven".equals(projectType)) {
             try {
                 // It's a maven project so we want to build our sources to a different location
                 FileObject cacheDir = ProjectUtils.getCacheDirectory(project, MirahExtenderImplementation.class);
                 buildDir = cacheDir.getFileObject("build");
-                if ( buildDir == null ){
+                if (buildDir == null) {
                     buildDir = cacheDir.createFolder("build");
                 }
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
         }
-  
+        
+
         ClassPath compileClassPath
                 = ClassPath.getClassPath(src, ClassPath.COMPILE);
         String compileClassPathStr = "";
@@ -508,7 +492,7 @@ public class MirahParser extends Parser {
         String changedSourcePaths = RecompileQueue.getProjectQueue(project).getAndClearChangedSourcePaths();
         //LOG.info("=> changedSourcePaths = " + changedSourcePaths);
         if (changedSourcePaths != null) {
-            Set<String> set = new HashSet<String>();
+            Set<String> set = new HashSet<>();
             set.addAll(Arrays.asList(changedSourcePaths.split(Pattern.quote(File.pathSeparator))));
             set.addAll(Arrays.asList(srcClassPathStr.split(Pattern.quote(File.pathSeparator))));
             StringBuilder sb = new StringBuilder();
@@ -538,14 +522,13 @@ public class MirahParser extends Parser {
         } catch (IOException ex) {
 
         }
-        
+
 //        LOG.info(this,"=> dest = " + dest);
 //        LOG.info(this,"=> diag = " + diag);
-        
         compiler.setDestinationDirectory(new File(dest));
         compiler.setDiagnostics(diag);
 
-        List<String> paths = new ArrayList<String>();
+        List<String> paths = new ArrayList<>();
         if (!"".equals(srcClassPathStr)) {
             paths.add(srcClassPathStr);
         }
@@ -575,30 +558,28 @@ public class MirahParser extends Parser {
                 .toString();
 
         FileObject macroJarDir = projectDirectory.getFileObject("lib/mirah/macros");
-        
-        if ( macroJarDir != null ){
-            
+
+        if (macroJarDir != null) {
             File jarDir = FileUtil.toFile(macroJarDir);
-            File[] jars = jarDir.listFiles(new FilenameFilter(){
+            File[] jars = jarDir.listFiles(new FilenameFilter() {
 
                 @Override
                 public boolean accept(File dir, String name) {
                     return name.endsWith(".jar");
                 }
-
             });
-            if ( jars != null ){
-                for ( File jar : jars ){
+            if (jars != null) {
+                for (File jar : jars) {
                     macroPath += jar.getAbsolutePath() + File.pathSeparator;
-                    
                 }
             }
         }
         
+        
         if (macroPath.length() >= 1) {
             macroPath = macroPath.substring(0, macroPath.length() - 1);
         }
-        
+
         String cp = ".";
         if (classPath.length() >= 1) {
             cp = classPath.toString().substring(0, classPath.length() - 1);
@@ -606,6 +587,8 @@ public class MirahParser extends Parser {
         compiler.setClassPath(macroPath + File.pathSeparator + cp);
 
         compiler.setMacroClassPath(macroPath);
+        
+        
         
         DocumentDebugger debugger = new DocumentDebugger();
 
@@ -633,8 +616,9 @@ public class MirahParser extends Parser {
         compiler.addFakeFile(relPath, srcText);
         FileChangeAdapter fileChangeListener = null;
         try {
-
-            compiler.compile(new String[] { "--new-closures" });
+            if (compileClassPath != null) {
+                compiler.compile(new String[]{"--new-closures"});
+            }
             if (mirahDir != null) {
 
                 for (FileObject compileRoot : compileClassPath.getRoots()) {
@@ -647,7 +631,7 @@ public class MirahParser extends Parser {
             if ("maven".equals(projectType)){
                 // If its a maven project, we need to copy the build files into 
                 FileObject libDir = projectDirectory.getFileObject("lib");
-                if ( libDir == null ){
+                if (libDir == null) {
                     libDir = projectDirectory.createFolder("lib");
                 }
                 FileObject mirahTmpClassesDir = libDir.getFileObject("mirah-tmp-classes");
@@ -693,11 +677,10 @@ public class MirahParser extends Parser {
 
     @Override
     public Result getResult(Task task) {
-        if ( result != null ) {
+        if (result != null) {
             return result;
         }
-        if ( snapshot == null ){
-            
+        if (snapshot == null) {
         }
         return new NBMirahParserResult(snapshot, diag);
     }
@@ -708,26 +691,23 @@ public class MirahParser extends Parser {
 
     @Override
     public void addChangeListener(ChangeListener cl) {
-
     }
 
     @Override
     public void removeChangeListener(ChangeListener changeListener) {
     }
 
-    public static class NBMirahParserResult extends ParserResult {
+    public static class NBMirahParserResult extends ParserResult implements BlockNode {
 
-        private MirahParseDiagnostics diagnostics;
+        private final MirahParseDiagnostics diagnostics;
         private boolean valid = true;
-        List<Error> errorList = new ArrayList<Error>();
-        List<Block> blockList = new ArrayList<Block>();
+        List<Error> errorList = new ArrayList<>();
+        List<Block> blockList = new ArrayList<>();
         Node rootNode;
         List parsedNodes;
         HashMap<Node, ResolvedType> resolvedTypes = null;
 
-        NBMirahParserResult(
-                Snapshot snapshot,
-                MirahParseDiagnostics diagnostics) {
+        NBMirahParserResult(Snapshot snapshot, MirahParseDiagnostics diagnostics) {
             super(snapshot);
             this.diagnostics = diagnostics;
         }
@@ -738,7 +718,7 @@ public class MirahParser extends Parser {
 
         @Override
         public List<? extends Error> getDiagnostics() {
-            return new ArrayList<Error>();
+            return new ArrayList<>();
         }
 
         @Override
@@ -758,14 +738,15 @@ public class MirahParser extends Parser {
             return blockList;
         }
 
-        public Block  addBlock(CharSequence function, int offset, int length, CharSequence extra, ElementKind kind) {
-            Block block = new Block(function, offset, length, extra, kind);
+        @Override
+        public Block addBlock(Node node, CharSequence function, int offset, int length, CharSequence extra, ElementKind kind) {
+            Block block = new Block(node, function, offset, length, extra, kind);
             blockList.add(block);
             return block;
         }
-        
-        public Block addBlock(Block parent, CharSequence function, int offset, int length, CharSequence extra, ElementKind kind){
-            return parent.addBlock(function, offset, length, extra, kind);
+
+        public Block addBlock(Block parent, Node node, CharSequence function, int offset, int length, CharSequence extra, ElementKind kind) {
+            return parent.addBlock(node, function, offset, length, extra, kind);
         }
         
 //        public void setRoot( Node root )
@@ -792,7 +773,7 @@ public class MirahParser extends Parser {
         {
             return parsedNodes;
         }
-        
+
         public void setResolvedTypes( HashMap<Node, ResolvedType> resolvedTypes )
         {
             this.resolvedTypes = resolvedTypes;
@@ -809,7 +790,7 @@ public class MirahParser extends Parser {
             return resolvedTypes.get(node);
         }
         
-        public class Error implements org.netbeans.modules.csl.api.Error {
+        public class Error implements org.netbeans.modules.csl.api.Error {        
 
             String description;
             int offset;
@@ -877,57 +858,7 @@ public class MirahParser extends Parser {
             }
 
         }
-
-        public class Block {
-
-            
-            ElementKind kind;
-            CharSequence function;
-            int offset;
-            int length;
-            CharSequence extra;
-            List<Block> children = new ArrayList<Block>();
-
-            public Block(CharSequence function, int offset, int length, CharSequence extra, ElementKind kind) {
-                this.function = function;
-                this.offset = offset;
-                this.length = length;
-                this.extra = extra;
-                this.kind = kind;
-            }
-
-            public Block addBlock(CharSequence function, int offset, int length, CharSequence extra, ElementKind kind){
-                Block block = new Block(function, offset, length, extra, kind);
-                children.add(block);
-                return block;
-            }
-            
-            public List<Block> getChildren(){
-                return Collections.unmodifiableList(children);
-            }
-            
-            public CharSequence getExtra() {
-                return extra;
-            }
-
-            public CharSequence getDescription() {
-                return function;
-            }
-
-            public int getOffset() {
-                return offset;
-            }
-
-            public int getLength() {
-                return length;
-            }
-            
-            public ElementKind getKind(){
-                return kind;
-            }
-
-        }
-
+       
     }
 
     public static class MirahParseDiagnostics extends SimpleDiagnostics {
@@ -944,7 +875,7 @@ public class MirahParser extends Parser {
             String message;
         }
 
-        private List<SyntaxError> errors = new ArrayList<SyntaxError>();
+        private List<SyntaxError> errors = new ArrayList<>();
 
         public MirahParseDiagnostics() {
             super(false);
@@ -957,7 +888,6 @@ public class MirahParser extends Parser {
 
         @Override
         public void log(Diagnostic.Kind kind, String position, String message) {
-
             super.log(kind, position, message);
             if (!"ERROR_TO_PREVENT_COMPILING".equals(message)) {
                 errors.add(new SyntaxError(kind, position, message));
@@ -977,6 +907,7 @@ public class MirahParser extends Parser {
             public ResolvedType type;
             public Node node;
 
+            @Override
             public String toString() {
                 if (type == null) {
                     return "[" + startPos + "," + endPos + "]";
@@ -984,56 +915,49 @@ public class MirahParser extends Parser {
                     return "[" + type.name() + " " + startPos + "," + endPos + "]";
                 }
             }
-
         }
 
         final private TreeSet<PositionType> leftEdges;
         final private TreeSet<PositionType> rightEdges;
-        final private HashMap<Node, ResolvedType> resolvedTypes
-                = new HashMap<Node, ResolvedType>();
+        final private HashMap<Node, ResolvedType> resolvedTypes = new HashMap<>();
 
         public Mirahc compiler;
 
         public DocumentDebugger() {
+            leftEdges = new TreeSet<>(new Comparator<PositionType>() {
 
-            leftEdges = new TreeSet<PositionType>(
-                    new Comparator<PositionType>() {
+                @Override
+                public int compare(PositionType o1, PositionType o2) {
+                    if (o1.startPos < o2.startPos) {
+                        return -1;
+                    } else if (o2.startPos < o1.startPos) {
+                        return 1;
+                    } else if (o1.endPos < o2.endPos) {
+                        return -1;
+                    } else if (o2.endPos < o1.endPos) {
+                        return 1;
+                    } else {
+                        return 0;
+                    }
+                }
+            });
+            rightEdges = new TreeSet<>(new Comparator<PositionType>() {
 
-                        @Override
-                        public int compare(PositionType o1, PositionType o2) {
-                            if (o1.startPos < o2.startPos) {
-                                return -1;
-                            } else if (o2.startPos < o1.startPos) {
-                                return 1;
-                            } else if (o1.endPos < o2.endPos) {
-                                return -1;
-                            } else if (o2.endPos < o1.endPos) {
-                                return 1;
-                            } else {
-                                return 0;
-                            }
-                        }
-
-                    });
-            rightEdges = new TreeSet<PositionType>(
-                    new Comparator<PositionType>() {
-
-                        @Override
-                        public int compare(PositionType o1, PositionType o2) {
-                            if (o1.endPos < o2.endPos) {
-                                return -1;
-                            } else if (o2.endPos < o1.endPos) {
-                                return 1;
-                            } else if (o1.startPos < o2.startPos) {
-                                return -1;
-                            } else if (o2.startPos < o1.startPos) {
-                                return 1;
-                            } else {
-                                return 0;
-                            }
-                        }
-
-                    });
+                @Override
+                public int compare(PositionType o1, PositionType o2) {
+                    if (o1.endPos < o2.endPos) {
+                        return -1;
+                    } else if (o2.endPos < o1.endPos) {
+                        return 1;
+                    } else if (o1.startPos < o2.startPos) {
+                        return -1;
+                    } else if (o2.startPos < o1.startPos) {
+                        return 1;
+                    } else {
+                        return 0;
+                    }
+                }
+            });
         }
 
         public PositionType findNearestPositionOccurringAfter(int pos) {
@@ -1055,7 +979,7 @@ public class MirahParser extends Parser {
         public HashMap<Node, ResolvedType> getResolvedTypes() {
             return resolvedTypes;
         }
-        
+
         public SortedSet<PositionType> findPositionsWithRightEdgeInRange(
                 int start,
                 int end) {
@@ -1081,66 +1005,54 @@ public class MirahParser extends Parser {
 
         @Override
         public void parsedNode(Node node) {
-
         }
 
         @Override
         public void enterNode(Context cntxt, Node node, boolean bln) {
-
         }
 
         @Override
         public void exitNode(Context cntxt, final Node node, TypeFuture tf) {
-//            LOG.info(this,"exitNode Context=" + cntxt + " node=" + node+" tf="+tf);
             tf.onUpdate(new TypeListener() {
 
                 @Override
                 public void updated(TypeFuture tf, ResolvedType rt) {
-                    
-//                    LOG.info(MirahParser.class,"exitNode:updated TypeFuture="+tf+" ResolvedType="+rt);
                     if (!tf.isResolved()) {
                         return;
                     }
-//                    LOG.info(MirahParser.class,">>>> exitNode:updated TypeFuture=" + tf + " ResolvedType=" + rt);
+
                     if (node.position() == null) {
                         return;
                     }
-//                    LOG.info(this,"<<<< exitNode:updated TypeFuture=" + tf + " ResolvedType=" + rt);
-//                    LOG.info(this,"<<<< exitNode:updated TypeFuture=" + tf + " ResolvedType=" + rt);
                     PositionType t = new PositionType();
                     t.startPos = node.position().startChar();
                     t.endPos = node.position().endChar();
                     t.type = rt;
                     t.node = node;
                     if (leftEdges.contains(t)) {
-                        leftEdges.remove(t);
+                    leftEdges.remove(t);
                     }
                     if (rightEdges.contains(t)) {
-                        rightEdges.remove(t);
+                    rightEdges.remove(t);
                     }
                     leftEdges.add(t);
                     rightEdges.add(t);
-
                     resolvedTypes.put(node, rt);
-
                 }
-
             });
         }
 
         @Override
         public void inferenceError(Context cntxt, Node node, TypeFuture tf) {
-
         }
-
     }
 
     private static String nodeToString(Node n) {
-        if (n == null || n.position() == null) {
-            if (n != null) {
-                return "" + n;
-            }
+        if (n == null) {
             return "";
+        }
+        if (n.position() == null) {
+            return "" + n;
         }
         StringBuilder sb = new StringBuilder();
         sb.append("Node ").append(n)
@@ -1156,11 +1068,9 @@ public class MirahParser extends Parser {
                 .append(":")
                 .append(n.position().endChar())
                 .append(" # ");
-
         return sb.toString();
-
     }
-    
+
     private void createJar(File source, String sourceRoot, File jarFile) throws IOException {
         FileOutputStream fos = null;
         JarOutputStream jos = null;
@@ -1168,25 +1078,29 @@ public class MirahParser extends Parser {
             fos = new FileOutputStream(jarFile);
             jos = new JarOutputStream(fos);
             jos.setLevel(0);
-            
+
             addToJar(source, sourceRoot, jos);
         } finally {
             try {
-                if ( jos != null ) jos.close();
-            } catch ( Throwable t ){}
+                if (jos != null) {
+                    jos.close();
+                }
+            } catch (Throwable t) {
+                // eat it
+            }
             try {
-                if ( fos != null ) fos.close();
-            } catch ( Throwable t){}
+                if (fos != null) {
+                    fos.close();
+                }
+            } catch (Throwable t) {
+                // eat it
+            }
         }
-              
-        
-        
     }
-    
+
     private void addToJar(File source, String sourceRoot, JarOutputStream jos) throws IOException {
-        if ( source.getName().endsWith(".class")){
+        if (source.getName().endsWith(".class")) {
             String fileName = formatEntry(source, sourceRoot, false);
-//            LOG.info(this,"Adding file "+fileName+" to jar ("+source+")");
             ZipEntry entry = new ZipEntry(fileName);
             jos.putNextEntry(entry);
             InputStream fis = null;
@@ -1194,50 +1108,46 @@ public class MirahParser extends Parser {
                 fis = new FileInputStream(source);
                 byte[] buf = new byte[4096];
                 int len;
-                while ( (len = fis.read(buf)) != -1 ){
-//                    LOG.info(this,"Writing "+len+" bytes");
+                while ((len = fis.read(buf)) != -1) {
                     jos.write(buf, 0, len);
                 }
                 jos.closeEntry();
             } finally {
                 try {
-                    if ( fis != null ){
+                    if (fis != null) {
                         fis.close();
                     }
-                } catch ( Exception ex){}
+                } catch (Exception ex) {
+                    // eat it
+                }
             }
-        } else if ( source.isDirectory() ){
+        } else if (source.isDirectory()) {
             String dirName = formatEntry(source, sourceRoot, true);
-//            LOG.info(this,"Adding "+dirName+" to jar");
-            //ZipEntry entry = new ZipEntry(dirName);
-            //jos.putNextEntry(entry);
-            for ( File child : source.listFiles()){
+            for (File child : source.listFiles()) {
                 addToJar(child, sourceRoot, jos);
             }
             //jos.closeEntry();
         }
     }
-    
-    private String formatEntry(File f, String sourceRoot, boolean directory){
-        if ( directory ){
+
+    private String formatEntry(File f, String sourceRoot, boolean directory) {
+        if (directory) {
             String name = f.getPath().substring(sourceRoot.length());
             name = name.replace("\\", "/");
-            if ( !name.endsWith("/")){
+            if (!name.endsWith("/")) {
                 name += "/";
             }
-            if ( name.startsWith("/")){
+            if (name.startsWith("/")) {
                 name = name.substring(1);
             }
             return name;
         } else {
             String name = f.getPath().substring(sourceRoot.length());
             name = name.replace("\\", "/");
-            
-            if ( name.startsWith("/")){
+            if (name.startsWith("/")) {
                 name = name.substring(1);
             }
             return name;
         }
     }
-
 }
