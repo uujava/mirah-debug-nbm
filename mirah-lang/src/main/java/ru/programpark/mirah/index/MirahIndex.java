@@ -214,7 +214,7 @@ public final class MirahIndex {
             String fqn = map.getValue(MirahIndexer.FQN_NAME);
             
             IndexedClass newClass = createClass(fqn, simpleName, map);
-            newClass.setUrl(map.getValue(MirahIndexer.URL));
+//            newClass.setUrl(map.getValue(MirahIndexer.URL));
             classes.add(newClass);
         }
 
@@ -237,17 +237,21 @@ public final class MirahIndex {
             String[] constructors = map.getValues(MirahIndexer.CONSTRUCTOR);
 
             for (String constructor : constructors) {
-                String paramList = constructor.substring(constructor.indexOf(";") + 1, constructor.length()); // NOI18N
-                String[] params = paramList.split(",");
-
-                List<MethodElement.MethodParameter> methodParams = new ArrayList<>();
-                for (String param : params) {
-                    if (!"".equals(param.trim())) { // NOI18N
-                        methodParams.add(new MethodElement.MethodParameter(param, MirahUtils.stripPackage(param)));
-                    }
-                }
-
-                result.add(new IndexedMethod(map, className, className, "void", methodParams, "", 0));
+//                String paramList = constructor.substring(constructor.indexOf(";") + 1, constructor.length()); // NOI18N
+//                String[] params = paramList.split(",");
+//
+//                List<MethodElement.MethodParameter> methodParams = new ArrayList<>();
+//                for (String param : params) {
+//                    if (!"".equals(param.trim())) { // NOI18N
+//                        methodParams.add(new MethodElement.MethodParameter(param, MirahUtils.stripPackage(param)));
+//                    }
+//                }
+                String[] tokens = constructor.split(";");
+                String constructorSignature = tokens[0];
+                String modifiers = tokens[1];
+                int offset = Integer.parseInt(tokens[2]);
+                List<MethodElement.MethodParameter> constructorParams = getMethodParameter(constructorSignature);
+                result.add(new IndexedMethod(map, className, className, "void", constructorParams, "", 0, offset));
             }
         }
 
@@ -350,17 +354,19 @@ public final class MirahIndex {
         return getFields(".*", fqName, QuerySupport.Kind.REGEXP); // NOI18N
     }
     
-    public IndexedClass findClassByFqn( String fqn )
+    public Set<IndexedClass> findClassesByFqn( String fqName )
     {
         Set<IndexedClass> classes = getAllClasses();
         if ( classes == null ) return null;
         
-        for( IndexedClass ic : classes )
+        Set<IndexedClass> result = new HashSet<>();
+        for( IndexedClass indexedClass : classes )
         {
-			String n = ic.getFqn();
-            if ( ic.getFqn().equals(fqn) ) return ic;
+            String n = indexedClass.getFqn();
+            if ( indexedClass.getFqn().equals(fqName) ) 
+                result.add(indexedClass);
         }
-        return null;
+        return result;
     }
 
     /**
@@ -584,6 +590,25 @@ public final class MirahIndex {
 
         //String fqn = map.getValue(MirahIndexer.FQN_NAME);
 
+        String[] tokens = signature.split(";");
+
+        String methodSignature = tokens[0];
+        String type = tokens[1];
+        if ( type.isEmpty() ) type = "void";
+        
+        String attributes = tokens[2];
+        int offset = -1;
+        
+        offset = Integer.parseInt(tokens[3]);
+
+        int flags = 0;
+
+        String method_name = getMethodName(methodSignature);
+        List<MethodElement.MethodParameter> parameters = getMethodParameter(methodSignature);
+        IndexedMethod method = new IndexedMethod(map, clz, method_name, type, parameters, attributes, flags, offset);
+        
+        return method;
+/*        
         int typeIndex = signature.indexOf(';');
         String methodSignature = signature;
         String type = "void";
@@ -596,6 +621,7 @@ public final class MirahIndex {
             methodSignature = signature.substring(0, typeIndex);
         }
 
+        
         // Extract attributes
         int attributeIndex = signature.indexOf(';', typeIndex + 1);
         String attributes = null;
@@ -608,8 +634,8 @@ public final class MirahIndex {
                 attributes = signature.substring(attributeIndex+1, signature.length());
             }
         }
-
-        return new IndexedMethod(map, clz, getMethodName(methodSignature), type, getMethodParameter(methodSignature), attributes, flags);
+*/
+//        return new IndexedMethod(map, clz, getMethodName(methodSignature), type, getMethodParameter(methodSignature), attributes, flags);
     }
 
     private String getMethodName(String methodSignature) {
@@ -636,7 +662,9 @@ public final class MirahIndex {
 
         List<MethodElement.MethodParameter> parameters = new ArrayList<>();
         for (String paramType : args) {
-            parameters.add(new MethodElement.MethodParameter(paramType, MirahUtils.stripPackage(paramType)));
+            int index = paramType.indexOf(':');
+            String type = index == -1 ? paramType : paramType.substring(index+1);
+            parameters.add(new MethodElement.MethodParameter(type, MirahUtils.stripPackage(type)));
         }
         return parameters;
     }

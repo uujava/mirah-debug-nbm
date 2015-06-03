@@ -78,6 +78,18 @@ public class ASTUtils {
 //        return result.getRootElement().getModuleNode();
     }
 
+    public static AstPath getPath(ParserResult parseResult, BaseDocument doc, int astOffset) {
+        
+        Node root = ASTUtils.getRoot(parseResult);
+
+        // in some cases we can not repair the code, therefore root == null
+        // therefore we can not complete. See # 131317
+        if (root == null) {
+            return null;
+        }
+        return new AstPath(root, astOffset, doc);
+    }
+
     public static OffsetRange getRangeFull(Node node, BaseDocument doc) {
             if (node.position().startLine() < 0 || node.position().startColumn() < 0 || node.position().endLine() < 0 || node.position().endColumn() < 0) {
                 return OffsetRange.NONE;

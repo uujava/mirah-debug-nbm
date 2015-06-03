@@ -171,6 +171,7 @@ public class MirahParser extends Parser {
     public void reparse(Snapshot snapshot) throws ParseException {
         try
         {
+            if ( snapshot == null || snapshot.getText() == null ) return;
             reparse(snapshot, snapshot.getText().toString());
         }
         catch( Exception ex )

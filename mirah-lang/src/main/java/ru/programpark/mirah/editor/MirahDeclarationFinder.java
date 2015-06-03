@@ -8,7 +8,6 @@ package ru.programpark.mirah.editor;
 
 import ca.weblite.netbeans.mirah.LOG;
 import ca.weblite.netbeans.mirah.hyperlinks.HyperlinkElement;
-import ca.weblite.netbeans.mirah.hyperlinks.MirahHyperlinkHelper;
 import ca.weblite.netbeans.mirah.lexer.MirahParser;
 import ca.weblite.netbeans.mirah.lexer.MirahTokenId;
 import com.sun.source.tree.Tree;
@@ -80,13 +79,13 @@ import ru.programpark.mirah.tests.LexUtilities;
 public class MirahDeclarationFinder implements DeclarationFinder {
 
     public static HashMap<String,String> primitivesMap = new HashMap<String,String>();
-    private static String t_boolean = "boolean";
-    private static String t_int = "int";
-    private static String t_short = "short";
-    private static String t_long = "long";
-    private static String t_char = "char";
-    private static String t_float = "float";
-    private static String t_double = "double";
+    private static final String t_boolean = "boolean";
+    private static final String t_int = "int";
+    private static final String t_short = "short";
+    private static final String t_long = "long";
+    private static final String t_char = "char";
+    private static final String t_float = "float";
+    private static final String t_double = "double";
             
     static {
         primitivesMap.put(t_boolean,null);
@@ -105,24 +104,44 @@ public class MirahDeclarationFinder implements DeclarationFinder {
     }
     
     @Override
-    public DeclarationLocation findDeclaration(ParserResult parseResult, int caretOffset) 
+    public DeclarationLocation findDeclaration(ParserResult info, int caretOffset) 
     {
-        MirahParser.NBMirahParserResult parsed = (MirahParser.NBMirahParserResult)parseResult;
-        FileObject fo = parseResult.getSnapshot().getSource().getFileObject();
-        Document doc = parseResult.getSnapshot().getSource().getDocument(false);
-        MirahHyperlinkHelper helper = new MirahHyperlinkHelper(fo);
-        AstPath path = helper.getPath(parseResult, (BaseDocument)doc, caretOffset);
+        MirahParser.NBMirahParserResult parsed = (MirahParser.NBMirahParserResult)info;
+        FileObject fo = info.getSnapshot().getSource().getFileObject();
+        Document doc = info.getSnapshot().getSource().getDocument(false);
+        AstPath path = ASTUtils.getPath(info, (BaseDocument)doc, caretOffset);
 //        ResolvedType resolved = null;
         String fqName = null;
         if ( path != null ) {
-            for (Iterator<Node> it = path.iterator(); it.hasNext();) {
+            for (Iterator<Node> it = path.iterator(); it.hasNext();) 
+            {
                 Node node = it.next();
                 if ( node instanceof Import )
                 {
                     fqName = ((Import)node).fullName().identifier();
-                    break;
+                    try {
+                        return findType(fqName, OffsetRange.NONE, (BaseDocument)doc, info, MirahIndex.get(fo));
+                    } catch (BadLocationException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+//                  break;
                 }
-                else {
+                else if ( node instanceof Call ) // вызов метода?
+                {
+                    Call call = (Call)node;
+                    ResolvedType type = parsed.getResolvedType(node);
+                    if ( type == null ) continue;
+                    fqName = type.name();         
+                    String name = call.name().identifier();
+                    String returnedType = null;
+                    
+//                    call.
+//                    
+//                    if ( call.typeref() != null )
+//                        returnedType = null; //call.typeref().name();
+                    return findMethod(name, fqName, returnedType, call, parsed, caretOffset, caretOffset, path, node,  MirahIndex.get(fo));
+                }
+                else { // иначе перейти к классу
                     ResolvedType type = parsed.getResolvedType(node);
                     if ( type == null ) continue;
                     fqName = type.name();
@@ -135,8 +154,9 @@ public class MirahDeclarationFinder implements DeclarationFinder {
             }
         }
 
-        if ( fqName == null ) return DeclarationLocation.NONE;
-        
+//        if ( fqName == null ) 
+            return DeclarationLocation.NONE;
+        /*
         HyperlinkElement he = helper.findByFqn(fqName.replace('.','/'));
         if ( he != null )
 //        if ( he.getUrl() != null )
@@ -154,14 +174,14 @@ public class MirahDeclarationFinder implements DeclarationFinder {
         else //if ( he.getFqn() != null )
         {
             try {
-                return findJavaClass(fqName.replace('/','.'),parsed);
+                return findJavaClass(fqName.replace('/','.'),info);
             } catch (BadLocationException ex) {
                 Exceptions.printStackTrace(ex);
             }
         }
 
         return DeclarationLocation.NONE;
-        
+        */
         /*
         final int foffset = offset;
         final Document doc = parseResult.getSnapshot().getSource().getDocument(false);
@@ -172,7 +192,6 @@ public class MirahDeclarationFinder implements DeclarationFinder {
         
         final ParserResult info = pr;
 //        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-        final MirahHyperlinkHelper helper = new MirahHyperlinkHelper(project.getProjectDirectory());
         final DeclarationLocation locs[] = new DeclarationLocation[1];
         try {
             ParserManager.parse(Collections.singleton (Source.create(doc)), new UserTask() {
@@ -217,7 +236,7 @@ public class MirahDeclarationFinder implements DeclarationFinder {
             //do nothing if FO is not attached to the document - the goto would not work anyway:
             return null;
         }
-        final OffsetRange[] ret = new OffsetRange[1]; 
+        final OffsetRange[] ret = new OffsetRange[] { OffsetRange.NONE }; 
         final Document fdoc = doc;
         final int foffset = offset;
         doc.render(new Runnable() {
@@ -261,9 +280,15 @@ public class MirahDeclarationFinder implements DeclarationFinder {
 //                if (token != null)
 //                    token[0] = t;
 
-//                ret[0] = new int [] {ts.offset(), ts.offset() + t.length()};
-                ret[0] = new OffsetRange(ts.offset(), ts.offset() + t.length());
-            }
+                if ( t.id().is(Tokens.tClassVar) ||
+                    t.id().is(Tokens.tIDENTIFIER) ||
+                    t.id().is(Tokens.tSelf) ||
+                    t.id().is(Tokens.tSuper) ||
+                    t.id().is(Tokens.tSuper) ||
+                    t.id().is(Tokens.tCONSTANT) ||
+                    t.id().is(Tokens.tInstVar) ) {
+                    ret[0] = new OffsetRange(ts.offset(), ts.offset() + t.length());
+                }
         });
         return ret[0];
         
@@ -342,8 +367,8 @@ public class MirahDeclarationFinder implements DeclarationFinder {
             BaseDocument doc, ParserResult info, MirahIndex index) throws BadLocationException {
 
 //        LOG.log(Level.FINEST, "Looking for type: {0}", fqName); // NOI18N
-
         if (doc != null && range != null) {
+/*
             String text = doc.getText(range.getStart(), range.getLength());
 
             if(!MirahUtils.stripPackage(fqName).equals(text)){
@@ -377,9 +402,15 @@ public class MirahDeclarationFinder implements DeclarationFinder {
 //                    fqName = fqName.substring(0, sepIndex);
 //                }
             }
-
-            Set<IndexedClass> classes = index.getClasses(fqName, QuerySupport.Kind.EXACT);
-
+*/
+//            Set<IndexedClass> classes = index.getClasses(fqName, QuerySupport.Kind.EXACT);
+            Set<IndexedClass> classes = index.findClassesByFqn(fqName); //.getClasses(fqName, QuerySupport.Kind.EXACT);
+            if ( ! classes.isEmpty() )
+            {
+                IndexedClass indexedClass = classes.iterator().next();
+                return new DeclarationLocation(indexedClass.getFileObject(), indexedClass.getOffset());
+            }
+/*            
             for (IndexedClass indexedClass : classes) {
                 Node node = ASTUtils.getForeignNode(indexedClass);
                 if (node != null) {
@@ -398,7 +429,7 @@ public class MirahDeclarationFinder implements DeclarationFinder {
                     }
                 }
             }
-
+*/
             // so - we haven't found this class using the groovy index,
             // then we have to search it as a pure java type.
 
@@ -556,7 +587,8 @@ public class MirahDeclarationFinder implements DeclarationFinder {
 
     private Set<IndexedMethod> getApplicableMethods(String name, String possibleFqn,
             String type, Call call, MirahIndex index) {
-        Set<IndexedMethod> methods = new HashSet<IndexedMethod>();
+//        Set<IndexedMethod> methods = new HashSet<IndexedMethod>();
+        Set<IndexedMethod> methods = index.getMethods(name,possibleFqn,QuerySupport.Kind.EXACT);
         String fqn = possibleFqn;
         /*
         if (type == null && possibleFqn != null && call.getLhs() == null && call != Call.UNKNOWN) {

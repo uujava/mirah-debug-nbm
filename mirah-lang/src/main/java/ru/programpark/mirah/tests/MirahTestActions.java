@@ -6,9 +6,7 @@
 package ru.programpark.mirah.tests;
 
 import ca.weblite.netbeans.mirah.LOG;
-import ca.weblite.netbeans.mirah.hyperlinks.GoToSupport;
 import ca.weblite.netbeans.mirah.hyperlinks.HyperlinkElement;
-import ca.weblite.netbeans.mirah.hyperlinks.MirahHyperlinkHelper;
 import ca.weblite.netbeans.mirah.lexer.MirahParser;
 import ca.weblite.netbeans.mirah.lexer.MirahTokenId;
 import java.io.BufferedReader;

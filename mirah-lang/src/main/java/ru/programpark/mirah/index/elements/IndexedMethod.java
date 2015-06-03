@@ -10,6 +10,7 @@ public final class IndexedMethod extends IndexedElement implements MethodElement
 
     private final List<MethodParameter> parameters;
     private final String returnType;
+    private int offset;
 
     public IndexedMethod(
             IndexResult result,
@@ -18,11 +19,12 @@ public final class IndexedMethod extends IndexedElement implements MethodElement
             String returnType,
             List<MethodParameter> parameters,
             String attributes,
-            int flags) {
+            int flags, int offset ) {
 
         super(result, clz, name, attributes, flags);
         this.returnType = returnType;
         this.parameters = parameters;
+        this.offset = offset;
     }
 
     @Override
@@ -126,6 +128,11 @@ public final class IndexedMethod extends IndexedElement implements MethodElement
             return false;
         }
         return true;
+    }
+    
+    public int getOffset()
+    {
+        return offset;
     }
 
 }

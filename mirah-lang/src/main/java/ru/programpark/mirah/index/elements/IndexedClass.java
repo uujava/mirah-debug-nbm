@@ -36,15 +36,15 @@ public final class IndexedClass extends IndexedElement implements ClassElement {
         return simpleName;
     }
 
-    public String getUrl() {
-        return url;
-    }
+//    public String getUrl() {
+//        return url;
+//    }
 
-    public void setUrl(String url) {
-        int index = url.lastIndexOf(':');
-        this.url = index == -1 ? url : url.substring(0, index);
-        this.offset = index == -1 ? 0 : Integer.parseInt(url.substring(index+1));
-    }
+//    public void setUrl(String url) {
+//        int index = url.lastIndexOf(':');
+//        this.url = index == -1 ? url : url.substring(0, index);
+//        this.offset = index == -1 ? 0 : Integer.parseInt(url.substring(index+1));
+//    }
 
     public int getOffset()
     {

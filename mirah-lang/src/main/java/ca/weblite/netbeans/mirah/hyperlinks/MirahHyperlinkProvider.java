@@ -96,7 +96,7 @@ public class MirahHyperlinkProvider implements HyperlinkProviderExt  {
         LOG.info(this,"performClickAction doc="+doc+" offset="+offset+" type="+type);
         switch (type) {
             case GO_TO_DECLARATION:
-                GoToSupport.goTo(doc, offset, false);
+//                GoToSupport.goTo(doc, offset, false);
                 break;
             case ALT_HYPERLINK:
 //                JTextComponent focused = EditorRegistry.focusedComponent();
