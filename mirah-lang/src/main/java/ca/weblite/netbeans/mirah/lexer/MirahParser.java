@@ -30,10 +30,12 @@ import java.util.zip.ZipEntry;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.Document;
 import javax.tools.Diagnostic;
+import mirah.impl.Tokens;
 import mirah.lang.ast.ClassDefinition;
 import mirah.lang.ast.ConstantAssign;
 import mirah.lang.ast.ConstructorDefinition;
 import mirah.lang.ast.FieldAssign;
+import mirah.lang.ast.Import;
 import mirah.lang.ast.InterfaceDeclaration;
 import mirah.lang.ast.MacroDefinition;
 import mirah.lang.ast.MethodDefinition;
@@ -53,6 +55,7 @@ import org.mirah.util.Context;
 import org.mirah.util.SimpleDiagnostics;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -272,6 +275,32 @@ public class MirahParser extends Parser {
             node.accept(new NodeScanner() {
 
                 @Override
+                public boolean enterImport(Import node, Object arg) {
+                    final BlockNode parent = blockStack.isEmpty() ? res : blockStack.peek();
+                    blockStack.push(parent.addImport(node, node.fullName().identifier(), node.position().startChar(), node.position().endChar() - node.position().startChar(), "", ElementKind.OTHER));
+                    return super.enterImport(node, arg);
+                }
+
+                @Override
+                public Object exitImport(Import node, Object arg) {
+                    blockStack.pop();
+                    return super.exitImport(node, arg);
+                }
+
+                @Override
+                public boolean enterBlock(mirah.lang.ast.Block node, Object arg) {
+                    final BlockNode parent = blockStack.isEmpty() ? res : blockStack.peek();
+                    blockStack.push(parent.addDSL(node, "DSL", node.position().startChar(), node.position().endChar() - node.position().startChar(), "", ElementKind.METHOD));
+                    return super.enterBlock(node, arg);
+                }
+
+                @Override
+                public Object exitBlock(mirah.lang.ast.Block node, Object arg) {
+                    blockStack.pop();
+                    return super.exitBlock(node, arg);
+                }
+
+                @Override
                 public boolean enterPackage(Package node, Object arg) {
                     if (!blockStack.isEmpty()) {
                         blockStack.pop();
@@ -296,7 +325,7 @@ public class MirahParser extends Parser {
 
                 @Override
                 public boolean enterMethodDefinition(MethodDefinition node, Object arg) {
-                    final BlockNode parent = blockStack.isEmpty() ? res : blockStack.peek();
+                    BlockNode parent = blockStack.isEmpty() ? res : blockStack.peek();
                     blockStack.push(parent.addBlock(node, node.name().identifier(), node.position().startChar(), node.position().endChar() - node.position().startChar(), "", ElementKind.METHOD));
                     return super.enterMethodDefinition(node, arg);
                 }
@@ -306,10 +335,7 @@ public class MirahParser extends Parser {
                     blockStack.pop();
                     return super.exitMethodDefinition(node, arg);
                 }
-                
-                
 
-                
                 @Override
                 public boolean enterConstructorDefinition(ConstructorDefinition node, Object arg) {
                     final BlockNode parent = blockStack.isEmpty() ? res : blockStack.peek();
@@ -349,20 +375,6 @@ public class MirahParser extends Parser {
                     return super.exitStaticMethodDefinition(node, arg);
                 }
 
-                /*
-                 @Override
-                 public boolean enterScript(Script node, Object arg) {
-                 Block block = res.addBlock("Mirah File", node.position().startChar(), node.position().endChar()-node.position().startChar(), "", ElementKind.OTHER);
-                 blockStack.push(block);
-                 return super.enterScript(node, arg);
-                 }
-
-                 @Override
-                 public Object exitScript(Script node, Object arg) {
-                 blockStack.pop();
-                 return super.exitScript(node, arg);
-                 }
-                 */
                 @Override
                 public boolean enterFieldAssign(FieldAssign node, Object arg) {
                     final BlockNode parent = blockStack.isEmpty() ? res : blockStack.peek();
@@ -389,20 +401,6 @@ public class MirahParser extends Parser {
                     return super.exitConstantAssign(node, arg);
                 }
 
-                /*
-                 @Override
-                 public boolean enterImport(Import node, Object arg) {
-                 final BlockNode parent = blockStack.isEmpty() ? res : blockStack.peek();
-                 blockStack.push(parent.addBlock(node, node.name().identifier(), node.position().startChar(), node.position().endChar() - node.position().startChar(), "", ElementKind.INTERFACE));
-                 return super.enterImport(node, arg);
-                 }
-                
-                 @Override
-                 public Object exitImport(Import node, Object arg) {
-                 blockStack.pop();
-                 return super.exitImport(node, arg);
-                 }
-                 */
                 @Override
                 public boolean enterMacroDefinition(MacroDefinition node, Object arg) {
                     final BlockNode parent = blockStack.isEmpty() ? res : blockStack.peek();
@@ -415,9 +413,31 @@ public class MirahParser extends Parser {
                     blockStack.pop();
                     return super.exitMacroDefinition(node, arg);
                 }
-                
             }, null);
         }
+
+        final Document doc = res.getSnapshot().getSource().getDocument(false);
+        final DocumentQuery dq = new DocumentQuery(doc);
+        final TokenSequence<MirahTokenId> seq = dq.getTokens(0, false);
+        final MirahTokenId tComment = MirahTokenId.get(Tokens.tComment);
+        final MirahTokenId tNL = MirahTokenId.get(Tokens.tNL);
+        do {
+            final MirahTokenId tokenId = seq.token().id();
+            if (!tokenId.equals(tComment)) {
+                if (!tokenId.equals(tNL)) {
+                    res.commentsBlock = false;
+                }
+                continue;
+            }
+            // К сожалению, это не работает...
+            // boolean inJavadoc = seq.token().id().ordinal() == Tokens.tJavaDoc.ordinal();
+            String comment = seq.token().text().toString().trim();
+            if (comment.startsWith("/*") && comment.endsWith("*/")) {
+                res.addBlockComment(null, "BlockComment", seq.offset(), seq.token().length(), "", ElementKind.DB);
+            } else if (comment.startsWith("#")) {
+                res.addLineComment(null, "LineComment", seq.offset(), seq.token().length(), "", ElementKind.TAG);
+            }
+        } while (seq.moveNext());
     }
 
     public void reparse(Snapshot snapshot, String content) throws ParseException {
@@ -704,6 +724,12 @@ public class MirahParser extends Parser {
         private boolean valid = true;
         List<Error> errorList = new ArrayList<>();
         List<Block> blockList = new ArrayList<>();
+        List<Block> importList = new ArrayList<>();
+        List<Block> dslList = new ArrayList<>();
+        List<Block> lineComments = new ArrayList();
+        List<Block> blockComments = new ArrayList();
+        boolean importsBlock = false;
+        boolean commentsBlock = false;
         Node rootNode;
         List parsedNodes;
         HashMap<Node, ResolvedType> resolvedTypes = null;
@@ -739,10 +765,74 @@ public class MirahParser extends Parser {
             return blockList;
         }
 
+        public List<Block> getImports() {
+            return importList;
+        }
+
+        public List<Block> getDSLs() {
+            return dslList;
+        }
+
+        public List<Block> getLineComments() {
+            return lineComments;
+        }
+
+        public List<Block> getBlockComments() {
+            return blockComments;
+        }
+
         @Override
         public Block addBlock(Node node, CharSequence function, int offset, int length, CharSequence extra, ElementKind kind) {
+            importsBlock = false;
+            commentsBlock = false;
             Block block = new Block(node, function, offset, length, extra, kind);
             blockList.add(block);
+            return block;
+        }
+
+        @Override
+        public Block addDSL(Node node, CharSequence function, int offset, int length, CharSequence extra, ElementKind kind) {
+            importsBlock = false;
+            commentsBlock = false;
+            Block block = new Block(node, function, offset, length, extra, kind);
+            dslList.add(block);
+            return block;
+        }
+
+        @Override
+        public Block addImport(Node node, CharSequence function, int offset, int length, CharSequence extra, ElementKind kind) {
+            commentsBlock = false;
+            if (importsBlock && !importList.isEmpty()) {
+                Block block = importList.get(importList.size() - 1);
+                block.length = offset + length - block.offset;
+                return block;
+            } else {
+                importsBlock = true;
+                Block block = new Block(node, function, offset, length, extra, kind);
+                importList.add(block);
+                return block;
+            }
+        }
+
+        public Block addLineComment(Node node, CharSequence function, int offset, int length, CharSequence extra, ElementKind kind) {
+            // комментарии не прерывают блоков импорта
+            if (commentsBlock && !lineComments.isEmpty()) {
+                Block block = lineComments.get(lineComments.size() - 1);
+                block.length = offset + length - block.offset;
+                return block;
+            } else {
+                commentsBlock = true;
+                Block block = new Block(node, function, offset, length, extra, kind);
+                lineComments.add(block);
+                return block;
+            }
+        }
+
+        public Block addBlockComment(Node node, CharSequence function, int offset, int length, CharSequence extra, ElementKind kind) {
+            // комментарии не прерывают блоков импорта
+            commentsBlock = false;
+            Block block = new Block(node, function, offset, length, extra, kind);
+            blockComments.add(block);
             return block;
         }
 

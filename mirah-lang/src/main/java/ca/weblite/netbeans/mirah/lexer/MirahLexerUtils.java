@@ -16,6 +16,7 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.spi.ParserResult;
 
 /**
  *
@@ -111,6 +112,14 @@ public class MirahLexerUtils {
             }
         }
         return OffsetRange.NONE;
+    }
+
+    public static int getAstOffset(ParserResult pr, int lexOffset) {
+        if (pr == null) {
+            return lexOffset;
+        } else {
+            return pr.getSnapshot().getEmbeddedOffset(lexOffset);
+        }
     }
 }
 /*

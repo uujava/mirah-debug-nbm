@@ -273,8 +273,8 @@ public class MirahStructureItem implements StructureItem, ElementHandle {
                     f.appendHtml(" : ");
                     f.parameters(true);
                     f.appendText(identifier.identifier());
+                    f.parameters(false);
                 }
-                f.parameters(false);
                 return f.getText();
             } else if (block.getNode() instanceof ClassDefinition) {
                 ClassDefinition clazz = (ClassDefinition) block.getNode();

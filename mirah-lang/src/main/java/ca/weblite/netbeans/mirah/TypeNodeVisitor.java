@@ -1,6 +1,7 @@
 package ca.weblite.netbeans.mirah;
 
 import mirah.lang.ast.Array;
+import mirah.lang.ast.Boolean;
 import mirah.lang.ast.Call;
 import mirah.lang.ast.Fixnum;
 import mirah.lang.ast.FunctionalCall;
@@ -62,6 +63,11 @@ public class TypeNodeVisitor extends AbstractNodeVisitor {
     @Override
     public Object visitFixnum(Fixnum fixnum, Object o) {
         return "long";
+    }
+
+    @Override
+    public Object visitBoolean(Boolean bln, Object o) {
+        return "boolean";
     }
 
     @Override

@@ -117,7 +117,7 @@ public class MirahTypingCompletion {
      * offset is at doc-or-section-start-and-bwd-bias or
      * doc-or-section-end-and-fwd-bias.
      */
-    private static TokenSequence<MirahTokenId> mirahTokenSequence(Document doc, int caretOffset, boolean backwardBias) {
+    public static TokenSequence<MirahTokenId> mirahTokenSequence(Document doc, int caretOffset, boolean backwardBias) {
         ((BaseDocument) doc).readLock();
         try {
             TokenHierarchy<?> hi = TokenHierarchy.get(doc);
