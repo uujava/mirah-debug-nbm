@@ -289,6 +289,7 @@ public class MirahDeclarationFinder implements DeclarationFinder {
                     t.id().is(Tokens.tInstVar) ) {
                     ret[0] = new OffsetRange(ts.offset(), ts.offset() + t.length());
                 }
+            }
         });
         return ret[0];
         

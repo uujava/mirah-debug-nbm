@@ -1,6 +1,6 @@
 package ca.weblite.netbeans.mirah.lexer;
 
-import mirah.lang.ast.Node; 
+import mirah.lang.ast.Node;
 import org.netbeans.modules.csl.api.ElementKind;
 
 /**
@@ -11,4 +11,8 @@ import org.netbeans.modules.csl.api.ElementKind;
 interface BlockNode {
 
     Block addBlock(Node node, CharSequence function, int offset, int length, CharSequence extra, ElementKind kind);
+
+    Block addImport(Node node, CharSequence function, int offset, int length, CharSequence extra, ElementKind kind);
+
+    Block addDSL(Node node, CharSequence function, int offset, int length, CharSequence extra, ElementKind kind);
 }
