@@ -134,7 +134,7 @@ public class MirahParser extends Parser {
         );
 
         String newContent = snapshot.getText().toString();
-        LOG.info(null, "===== PARSE: " + snapshot.getSource().getFileObject().getPath() + " ======");
+        LOG.info(null, "----- Parsing Start: " + snapshot.getSource().getFileObject().getNameExt() + " -----");
 //        LOG.info(this, "newContent = "+newContent);
         boolean changed = oldContent == null || !oldContent.equals(newContent);
 //        LOG.info(this, "changed = " + changed);
@@ -155,7 +155,7 @@ public class MirahParser extends Parser {
                 DocumentDebugger dbg = getDocumentDebugger(snapshot.getSource().getDocument(false));
                 if ( dbg != null )
                 {
-                    // сохраняю карту распознанныч типов
+                    // сохраняю карту распознанных типов
                     result.setResolvedTypes(dbg.resolvedTypes);
                     // Сохраняю дерево разбора - это список List<Node>
                     if ( dbg.compiler != null && dbg.compiler.compiler() != null )
@@ -168,7 +168,7 @@ public class MirahParser extends Parser {
             }
             
         }
-        LOG.info(null, "----- Parsing End: " + snapshot.getSource().getFileObject().getPath() + " -----");
+        LOG.info(null, "----- Parsing End  : " + snapshot.getSource().getFileObject().getNameExt() + " -----");
     }
 
     public void reparse(Snapshot snapshot) throws ParseException {
@@ -417,7 +417,17 @@ public class MirahParser extends Parser {
         }
 
         final Document doc = res.getSnapshot().getSource().getDocument(false);
+        if ( doc == null ) 
+        {
+//            LOG.info(this,"doc = null file="+res.getSnapshot().getSource().getFileObject().getPath());
+            return;
+        }
         final DocumentQuery dq = new DocumentQuery(doc);
+        if ( dq == null )
+        {
+//            LOG.info(this,"dq = null file="+res.getSnapshot().getSource().getFileObject().getPath());
+            return;
+        }
         final TokenSequence<MirahTokenId> seq = dq.getTokens(0, false);
         final MirahTokenId tComment = MirahTokenId.get(Tokens.tComment);
         final MirahTokenId tNL = MirahTokenId.get(Tokens.tNL);
@@ -429,7 +439,7 @@ public class MirahParser extends Parser {
                 }
                 continue;
             }
-            // К сожалению, это не работает...
+            // К сожалению, это не работает
             // boolean inJavadoc = seq.token().id().ordinal() == Tokens.tJavaDoc.ordinal();
             String comment = seq.token().text().toString().trim();
             if (comment.startsWith("/*") && comment.endsWith("*/")) {
@@ -668,6 +678,11 @@ public class MirahParser extends Parser {
 //            ex.printStackTrace();
         }
         Document doc = snapshot.getSource().getDocument(true);
+        if ( doc == null ) //todo СЂР°Р·РѕР±СЂР°С‚СЊСЃСЏ?
+        {
+//            LOG.info(this,"doc = null file="+snapshot.getSource().getFileObject().getPath());
+            return;
+        }
         if ( debugger != null && result != null )
         {
             // сохраняю карту распознанныч типов
@@ -677,7 +692,7 @@ public class MirahParser extends Parser {
         if (debugger.resolvedTypes.size() > 0) {
             debugger.compiler = compiler.getMirahc();
             documentDebuggers.put(doc, debugger);
-            // Сохраняю дерево разбора - это список List<Node>
+            // РЎРѕС…СЂР°РЅСЏСЋ РґРµСЂРµРІРѕ СЂР°Р·Р±РѕСЂР° - СЌС‚Рѕ СЃРїРёСЃРѕРє List<Node>
             if ( debugger.compiler.compiler() != null )
             result.setParsedNodes(debugger.compiler.compiler().getParsedNodes());
             fireOnParse(doc);
@@ -693,7 +708,8 @@ public class MirahParser extends Parser {
                     return root;
             }
         }
-        return ClassPath.getClassPath(file, ClassPath.SOURCE).findOwnerRoot(file);
+        ClassPath path = ClassPath.getClassPath(file, ClassPath.SOURCE);
+        return path != null ? path.findOwnerRoot(file) : null;
     }
 
     @Override
