@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -31,10 +32,12 @@ import javax.swing.event.ChangeListener;
 import javax.swing.text.Document;
 import javax.tools.Diagnostic;
 import mirah.impl.Tokens;
+import mirah.lang.ast.Call;
 import mirah.lang.ast.ClassDefinition;
 import mirah.lang.ast.ConstantAssign;
 import mirah.lang.ast.ConstructorDefinition;
 import mirah.lang.ast.FieldAssign;
+import mirah.lang.ast.FunctionalCall;
 import mirah.lang.ast.Import;
 import mirah.lang.ast.InterfaceDeclaration;
 import mirah.lang.ast.MacroDefinition;
@@ -250,6 +253,16 @@ public class MirahParser extends Parser {
         LOG.info(this, "----- end of dump -----");
     }
 
+    // При Array.size <= 7 поиск перебором по массиву не медленнее индексированного поиска в Map
+    private static final Collection<String> macroNames = new ArrayList<>();
+    static {
+        macroNames.add("attr_reader");
+        macroNames.add("attr_writer");
+        macroNames.add("attr_accessor");
+        macroNames.add("fx_component");
+        macroNames.add("entity_attr");
+    }
+
     void getBlocks(final NBMirahParserResult res, String content) {
         mirah.impl.MirahParser parser = new mirah.impl.MirahParser();
 
@@ -261,17 +274,9 @@ public class MirahParser extends Parser {
             // ex.printStackTrace();
             return;
         }
-        if ( ast instanceof Node ){
-            
+        if ( ast instanceof Node ) {            
             Node node = (Node)ast;
-//            res.setRoot(node);
-            
-//            res.setParsedNodes();
-//            dumpNode(node);
 
-            //todo - add folding to multiline comments
-            //todo - add folding for import statements
-            //todo - javadoc creation
             node.accept(new NodeScanner() {
 
                 @Override
@@ -412,6 +417,46 @@ public class MirahParser extends Parser {
                 public Object exitMacroDefinition(MacroDefinition node, Object arg) {
                     blockStack.pop();
                     return super.exitMacroDefinition(node, arg);
+                }
+
+                @Override
+                public boolean enterCall(Call node, Object arg) {
+                    final String identifier = node.name().identifier();
+                    if (macroNames.contains(identifier)) {
+                        blockStack.push(res.addMacro(node, identifier, node.position().startChar(), node.position().endChar() - node.position().startChar(), "", ElementKind.CALL));
+                    } else {
+                        res.macroBlock = false;
+                    }
+                    return super.enterCall(node, arg);
+                }
+
+                @Override
+                public Object exitCall(Call node, Object arg) {
+                    final String identifier = node.name().identifier();
+                    if (macroNames.contains(identifier)) {
+                        blockStack.pop();
+                    }
+                    return super.exitCall(node, arg);
+                }
+
+                @Override
+                public boolean enterFunctionalCall(FunctionalCall node, Object arg) {
+                    final String identifier = node.name().identifier();
+                    if (macroNames.contains(identifier)) {
+                        blockStack.push(res.addMacro(node, identifier, node.position().startChar(), node.position().endChar() - node.position().startChar(), "", ElementKind.CALL));
+                    } else {
+                        res.macroBlock = false;
+                    }
+                    return super.enterFunctionalCall(node, arg);
+                }
+
+                @Override
+                public Object exitFunctionalCall(FunctionalCall node, Object arg) {
+                    final String identifier = node.name().identifier();
+                    if (macroNames.contains(identifier)) {
+                        blockStack.pop();
+                    }
+                    return super.exitFunctionalCall(node, arg);
                 }
             }, null);
         }
@@ -742,10 +787,12 @@ public class MirahParser extends Parser {
         List<Block> blockList = new ArrayList<>();
         List<Block> importList = new ArrayList<>();
         List<Block> dslList = new ArrayList<>();
-        List<Block> lineComments = new ArrayList();
-        List<Block> blockComments = new ArrayList();
+        List<Block> lineComments = new ArrayList<>();
+        List<Block> blockComments = new ArrayList<>();
+        List<Block> macroList = new ArrayList<>();
         boolean importsBlock = false;
         boolean commentsBlock = false;
+        boolean macroBlock = false;
         Node rootNode;
         List parsedNodes;
         HashMap<Node, ResolvedType> resolvedTypes = null;
@@ -789,6 +836,10 @@ public class MirahParser extends Parser {
             return dslList;
         }
 
+        public List<Block> getMacroses() {
+            return macroList;
+        }
+
         public List<Block> getLineComments() {
             return lineComments;
         }
@@ -801,6 +852,7 @@ public class MirahParser extends Parser {
         public Block addBlock(Node node, CharSequence function, int offset, int length, CharSequence extra, ElementKind kind) {
             importsBlock = false;
             commentsBlock = false;
+            macroBlock = false;
             Block block = new Block(node, function, offset, length, extra, kind);
             blockList.add(block);
             return block;
@@ -810,6 +862,7 @@ public class MirahParser extends Parser {
         public Block addDSL(Node node, CharSequence function, int offset, int length, CharSequence extra, ElementKind kind) {
             importsBlock = false;
             commentsBlock = false;
+            macroBlock = false;
             Block block = new Block(node, function, offset, length, extra, kind);
             dslList.add(block);
             return block;
@@ -818,6 +871,7 @@ public class MirahParser extends Parser {
         @Override
         public Block addImport(Node node, CharSequence function, int offset, int length, CharSequence extra, ElementKind kind) {
             commentsBlock = false;
+            macroBlock = false;
             if (importsBlock && !importList.isEmpty()) {
                 Block block = importList.get(importList.size() - 1);
                 block.length = offset + length - block.offset;
@@ -826,6 +880,21 @@ public class MirahParser extends Parser {
                 importsBlock = true;
                 Block block = new Block(node, function, offset, length, extra, kind);
                 importList.add(block);
+                return block;
+            }
+        }
+
+        public Block addMacro(Node node, CharSequence function, int offset, int length, CharSequence extra, ElementKind kind) {
+            commentsBlock = false;
+            importsBlock = false;
+            if (macroBlock && !macroList.isEmpty()) {
+                Block block = macroList.get(macroList.size() - 1);
+                block.length = offset + length - block.offset;
+                return block;
+            } else {
+                macroBlock = true;
+                Block block = new Block(node, function, offset, length, extra, kind);
+                macroList.add(block);
                 return block;
             }
         }
@@ -845,7 +914,7 @@ public class MirahParser extends Parser {
         }
 
         public Block addBlockComment(Node node, CharSequence function, int offset, int length, CharSequence extra, ElementKind kind) {
-            // комментарии не прерывают блоков импорта
+            // комментарии не прерывают другие блоки, в т.ч. блоки импорта и блоки макросов атрибутики
             commentsBlock = false;
             Block block = new Block(node, function, offset, length, extra, kind);
             blockComments.add(block);

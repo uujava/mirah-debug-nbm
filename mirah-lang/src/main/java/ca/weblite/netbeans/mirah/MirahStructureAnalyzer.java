@@ -66,6 +66,9 @@ public class MirahStructureAnalyzer implements StructureScanner {
         for (Block block : res.getBlockComments()) {
             folds(block, null, out, pr);
         }
+        for (Block block : res.getMacroses()) {
+            folds(block, null, out, pr);
+        }
         return out;
     }
 
@@ -131,6 +134,9 @@ public class MirahStructureAnalyzer implements StructureScanner {
             case DB:
                 // Комментарии в стиле Java, начинающиеся с /* и /**
                 return getRanges("initial-comment", out);
+            case CALL:
+                // Различные макросы, типа attr_accessor
+                return getRanges("othercodeblocks", out);
             default:
                 return null;
         }
