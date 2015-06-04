@@ -55,22 +55,22 @@ import mirah.objectweb.asm.tree.ClassNode;
 public class MirahIndexer extends EmbeddingIndexer {
 
     // class
-    static final String FQN_NAME = "fqn"; //NOI18N
-    static final String CLASS_NAME = "class"; //NOI18N
-    static final String CASE_INSENSITIVE_CLASS_NAME = "class-ig"; //NOI18N
+    public static final String FQN_NAME = "fqn"; //NOI18N
+    public static final String CLASS_NAME = "class"; //NOI18N
+    public static final String CASE_INSENSITIVE_CLASS_NAME = "class-ig"; //NOI18N
     // not indexed
-    static final String IN = "in"; //NOI18N
+    public static final String IN = "in"; //NOI18N
     /** Attributes: hh;nnnn where hh is a hex representing flags in IndexedClass, and nnnn is the documentation length */
-    static final String CLASS_ATTRS = "attrs"; //NOI18N
+    public static final String CLASS_ATTRS = "attrs"; //NOI18N
 
     // method
-    static final String METHOD_NAME = "method"; //NOI18N
+    public static final String METHOD_NAME = "method"; //NOI18N
 
     // constructor
-    static final String CONSTRUCTOR = "ctor"; //NOI18N
+    public static final String CONSTRUCTOR = "ctor"; //NOI18N
 
     // field
-    static final String FIELD_NAME = "field"; //NOI18N
+    public static final String FIELD_NAME = "field"; //NOI18N
 
 //    static final String URL = "url"; //NOI18N
     

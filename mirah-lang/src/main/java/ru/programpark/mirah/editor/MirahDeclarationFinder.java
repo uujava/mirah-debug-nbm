@@ -7,6 +7,7 @@
 package ru.programpark.mirah.editor;
 
 import ca.weblite.netbeans.mirah.LOG;
+import ca.weblite.netbeans.mirah.cc.AstSupport;
 import ca.weblite.netbeans.mirah.hyperlinks.HyperlinkElement;
 import ca.weblite.netbeans.mirah.lexer.MirahParser;
 import ca.weblite.netbeans.mirah.lexer.MirahTokenId;
@@ -19,21 +20,30 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.logging.Level;
 import java.util.regex.Pattern;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import mirah.impl.Tokens;
+import mirah.lang.ast.AnnotationList;
 import mirah.lang.ast.Call;
+import mirah.lang.ast.ClassDefinition;
 import mirah.lang.ast.Import;
+import mirah.lang.ast.ModifierList;
 import mirah.lang.ast.Node;
+import mirah.lang.ast.Script;
+import mirah.lang.ast.SimpleString;
+import mirah.lang.ast.TypeName;
+import mirah.lang.ast.TypeNameList;
 import org.mirah.typer.ResolvedType;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
@@ -103,6 +113,40 @@ public class MirahDeclarationFinder implements DeclarationFinder {
         return od != null ? od.getPrimaryFile() : null;
     }
     
+    public void findSuperClass( ClassDefinition classDef )
+    {
+        Class cl = classDef.getClass();
+        TypeName type = classDef.superclass();
+        Node script = classDef.findAncestor(Script.class);
+        if ( script != null )
+        {
+            LinkedList<String> imports = AstSupport.collectImports(script);
+        }
+    }
+
+    // Check name as imported class
+    public DeclarationLocation checkImportClasses( MirahParser.NBMirahParserResult parsed, SimpleString ss )
+    {
+        Node root = parsed.getRoot();
+        String name = ss.identifier();
+        if ( root != null )
+        {
+            LinkedList<String> imports = AstSupport.collectImports(root);
+            for( String imp : imports )
+            if ( imp.endsWith(name) && imp.charAt(imp.length() - name.length() - 1) == '.' )
+            {    
+                FileObject fo = parsed.getSnapshot().getSource().getFileObject();
+                BaseDocument doc = (BaseDocument)parsed.getSnapshot().getSource().getDocument(false);
+                try {
+                    return findType(imp, OffsetRange.NONE, doc, parsed, MirahIndex.get(fo));
+                } catch (BadLocationException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
+        return DeclarationLocation.NONE;
+    }
+    
     @Override
     public DeclarationLocation findDeclaration(ParserResult info, int caretOffset) 
     {
@@ -112,21 +156,32 @@ public class MirahDeclarationFinder implements DeclarationFinder {
         AstPath path = ASTUtils.getPath(info, (BaseDocument)doc, caretOffset);
 //        ResolvedType resolved = null;
         String fqName = null;
-        if ( path != null ) {
-            for (Iterator<Node> it = path.iterator(); it.hasNext();) 
+        DeclarationLocation location = DeclarationLocation.NONE;
+        if ( path == null ) return location;
+
+        for (Iterator<Node> it = path.iterator(); it.hasNext();) 
+        {
+            Node node = it.next();
+            if ( node instanceof ClassDefinition ) //test
             {
-                Node node = it.next();
+                findSuperClass((ClassDefinition)node);
+            }
+        }
+        for (Iterator<Node> it = path.iterator(); it.hasNext();) 
+        {
+            Node node = it.next();
+            if ( node instanceof AnnotationList ||
+                 node instanceof TypeNameList ||
+                 node instanceof ModifierList )
+                continue;
+
+            try {
                 if ( node instanceof Import )
                 {
                     fqName = ((Import)node).fullName().identifier();
-                    try {
-                        return findType(fqName, OffsetRange.NONE, (BaseDocument)doc, info, MirahIndex.get(fo));
-                    } catch (BadLocationException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
-//                  break;
+                    location = findType(fqName, OffsetRange.NONE, (BaseDocument)doc, info, MirahIndex.get(fo));
                 }
-                else if ( node instanceof Call ) // вызов метода?
+                else if ( node instanceof Call ) // РІС‹Р·РѕРІ РјРµС‚РѕРґР°?
                 {
                     Call call = (Call)node;
                     ResolvedType type = parsed.getResolvedType(node);
@@ -134,14 +189,15 @@ public class MirahDeclarationFinder implements DeclarationFinder {
                     fqName = type.name();         
                     String name = call.name().identifier();
                     String returnedType = null;
-                    
-//                    call.
-//                    
 //                    if ( call.typeref() != null )
 //                        returnedType = null; //call.typeref().name();
-                    return findMethod(name, fqName, returnedType, call, parsed, caretOffset, caretOffset, path, node,  MirahIndex.get(fo));
+                    location = findMethod(name, fqName, returnedType, call, parsed, caretOffset, caretOffset, path, node,  MirahIndex.get(fo));
                 }
-                else { // иначе перейти к классу
+                else if ( node instanceof SimpleString )
+                {
+                    location = checkImportClasses(parsed,(SimpleString)node);
+                }
+                else { // goto resolved type
                     ResolvedType type = parsed.getResolvedType(node);
                     if ( type == null ) continue;
                     fqName = type.name();
@@ -149,84 +205,15 @@ public class MirahDeclarationFinder implements DeclarationFinder {
                     {
                         fqName = null; continue;
                     }
-                    break;
+                    location = findType(fqName, OffsetRange.NONE, (BaseDocument)doc, info, MirahIndex.get(fo));
                 }
-            }
-        }
-
-//        if ( fqName == null ) 
-            return DeclarationLocation.NONE;
-        /*
-        HyperlinkElement he = helper.findByFqn(fqName.replace('.','/'));
-        if ( he != null )
-//        if ( he.getUrl() != null )
-        {
-            try {
-                fo = FileUtil.toFileObject(new File(he.getUrl()));
-                return new DeclarationLocation(fo,he.getOffset());
-            }
-            catch( Exception e)
-            {
-                LOG.exception(null, e);
-                e.printStackTrace();
-            }
-        }
-        else //if ( he.getFqn() != null )
-        {
-            try {
-                return findJavaClass(fqName.replace('/','.'),info);
             } catch (BadLocationException ex) {
                 Exceptions.printStackTrace(ex);
             }
+            if ( location != DeclarationLocation.NONE ) break;
         }
-
-        return DeclarationLocation.NONE;
-        */
-        /*
-        final int foffset = offset;
-        final Document doc = parseResult.getSnapshot().getSource().getDocument(false);
-        final FileObject fo = getFileObject(doc);
-        if (fo == null) return DeclarationLocation.NONE;
-        Project project = FileOwnerQuery.getOwner(fo);
-        if (project == null) return DeclarationLocation.NONE;
-        
-        final ParserResult info = pr;
-//        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-        final DeclarationLocation locs[] = new DeclarationLocation[1];
-        try {
-            ParserManager.parse(Collections.singleton (Source.create(doc)), new UserTask() {
-                @Override
-                public void run(ResultIterator resultIterator) throws Exception {
-                    Parser.Result res = resultIterator.getParserResult(0); // (offset);
-                    
-                    HyperlinkElement he = helper.analyze(doc, (ParserResult)res, foffset);
-                    if ( he != null )
-                    if ( he.getUrl() != null )
-                    {
-                        try {
-                            FileObject fo = FileUtil.toFileObject(new File(he.getUrl()));
-                            locs[0] = new DeclarationLocation(fo,he.getOffset());
-    //                       CALLER.open(f1, offset);
-                        }
-                        catch( Exception e)
-                        {
-                            LOG.exception(null, e);
-                            e.printStackTrace();
-                        }
-                    }
-                    else if ( he.getFqn() != null )
-                    {
-                        locs[0] = findJavaClass(he.getFqn(),info);
-                        if ( locs[0] == DeclarationLocation.NONE )
-                        locs[0] = findJavaClass(he.getFqn().replace('/','.'),info);
-                    }
-                }
-            });
-        } catch (ParseException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        return locs[0];
-        */
+//        if ( fqName == null ) 
+        return location;
     }
 
     @Override
@@ -583,6 +570,14 @@ public class MirahDeclarationFinder implements DeclarationFinder {
         DeclarationLocation l = getMethodDeclaration(info, name, methods,
              path, closest, index, astOffset, lexOffset);
 
+        if ( l == DeclarationLocation.NONE )
+        {
+            FileObject fo = info.getSnapshot().getSource().getFileObject();
+            if (fo != null) {
+                ClasspathInfo cpi = ClasspathInfo.create(fo);
+                l = findJavaMethod(cpi,possibleFqn, name);
+            }
+        }
         return l;
     }
 
@@ -857,8 +852,9 @@ public class MirahDeclarationFinder implements DeclarationFinder {
         }
         return DeclarationLocation.NONE;
     }
-/*
-    private static DeclarationLocation findJavaMethod(ClasspathInfo cpInfo, final String fqn, final MethodCallExpression methodCall) {
+
+    //todo - need check signature
+    private static DeclarationLocation findJavaMethod(ClasspathInfo cpInfo, final String fqn, final String methodName ) {
         final ElementHandle[] handles = new ElementHandle[1];
         final int[] offset = new int[1];
         JavaSource javaSource = JavaSource.create(cpInfo);
@@ -870,7 +866,10 @@ public class MirahDeclarationFinder implements DeclarationFinder {
                     TypeElement typeElement = ElementSearch.getClass(controller.getElements(), fqn);
                     if (typeElement != null) {
                         for (ExecutableElement javaMethod : ElementFilter.methodsIn(typeElement.getEnclosedElements())) {
-                            if (Methods.isSameMethod(javaMethod, methodCall)) {
+//                            if (Methods.isSameMethod(javaMethod, methodCall)) {
+                            Name n = javaMethod.getSimpleName();
+                            String simpleName = n.toString();
+                            if ( javaMethod.getSimpleName().equals(methodName)) {
                                 handles[0] = ElementHandle.create(javaMethod);
                             }
                         }
@@ -902,8 +901,6 @@ public class MirahDeclarationFinder implements DeclarationFinder {
         }
         return DeclarationLocation.NONE;
     }
-*/
-    
 }
 
 /*

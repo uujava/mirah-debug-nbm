@@ -277,7 +277,7 @@ public final class MirahIndex {
             kind = QuerySupport.Kind.PREFIX;
         }
 
-        search(field, name, kind, result);
+        search(field, name==null ? "*" : name, kind, result);
 
         // TODO Prune methods to fit my scheme - later make lucene index smarter about how to prune its index search
         final Set<IndexedMethod> methods = new HashSet<>();
@@ -302,6 +302,7 @@ public final class MirahIndex {
                     }
 
                     // Lucene returns some inexact matches, TODO investigate why this is necessary
+                    if ( name != null )
                     if ((kind == QuerySupport.Kind.PREFIX) && !signature.startsWith(name)) {
                         continue;
                     } else if (kind == QuerySupport.Kind.CASE_INSENSITIVE_PREFIX && !signature.regionMatches(true, 0, name, 0, name.length())) {

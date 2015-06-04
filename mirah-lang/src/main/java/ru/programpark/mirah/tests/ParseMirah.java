@@ -57,7 +57,7 @@ import ru.programpark.mirah.index.elements.IndexedClass;
  *
  * @author savushkin
  */
-public class MirahTestActions {
+public class ParseMirah {
 
 //    static String project_dir = "c:/mirah-debug/mirah-dsl-parent/jfx-controller-framework-test/";
 //    static String mirah_file_name = "c:\\mirah-debug\\mirah-dsl-parent\\jfx-controller-framework-test\\src\\main\\mirah\\ru\\programpark\\vector\\jfx\\controller\\framework\\BaseController.mirah";
@@ -99,6 +99,14 @@ public class MirahTestActions {
         
         return od != null ? od.getPrimaryFile() : null;
     }
+    public static void dumpErrors( MirahParser.NBMirahParserResult pres, final InputOutput io )
+    {
+        if ( pres.getErrors() == null ) return;
+        for( org.netbeans.modules.csl.api.Error err : pres.getErrors() )
+        {
+            io.getErr().println("ERROR: "+err.getDescription());
+        }
+    }
     
     public static void dumpResolvedTypes( MirahParser.NBMirahParserResult pres, final InputOutput io )
     {
@@ -129,8 +137,9 @@ public class MirahTestActions {
         FileObject fo = getFileObject(doc);
         if ( ! fo.getExt().equals("mirah") ) return;
         
-        final InputOutput io = IOProvider.getDefault().getIO(fo.getName()+".mirah", true);
+        final InputOutput io = IOProvider.getDefault().getIO(fo.getName()+".mirah", false);
         try {
+            io.select();
             io.getOut().println("CaretPosition = "+focused.getCaretPosition());
             dumpTokens(doc,io);
             ParserManager.parse(Collections.singleton (Source.create(doc)), new UserTask() {
@@ -143,6 +152,7 @@ public class MirahTestActions {
 //                       Node node = pres.getRoot();
                        dumpNodes(pres,io);
                        dumpResolvedTypes(pres,io);
+                       dumpErrors(pres,io);
                     }
                 }
             });

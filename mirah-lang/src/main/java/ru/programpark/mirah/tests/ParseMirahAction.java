@@ -22,21 +22,17 @@ import org.openide.util.Lookup;
  *
  * @author sdv
  */
-@ActionID(category = "File",id = "ru.programpark.mirah.tests.MirahTestAction")
+@ActionID(category = "File",id = "ru.programpark.mirah.tests.ParseMirahAction")
 @ActionRegistration(displayName = "Parse Mirah File")
-//@ActionReferences({@ActionReference(path = "Menu/File",position = 1200)
-//,@ActionReference(path = "Menu/Window",position = 1200)
-//,@ActionReference(path = "Menu/Edit",position = 1200)
-//})
 @ActionReference(path = "Menu/File",position = 1200)
-public final class MirahTestAction implements ActionListener {
+public final class ParseMirahAction implements ActionListener {
     
     @Override
     public void actionPerformed(ActionEvent e) {
         final Runnable action = new Runnable() {
             @Override
             public void run() {
-                MirahTestActions.dumpDocument();
+                ParseMirah.dumpDocument();
             }
         };
         action.run();
