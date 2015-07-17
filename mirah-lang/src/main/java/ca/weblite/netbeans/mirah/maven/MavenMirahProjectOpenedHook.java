@@ -86,8 +86,8 @@ public class MavenMirahProjectOpenedHook extends ProjectOpenedHook {
 
             @Override
             public void fileChanged(FileEvent fe) {
-                LOG.info(MavenMirahProjectOpenedHook.this,"fileChanged path="+fe.getFile().getPath());
                 if ( fe.getFile().getPath().endsWith(".java")){
+                    LOG.info(MavenMirahProjectOpenedHook.this, "file " + fe.getFile().getNameExt() + " changed in project " + project.getProjectDirectory().getNameExt());
                     //System.out.println("Adding to compile queue "+fe.getFile());
                     RecompileQueue.getProjectQueue(project).addChanged(fe.getFile());
                 }

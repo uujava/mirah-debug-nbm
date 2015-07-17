@@ -277,7 +277,7 @@ public final class MirahIndex {
             kind = QuerySupport.Kind.PREFIX;
         }
 
-        search(field, name==null ? "*" : name, kind, result);
+        search(field, name==null ? "" : name, kind, result);
 
         // TODO Prune methods to fit my scheme - later make lucene index smarter about how to prune its index search
         final Set<IndexedMethod> methods = new HashSet<>();

@@ -302,10 +302,10 @@ public final class CompletionContext {
         up to the root to figure out where we are. Some of the trails are:
 
         In main method:
-        Path(4)=[Script:ClassDefinition:MethodNode:ConstantExpression:]
+        Path(4)=[Script:ClassDefinition:MethodDefinition:ConstantExpression:]
 
         In closure, which sits in a method:
-        Path(7)=[Script:ClassDefinition:MethodNode:DeclarationExpression:DeclarationExpression:VariableExpression:ClosureExpression:]
+        Path(7)=[Script:ClassDefinition:MethodDefinition:DeclarationExpression:DeclarationExpression:VariableExpression:ClosureExpression:]
 
         In closure directly attached to class:
         Path(4)=[Script:ClassDefinition:PropertyNode:FieldDeclaration:]
@@ -669,13 +669,13 @@ public final class CompletionContext {
      * [Script:PropertyExpression:ConstantExpression:ExpressionStatement:PropertyExpression:ConstantExpression:]
      *
      * l.
-     * [Script:ClassDefinition:MethodNode:ExpressionStatement:VariableExpression:]
+     * [Script:ClassDefinition:MethodDefinition:ExpressionStatement:VariableExpression:]
      *
      * l.ab
-     * [Script:ClassDefinition:MethodNode:ExpressionStatement:PropertyExpression:ConstantExpression:]
+     * [Script:ClassDefinition:MethodDefinition:ExpressionStatement:PropertyExpression:ConstantExpression:]
      *
      * l.M
-     * [Script:ClassDefinition:MethodNode:ExpressionStatement:PropertyExpression:VariableExpression:ConstantExpression:]
+     * [Script:ClassDefinition:MethodDefinition:ExpressionStatement:PropertyExpression:VariableExpression:ConstantExpression:]
      *
      * @return a valid Node or null
      */

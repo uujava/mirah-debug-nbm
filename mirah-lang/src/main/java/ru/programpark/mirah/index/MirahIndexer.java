@@ -161,6 +161,8 @@ public class MirahIndexer extends EmbeddingIndexer {
             long indexerThisRunTime = indexerThisStopTime - indexerThisStartTime;
             indexerRunTime += indexerThisRunTime;
 
+            LOG.info(this, "Indexed File: " + parserResult.getSnapshot().getSource().getFileObject().getNameExt());
+            /*
             LOG.info(this, "---------------------------------------------------------------------------------");
             LOG.info(this,"Indexed File                : "+parserResult.getSnapshot().getSource().getFileObject().getPath());
             LOG.info(this,"Indexing time (ms)          : "+indexerThisRunTime);
@@ -169,6 +171,7 @@ public class MirahIndexer extends EmbeddingIndexer {
             LOG.info(this,"Avg indexing time/file (ms) : "+indexerRunTime/filesIndexed);
             LOG.info(this,"Time betw. 1st and Last idx : "+(indexerThisStopTime - indexerFirstRun));
             LOG.info(this, "---------------------------------------------------------------------------------");
+            */
         }
         catch( Exception e )
         {
@@ -314,7 +317,7 @@ public class MirahIndexer extends EmbeddingIndexer {
             prepareLocation(node, sb);
             if ( document != null ) document.addPair(METHOD_NAME, sb.toString(), true, true);
     //      LOG.info(MirahIndexer.class, "enterMethodDefinition name=" + node.name().identifier()+" file="+file.getName()+" node="+node);
-            System.out.println("METHOD_NAME="+sb.toString());
+//            System.out.println("METHOD_NAME="+sb.toString());
             return true;
     //            return enterMethodDefinition(node, arg);
         }
@@ -377,8 +380,8 @@ public class MirahIndexer extends EmbeddingIndexer {
                 document.addPair(CLASS_NAME, node.name().identifier(), true, true);
 //                document.addPair(URL, file.getPath()+":"+node.position().startLine(), true, true);
             }
-            System.out.println("FQN_NAME="+className);
-            System.out.println("CLASS_NAME="+node.name().identifier());
+//            System.out.println("FQN_NAME="+className);
+//            System.out.println("CLASS_NAME="+node.name().identifier());
     //        System.out.println("FQN_NAME="+className);
     //        prepareLocation(node, sb);
 
@@ -403,7 +406,7 @@ public class MirahIndexer extends EmbeddingIndexer {
     //          scopeStack.push(scope);
     //          }
     //          scopeStack.peek().addImport(node.fullName().identifier());
-            System.out.println("Entering import: "+node.fullName().identifier());
+//            System.out.println("Entering import: "+node.fullName().identifier());
             return super.enterImport(node, arg);
         }
     //    public boolean enterAnnotation(Annotation node, Object arg) {
@@ -458,7 +461,7 @@ public class MirahIndexer extends EmbeddingIndexer {
     //                sb.append(IndexedElement.flagToSecondChar(flags));
     //            }
 
-            System.out.println("CONSTRUCTOR="+sb.toString());
+//            System.out.println("CONSTRUCTOR="+sb.toString());
             if ( document != null ) document.addPair(CONSTRUCTOR, sb.toString(), true, true);
             return super.enterConstructorDefinition(node, arg);
         }
@@ -471,7 +474,7 @@ public class MirahIndexer extends EmbeddingIndexer {
                 sb.append(';');
                 prepareModifiers(node.modifiers(), sb);
                 prepareLocation(node, sb);
-                System.out.println("FIELD_ASSIGN="+sb.toString());
+//                System.out.println("FIELD_ASSIGN="+sb.toString());
 
                 // TODO - gather documentation on fields? naeh
                 if ( document != null ) document.addPair(FIELD_NAME, sb.toString(), true, true);
@@ -502,7 +505,7 @@ public class MirahIndexer extends EmbeddingIndexer {
     //                sb.append(';');
     //                sb.append(child.isProperty());
     //            }
-                System.out.println("FIELD_NAME="+sb.toString());
+//                System.out.println("FIELD_NAME="+sb.toString());
 
             // TODO - gather documentation on fields? naeh
             if ( document != null ) document.addPair(FIELD_NAME, sb.toString(), true, true);

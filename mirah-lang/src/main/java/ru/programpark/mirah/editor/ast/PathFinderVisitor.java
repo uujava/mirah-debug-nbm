@@ -68,7 +68,7 @@ public class PathFinderVisitor extends NodeScanner {
 
     // super visitor doesn't visit parameters
     @Override
-    protected void visitConstructorOrMethod(MethodNode node, boolean isConstructor) {
+    protected void visitConstructorOrMethod(MethodDefinition node, boolean isConstructor) {
         super.visitConstructorOrMethod(node, isConstructor);
         for (Parameter parameter : node.getParameters()) {
             isInside(parameter, line, column);
@@ -655,10 +655,10 @@ public class PathFinderVisitor extends NodeScanner {
                 call.setObjectExpression(var);
             }
         // FIXME http://jira.codehaus.org/browse/GROOVY-3472
-        } else if (node instanceof MethodNode || node instanceof ClosureExpression) {
+        } else if (node instanceof MethodDefinition || node instanceof ClosureExpression) {
             Statement code = null;
-            if (node instanceof MethodNode) {
-                code = ((MethodNode) node).getCode();
+            if (node instanceof MethodDefinition) {
+                code = ((MethodDefinition) node).getCode();
             } else {
                 code = ((ClosureExpression) node).getCode();
             }

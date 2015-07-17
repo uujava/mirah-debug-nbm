@@ -8,6 +8,7 @@ import mirah.lang.ast.FunctionalCall;
 import mirah.lang.ast.Hash;
 import mirah.lang.ast.HashEntry;
 import mirah.lang.ast.Identifier;
+import mirah.lang.ast.JavaDoc;
 import mirah.lang.ast.Node;
 import mirah.lang.ast.NodeList;
 import mirah.lang.ast.SimpleString;
@@ -113,5 +114,10 @@ public class TypeNodeVisitor extends AbstractNodeVisitor {
         } else {
             return type.identifier();
         }
+    }
+
+    @Override
+    public Object visitJavaDoc(JavaDoc jd, Object o) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

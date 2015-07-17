@@ -149,7 +149,7 @@ public class AstPath implements Iterable<Node> {
                     
                     //&& (path.size() == 1 || path.get(1) instanceof Expression || path.get(1) instanceof Statement)) {
 
-                MethodNode method = clazz.getMethod("run", new Parameter[]{}); // NOI18N
+                MethodDefinition method = clazz.getMethod("run", new Parameter[]{}); // NOI18N
                 if (method != null) {
 //                    if (method.getCode() != null && (path.size() <= 1 || method.getCode() != path.get(1))) {
 //                        path.add(1, method.getCode());
@@ -276,7 +276,7 @@ public class AstPath implements Iterable<Node> {
 //            pathFinder.visitClass(classNode);
 //        }
 //
-//        for (MethodNode methodNode : script.getMethods()) {
+//        for (MethodDefinition methodNode : script.getMethods()) {
 //            pathFinder.visitMethod(methodNode);
 //        }
 

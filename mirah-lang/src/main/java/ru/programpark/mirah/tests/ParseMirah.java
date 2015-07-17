@@ -62,6 +62,18 @@ public class ParseMirah {
 //    static String project_dir = "c:/mirah-debug/mirah-dsl-parent/jfx-controller-framework-test/";
 //    static String mirah_file_name = "c:\\mirah-debug\\mirah-dsl-parent\\jfx-controller-framework-test\\src\\main\\mirah\\ru\\programpark\\vector\\jfx\\controller\\framework\\BaseController.mirah";
     
+    private static int getLevels( Node node )
+    {
+        int levels = 0;
+        Node parent = node.parent();
+        while( parent != null )
+        {
+            parent = parent.parent();
+            levels++;
+        }
+        return levels;
+    }
+    
     private static void dumpNodes( final MirahParser.NBMirahParserResult pres, final InputOutput io )
     {
         Node root = pres.getRoot();
@@ -69,10 +81,14 @@ public class ParseMirah {
           @Override
             public boolean enterDefault(Node node, Object arg) {
                 ResolvedType type = pres.getResolvedType(node);
+                int levels = getLevels(node);
+                StringBuffer sb = new StringBuffer();
+                for( int i = 0 ; i < levels ; i++ ) sb.append('.');
+                String prefix = sb.toString();
                 if ( node != null && node.position() != null )
-                    io.getOut().println(":"+node+"["+node.position().startChar()+","+node.position().endChar()+"] "+node.parent()+" type="+type);
+                    io.getOut().println(prefix + " "+node+"["+node.position().startChar()+","+node.position().endChar()+"] "+node.parent()+" type="+type);
                 else
-                    io.getOut().println(":"+node+" pos = null "+node.parent());
+                    io.getOut().println(prefix + " "+node+" pos = null "+node.parent());
                 return super.enterDefault(node, arg);
             }
         }, null);

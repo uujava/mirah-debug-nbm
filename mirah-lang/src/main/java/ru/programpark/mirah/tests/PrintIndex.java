@@ -55,7 +55,7 @@ public class PrintIndex {
                 for( IndexedMethod me : methods )
                 {
                     String name = me.getName();
-                    io.getOut().println("method: "+me.getSignature());
+                    io.getOut().println("... "+me.getSignature());
                 }
             }
 //            Set<IndexedMethod> methods = index.getMethods(null, null, QuerySupport.Kind.PREFIX);
