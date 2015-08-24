@@ -176,6 +176,21 @@
         </dependency>
         <dependency>
             <groupId>org.netbeans.api</groupId>
+            <artifactId>org-netbeans-spi-quicksearch</artifactId>
+            <version>${netbeans.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-netbeans-api-search</artifactId>
+            <version>${netbeans.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.netbeans.modules</groupId>
+            <artifactId>org-netbeans-modules-jumpto</artifactId>
+            <version>${netbeans.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.netbeans.api</groupId>
             <artifactId>org-openide-util-lookup</artifactId>
             <version>${netbeans.version}</version>
         </dependency>
@@ -409,6 +424,11 @@
                              <type>spec</type> 
                              <explicitValue>org.netbeans.modules.editor.lib2/1 > 1</explicitValue> 
                          </dependency>
+                        <dependency> 
+                            <id>org.netbeans.api:org-netbeans-modules-jumpto</id> 
+                            <type>impl</type> 
+                            <explicitValue>org-netbeans-modules-jumpto/1 = 1.42</explicitValue>
+                        </dependency>
                     </moduleDependencies>
                     <publicPackages>
                         <publicPackage>ca.weblite.netbeans.mirah.lexer</publicPackage>

@@ -23,6 +23,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import mirah.lang.ast.Arguments;
 import mirah.lang.ast.ClassDefinition;
+import mirah.lang.ast.ClosureDefinition;
 import mirah.lang.ast.ConstructorDefinition;
 import mirah.lang.ast.FieldAssign;
 import mirah.lang.ast.FieldDeclaration;
@@ -317,7 +318,7 @@ public class MirahIndexer extends EmbeddingIndexer {
             prepareLocation(node, sb);
             if ( document != null ) document.addPair(METHOD_NAME, sb.toString(), true, true);
     //      LOG.info(MirahIndexer.class, "enterMethodDefinition name=" + node.name().identifier()+" file="+file.getName()+" node="+node);
-//            System.out.println("METHOD_NAME="+sb.toString());
+//            LOG.info(MirahIndexer.class, "METHOD_NAME="+sb.toString());
             return true;
     //            return enterMethodDefinition(node, arg);
         }
@@ -349,7 +350,13 @@ public class MirahIndexer extends EmbeddingIndexer {
         {
             return enterClassDefinition(node, arg);
         }
-
+        /*
+        @Override
+        public boolean enterClosureDefinition(ClosureDefinition node, Object arg ) 
+        {
+            return enterClassDefinition(node, arg);
+        }
+        */
         @Override
         public boolean enterClassDefinition( ClassDefinition node, Object arg ) 
         {
