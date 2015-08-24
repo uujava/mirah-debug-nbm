@@ -140,11 +140,13 @@ public class SourceQuery implements List<Node>{
     public String findClassName( int offset )
     {
         SourceQuery queryClass = findClass(offset);
+        // выбираю последнее значение из списка - возможно это вложенное замыкание
         if (queryClass != null && queryClass.size() > 0) {
-            if (queryClass.get(0) instanceof Named) {
-                return ((Named) queryClass.get(0)).name().identifier();
+            int i = queryClass.size() - 1;
+            if (queryClass.get(i) instanceof Named) {
+                return ((Named) queryClass.get(i)).name().identifier();
             } else {
-                return queryClass.get(0).toString();
+                return queryClass.get(i).toString();
             }
         }
         return null;
@@ -450,7 +452,17 @@ public class SourceQuery implements List<Node>{
             }
             return super.enterClassDefinition(node, arg); //To change body of generated methods, choose Tools | Templates.
         }
-
+        // `Добавлена обработка замыканий
+        @Override
+        public boolean enterClosureDefinition(ClosureDefinition node, Object arg) {
+            
+            if ( node.position() != null 
+                    && node.position().startChar() <= offset
+                    && node.position().endChar() > offset ){
+                found.add(node);
+            }
+            return super.enterClosureDefinition(node, arg); //To change body of generated methods, choose Tools | Templates.
+        }
         
     }
     

@@ -238,7 +238,7 @@ public class ToggleBreakpointActionProvider extends ActionsProviderSupport
         }
         return Source.create(fo);
     }
-
+    //todo сделать через AstPath
     public String[] getClassInfo(String url, final int lineNumber) {
         try {
             //LOG.info("getClassInfo url = " + url);

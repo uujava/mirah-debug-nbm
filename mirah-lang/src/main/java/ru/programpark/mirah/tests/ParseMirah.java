@@ -25,6 +25,8 @@ import java.util.Set;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import mirah.lang.ast.ClosureDefinition;
+import mirah.lang.ast.MethodDefinition;
 import mirah.lang.ast.Node;
 import mirah.lang.ast.NodeScanner;
 import org.mirah.typer.ResolvedType;
@@ -77,6 +79,15 @@ public class ParseMirah {
     private static void dumpNodes( final MirahParser.NBMirahParserResult pres, final InputOutput io )
     {
         Node root = pres.getRoot();
+        if ( root == null ) return;
+        io.getOut().println();
+        io.getOut().println();
+        io.getOut().println("------------- DUMP NODES ---------------------");
+        io.getOut().println("------------- DUMP NODES ---------------------");
+        io.getOut().println("------------- DUMP NODES ---------------------");
+        io.getOut().println("------------- DUMP NODES ---------------------");
+        io.getOut().println();
+        io.getOut().println();
         root.accept(new NodeScanner(){
           @Override
             public boolean enterDefault(Node node, Object arg) {
@@ -89,6 +100,28 @@ public class ParseMirah {
                     io.getOut().println(prefix + " "+node+"["+node.position().startChar()+","+node.position().endChar()+"] "+node.parent()+" type="+type);
                 else
                     io.getOut().println(prefix + " "+node+" pos = null "+node.parent());
+                
+                if ( node instanceof ClosureDefinition )
+                {
+                    ClosureDefinition closure = (ClosureDefinition)node;
+                    io.getOut().println(prefix + "???? Closure: " + node);
+                    for( Object n : closure.body() )
+                    {
+                        if ( n instanceof Node ) enterDefault((Node)n,arg);
+                    }
+                    io.getOut().println(prefix + "???? END OF Closure: " + node);
+                }
+                if ( node instanceof MethodDefinition )
+                {
+                    MethodDefinition closure = (MethodDefinition)node;
+                    io.getOut().println(prefix + "???? MethodDefinition: " + node);
+                    for( Object n : closure.body() )
+                    {
+                        if ( n instanceof Node ) enterDefault((Node)n,arg);
+                    }
+                    io.getOut().println(prefix + "???? END OF MethodDefinition: " + node);
+                }
+                
                 return super.enterDefault(node, arg);
             }
         }, null);
@@ -118,6 +151,9 @@ public class ParseMirah {
     public static void dumpErrors( MirahParser.NBMirahParserResult pres, final InputOutput io )
     {
         if ( pres.getErrors() == null ) return;
+        io.getOut().println();
+        io.getOut().println();
+        io.getOut().println("------------- DUMP ERRORS ---------------------");
         for( org.netbeans.modules.csl.api.Error err : pres.getErrors() )
         {
             io.getErr().println("ERROR: "+err.getDescription());
@@ -134,11 +170,21 @@ public class ParseMirah {
 //                String s = rt.name();
 //                int t = 0;
 //            }
+            
+            io.getOut().println();
+            io.getOut().println();
+            io.getOut().println();
+            io.getOut().println();
+            io.getOut().println();
+            io.getOut().println("------------- RESOLVED TYPES ---------------------");
+            io.getOut().println("------------- RESOLVED TYPES ---------------------");
+            io.getOut().println("------------- RESOLVED TYPES ---------------------");
+            io.getOut().println("------------- RESOLVED TYPES ---------------------");
             for( Node key : pres.getResolvedTypes().keySet() )
             {
                 ResolvedType tp = pres.getResolvedTypes().get(key);
                 int t = 0;
-                io.getOut().println(">"+key+" -> "+tp);
+                io.getOut().println("TYPE: "+key+"("+key.getClass()+") -> "+tp + "(" + tp.getClass() + ")");
             }
         }
     }

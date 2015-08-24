@@ -16,7 +16,7 @@ import org.netbeans.editor.BaseDocument;
 import org.openide.util.Exceptions;
 
 /**
- * This represents a path in a Groovy AST.
+ * This represents a path in a Mirah AST.
  *
  * @author Tor Norbye
  * @author Martin Adamek
