@@ -231,9 +231,15 @@ public final class MirahIndex {
         final Set<IndexResult> indexResult = new HashSet<>();
         final Set<IndexedMethod> result = new HashSet<>();
 
-        search(MirahIndexer.CONSTRUCTOR, className, QuerySupport.Kind.PREFIX, indexResult);
-
+//        search(MirahIndexer.CONSTRUCTOR, className, QuerySupport.Kind.PREFIX, indexResult);
+        search(MirahIndexer.CONSTRUCTOR, "", QuerySupport.Kind.PREFIX, indexResult);
         for (IndexResult map : indexResult) {
+            if (className != null) {
+                String fqn = map.getValue(MirahIndexer.FQN_NAME);
+                if (!(className.equals(fqn))) {
+                    continue;
+                }
+            }
             String[] constructors = map.getValues(MirahIndexer.CONSTRUCTOR);
 
             for (String constructor : constructors) {
@@ -247,11 +253,12 @@ public final class MirahIndex {
 //                    }
 //                }
                 String[] tokens = constructor.split(";");
+                if ( tokens.length == 0 ) continue;
                 String constructorSignature = tokens[0];
-                String modifiers = tokens[1];
-                int offset = Integer.parseInt(tokens[2]);
+                String modifiers = tokens.length > 1 ? tokens[1] : "";
+                int offset = tokens.length > 2 ? Integer.parseInt(tokens[2]) : 0;
                 List<MethodElement.MethodParameter> constructorParams = getMethodParameter(constructorSignature);
-                result.add(new IndexedMethod(map, className, className, "void", constructorParams, "", 0, offset));
+                result.add(new IndexedMethod(map, className, "new", "void", constructorParams, "", 0, offset));
             }
         }
 
@@ -573,7 +580,10 @@ public final class MirahIndex {
             flags = IndexedElement.stringToFlag(attrs, 0);
         }
 
-        IndexedClass c = IndexedClass.create(simpleName, fqn, map, attrs, flags);
+        String lineStr = map.getValue(MirahIndexer.CLASS_LINE);
+        int line = lineStr != null ? Integer.parseInt(lineStr) : 0;
+        
+        IndexedClass c = IndexedClass.create(simpleName, fqn, map, attrs, flags, line);
 
         return c;
     }
@@ -663,6 +673,7 @@ public final class MirahIndex {
 
         List<MethodElement.MethodParameter> parameters = new ArrayList<>();
         for (String paramType : args) {
+			if ( paramType.length() == 0 ) continue;
             int index = paramType.indexOf(':');
             String type = index == -1 ? paramType : paramType.substring(index+1);
             parameters.add(new MethodElement.MethodParameter(type, MirahUtils.stripPackage(type)));

@@ -45,20 +45,24 @@ public final class IndexedMethod extends IndexedElement implements MethodElement
     @Override
     public String getSignature() {
         StringBuilder sb = new StringBuilder();
-        sb.append(in);
-        sb.append("#"); // NOI18N
+//        sb.append(in);
+//        sb.append("#"); // NOI18N
         sb.append(name);
-
+        sb.append("("); // NOI18N
         if (!parameters.isEmpty()) {
-            sb.append("("); // NOI18N
             for (MethodParameter param : parameters) {
                 sb.append(param.getFqnType());
                 sb.append(",");
             }
             sb.deleteCharAt(sb.length() - 1);
-            sb.append(")"); // NOI18N
         }
-
+        sb.append(")"); // NOI18N
+        if ( this.returnType != null )
+        {
+            sb.append(":");
+            sb.append(returnType);
+        }
+        sb.append("["+offset+"]");
         return sb.toString();
     }
 

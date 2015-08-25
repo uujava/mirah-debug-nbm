@@ -181,7 +181,7 @@ public class MirahDeclarationFinder implements DeclarationFinder {
                     fqName = ((Import)node).fullName().identifier();
                     location = findType(fqName, OffsetRange.NONE, (BaseDocument)doc, info, MirahIndex.get(fo));
                 }
-                else if ( node instanceof Call ) // РІС‹Р·РѕРІ РјРµС‚РѕРґР°?
+                else if ( node instanceof Call ) // Вызов метода?
                 {
                     Call call = (Call)node;
                     ResolvedType type = parsed.getResolvedType(node);
@@ -396,7 +396,7 @@ public class MirahDeclarationFinder implements DeclarationFinder {
             if ( ! classes.isEmpty() )
             {
                 IndexedClass indexedClass = classes.iterator().next();
-                return new DeclarationLocation(indexedClass.getFileObject(), indexedClass.getOffset());
+                return new DeclarationLocation(indexedClass.getFileObject(), indexedClass.getLine());
             }
 /*            
             for (IndexedClass indexedClass : classes) {

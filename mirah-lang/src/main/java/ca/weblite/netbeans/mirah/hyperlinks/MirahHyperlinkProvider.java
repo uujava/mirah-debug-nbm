@@ -73,8 +73,6 @@ public class MirahHyperlinkProvider implements HyperlinkProviderExt  {
             return null;
         }
     }
-    static String project_dir = "c:\\mirah-debug\\mavenproject1";
-
     @Override
     public void performClickAction(Document doc, int offset, HyperlinkType type) {
         

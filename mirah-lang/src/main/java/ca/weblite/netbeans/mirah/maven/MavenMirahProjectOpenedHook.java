@@ -107,7 +107,7 @@ public class MavenMirahProjectOpenedHook extends ProjectOpenedHook {
         LOG.info(this,"Setting project type in prefs to maven");
 
         //svd - force maven project indexing
-        IndexingManager.getDefault().refreshIndex(project.getProjectDirectory().toURL(),null,false);
+//        IndexingManager.getDefault().refreshIndex(project.getProjectDirectory().toURL(),null,false);
         
     }
 

@@ -24,10 +24,8 @@ import org.openide.util.Lookup;
  */
 @ActionID(category = "File",id = "ru.programpark.mirah.tests.PrintIndexAction")
 @ActionRegistration(displayName = "Print Index")
-@ActionReference(path = "Menu/File",position = 1200)
+@ActionReference(path = "Menu/File",position = 1230)
 public final class PrintIndexAction implements ActionListener {
-    
-//    static String project_dir = "c:\\mirah-debug\\mavenproject1";
     
     @Override
     public void actionPerformed(ActionEvent e) {

@@ -28,10 +28,8 @@ import org.openide.util.Lookup;
 //,@ActionReference(path = "Menu/Window",position = 1200)
 //,@ActionReference(path = "Menu/Edit",position = 1200)
 //})
-@ActionReference(path = "Menu/File",position = 1200)
+@ActionReference(path = "Menu/File",position = 1220)
 public final class PrintAstAction implements ActionListener {
-    
-//    static String project_dir = "c:\\mirah-debug\\mavenproject1";
     
     @Override
     public void actionPerformed(ActionEvent e) {

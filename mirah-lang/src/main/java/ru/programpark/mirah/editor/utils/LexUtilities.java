@@ -148,8 +148,6 @@ public final class LexUtilities {
         }
     }
 
-    static String mirah_file_name = "c:\\mirah-debug\\mavenproject1\\src\\main\\java\\ru\\pp\\MirahClass22.mirah";
-    
     /** Find the Mirah token sequence (in case it's embedded in something else at the top level. */
     @SuppressWarnings("unchecked")
     public static TokenSequence<MirahTokenId> getMirahTokenSequence(Document doc, int offset) {

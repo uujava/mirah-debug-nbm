@@ -24,7 +24,7 @@ import org.openide.util.Lookup;
  */
 @ActionID(category = "File",id = "ru.programpark.mirah.tests.ParseMirahAction")
 @ActionRegistration(displayName = "Parse Mirah File")
-@ActionReference(path = "Menu/File",position = 1200)
+@ActionReference(path = "Menu/File",position = 1210)
 public final class ParseMirahAction implements ActionListener {
     
     @Override

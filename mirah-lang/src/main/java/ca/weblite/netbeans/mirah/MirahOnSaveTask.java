@@ -59,7 +59,7 @@ public class MirahOnSaveTask implements OnSaveTask {
         Vector<URL> urls = new Vector<URL>();
         urls.add(fo.toURL());
         IndexingManager.getDefault().refreshIndex(project.getProjectDirectory().toURL(),urls,false);
-//        LOG.info(this, "------------------ end of save task --------------------");        
+        LOG.info(this, "------------------ end of save task --------------------");        
     }
 
     @Override

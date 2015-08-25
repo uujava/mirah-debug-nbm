@@ -73,6 +73,7 @@ public class MirahIndexer extends EmbeddingIndexer {
     // field
     public static final String FIELD_NAME = "field"; //NOI18N
 
+    public static final String CLASS_LINE = "line"; //NOI18N
 //    static final String URL = "url"; //NOI18N
     
     /** Attributes: "i" -> private, "o" -> protected, ", "s" - static/notinstance, "d" - documented */
@@ -88,7 +89,7 @@ public class MirahIndexer extends EmbeddingIndexer {
 
     
     private ClassNode lastFoundClass = null;
-
+    
 /*    
     static {
             OpenProjects.getDefault().addPropertyChangeListener(
@@ -279,6 +280,8 @@ public class MirahIndexer extends EmbeddingIndexer {
         private IndexDocument document = null;
         private String packageName = null;
         private ClassNode lastFoundClass = null;
+        private String className = null;
+
 
         private HashMap fields = new HashMap();
 
@@ -300,7 +303,7 @@ public class MirahIndexer extends EmbeddingIndexer {
             node.accept(this, null);
         }
 
-        // в индекс записывается строка #{method_name}(#{arguments});#{returned_value};#{modifiers};#{line_number}
+        // В индекс записывается строка #{method_name}(#{arguments});#{returned_value};#{modifiers};#{line_number}
         // поиск возможен только по префиксу (QuerySupport.Kind.PREFIX), а не точный QuerySupport.Kind.EXACT
         @Override
         public boolean enterMethodDefinition( MethodDefinition node, Object arg )
@@ -309,16 +312,25 @@ public class MirahIndexer extends EmbeddingIndexer {
             sb.append(node.name().identifier());
     //            sb.append(';').append(org.netbeans.modules.groovy.editor.java.Utilities.translateClassLoaderTypeName(
     //                    childNode.getReturnType().getName()));
+            
+            if ( node.name().identifier() == "call" )
+            {
+                int _t = 0;
+            }
             prepareArguments(node.arguments(), sb);
             sb.append(';');
             if ( node.type() != null && node.type().typeref() != null ) sb.append(node.type().typeref().name());
             sb.append(';');
             prepareModifiers(node.modifiers(), sb);
+            
             sb.append(';');
             prepareLocation(node, sb);
             if ( document != null ) document.addPair(METHOD_NAME, sb.toString(), true, true);
-    //      LOG.info(MirahIndexer.class, "enterMethodDefinition name=" + node.name().identifier()+" file="+file.getName()+" node="+node);
-//            LOG.info(MirahIndexer.class, "METHOD_NAME="+sb.toString());
+            
+//      LOG.info(MirahIndexer.class, "enterMethodDefinition name=" + node.name().identifier()+" file="+file.getName()+" node="+node);
+            LOG.info(MirahIndexer.class, ""+className+": METHOD_NAME="+sb.toString());
+//            if ( node.type() != null && node.type().typeref() != null )
+//            LOG.info(MirahIndexer.class, "return="+node.type().typeref().name()+" array="+node.type().typeref().isArray()+" static="+node.type().typeref().isStatic());
             return true;
     //            return enterMethodDefinition(node, arg);
         }
@@ -350,20 +362,20 @@ public class MirahIndexer extends EmbeddingIndexer {
         {
             return enterClassDefinition(node, arg);
         }
-        /*
+       
         @Override
         public boolean enterClosureDefinition(ClosureDefinition node, Object arg ) 
         {
             return enterClassDefinition(node, arg);
         }
-        */
+        
         @Override
         public boolean enterClassDefinition( ClassDefinition node, Object arg ) 
         {
             if (lastFoundClass != null) {
                 return true;
             }
-            String className = "";
+//            String className = "";
             if ( packageName != null ) className = packageName + ".";
             className += node.name().identifier();
 
@@ -385,6 +397,7 @@ public class MirahIndexer extends EmbeddingIndexer {
                 documents.add(document);
                 document.addPair(FQN_NAME, className, true, true);
                 document.addPair(CLASS_NAME, node.name().identifier(), true, true);
+                document.addPair(CLASS_LINE, ""+node.position().startLine(), true, true);
 //                document.addPair(URL, file.getPath()+":"+node.position().startLine(), true, true);
             }
 //            System.out.println("FQN_NAME="+className);
@@ -427,7 +440,7 @@ public class MirahIndexer extends EmbeddingIndexer {
     //    public boolean enterBlockArgument(BlockArgument node, Object arg) {
     //    public boolean enterBlockPass(BlockPass node, Object arg) {
     //    public boolean enterClosureDefinition(ClosureDefinition node, Object arg) {
-        // в индекс записывается строка #{method_name}(#{arguments});#{modifiers};#{line_number}
+        // into index saved string: #{method_name}(#{arguments});#{modifiers};#{line_number}
         @Override
         public boolean enterConstructorDefinition(ConstructorDefinition node, Object arg) 
         {
@@ -470,6 +483,9 @@ public class MirahIndexer extends EmbeddingIndexer {
 
 //            System.out.println("CONSTRUCTOR="+sb.toString());
             if ( document != null ) document.addPair(CONSTRUCTOR, sb.toString(), true, true);
+
+            LOG.info(MirahIndexer.class, "" + className + ": CONSTRUCTOR=" + sb.toString());
+
             return super.enterConstructorDefinition(node, arg);
         }
     //    public boolean enterFieldAccess(FieldAccess node, Object arg) {
