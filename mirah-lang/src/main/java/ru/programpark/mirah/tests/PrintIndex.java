@@ -11,7 +11,9 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
+import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -36,11 +38,11 @@ import static ru.programpark.mirah.tests.ParseMirah.getFileObject;
  */
 final class IndexHyperlink implements OutputListener {
 
-    private final int line;
+    private final int offset;
     private final FileObject fileObj;
 
-    public IndexHyperlink(FileObject fileObj, int line ) {
-        this.line = line;
+    public IndexHyperlink(FileObject fileObj, int offset ) {
+        this.offset = offset;
         this.fileObj = fileObj;
     }
 
@@ -63,16 +65,36 @@ final class IndexHyperlink implements OutputListener {
         Line xline = null;
         try {
             DataObject dobj = DataObject.find(fileObj);
+            
+            EditorCookie cookie = dobj.getCookie(EditorCookie.class);
+            Document doc = cookie.openDocument();
+            xline = NbEditorUtilities.getLine(doc,590,false);
+            if (cookie == null) {
+                throw new java.io.FileNotFoundException();
+            }
+            
+            /*
             LineCookie cookie = dobj.getCookie(LineCookie.class);
             if (cookie == null) {
                 throw new java.io.FileNotFoundException();
             } else {
                 xline = cookie.getLineSet().getCurrent(line-1);
             }
+                    */
         } catch (Exception e) {
             e.printStackTrace();
         }
         if ( xline != null ) xline.show(Line.SHOW_GOTO);
+//        Line nbLine = NbEditorUtilities.getLine(
+//                editorPane.getDocument,
+//                documentOffsetForLine,
+//                false);
+//// display to the output window
+//        ow.println(theLineNumber.toString, new OutList(nbLine, offset));
+
+        
+        
+        
     }
 }
 
@@ -103,7 +125,7 @@ public class PrintIndex {
             for (IndexedClass cls : classes) {
                 String fqName = cls.getFqn();
                 String signature = cls.getSignature();
-                io.getOut().println("class: " + signature, new IndexHyperlink(cls.getFileObject(), cls.getLine()));
+                io.getOut().println("class: " + signature, new IndexHyperlink(cls.getFileObject(), cls.getOffset()));
 //                io.getOut().println("class: "+signature+" "+cls.getFileObject().getPath()+"["+cls.getLine()+"]");
                 Set<IndexedMethod> constructors = index.getConstructors(fqName);
                 for (IndexedMethod con : constructors) {

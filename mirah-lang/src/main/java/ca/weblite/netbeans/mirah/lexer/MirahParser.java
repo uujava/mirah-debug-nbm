@@ -132,6 +132,8 @@ public class MirahParser extends Parser {
     public void parse(Snapshot snapshot, Task task, SourceModificationEvent sme)
             throws ParseException {
 
+        long start = System.currentTimeMillis();
+        
         String oldContent = lastContent.get(
                 snapshot.getSource().getDocument(false)
         );
@@ -171,7 +173,7 @@ public class MirahParser extends Parser {
             }
             
         }
-        LOG.info(null, "----- Parsing End  : " + snapshot.getSource().getFileObject().getNameExt() + " -----");
+        LOG.info(null, "----- Parsing End  : " + snapshot.getSource().getFileObject().getNameExt() + " Elapsed: "+(System.currentTimeMillis()-start)+" msec -----");
     }
 
     public void reparse(Snapshot snapshot) throws ParseException {

@@ -10,6 +10,7 @@ import mirah.impl.Tokens;
 import mirah.lang.ast.ClassDefinition;
 import mirah.lang.ast.MethodDefinition;
 import mirah.lang.ast.Node;
+import mirah.lang.ast.NodeScanner;
 import mirah.lang.ast.Script;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.lexer.Token;
@@ -809,4 +810,33 @@ public class ASTUtils {
             return true;
         }
     }
+    
+    public static Node findLeaf( ParserResult parseResult, BaseDocument doc, final int offset) {
+
+        Node root = ASTUtils.getRoot(parseResult);
+        if (root == null) return null;
+
+        final Node leaf[] = new Node[1];
+        leaf[0] = null;
+        root.accept(new NodeScanner() {
+            @Override
+            public boolean enterDefault(Node node, Object arg) {
+                if ( node != null && node.position() != null 
+                    && offset >= node.position().startChar()
+                    && offset < node.position().endChar())
+                {
+                    if (leaf[0] == null
+                    || node.position().endChar() - node.position().startChar()
+                    < leaf[0].position().endChar() - leaf[0].position().startChar())
+                    leaf[0] = node;
+                }
+                return super.enterDefault(node, arg); //To change body of generated methods, choose Tools | Templates.
+            }
+
+        }, null);
+
+        return leaf[0];
+    }
+
+    
 }

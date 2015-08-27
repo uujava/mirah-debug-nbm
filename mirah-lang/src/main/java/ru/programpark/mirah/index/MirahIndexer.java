@@ -163,7 +163,7 @@ public class MirahIndexer extends EmbeddingIndexer {
             long indexerThisRunTime = indexerThisStopTime - indexerThisStartTime;
             indexerRunTime += indexerThisRunTime;
 
-            LOG.info(this, "Indexed File: " + parserResult.getSnapshot().getSource().getFileObject().getNameExt());
+            LOG.info(this, "Indexed File: " + parserResult.getSnapshot().getSource().getFileObject().getNameExt()+" Time = "+indexerThisRunTime+" ms");
             /*
             LOG.info(this, "---------------------------------------------------------------------------------");
             LOG.info(this,"Indexed File                : "+parserResult.getSnapshot().getSource().getFileObject().getPath());
@@ -397,7 +397,7 @@ public class MirahIndexer extends EmbeddingIndexer {
                 documents.add(document);
                 document.addPair(FQN_NAME, className, true, true);
                 document.addPair(CLASS_NAME, node.name().identifier(), true, true);
-                document.addPair(CLASS_LINE, ""+node.position().startLine(), true, true);
+                document.addPair(CLASS_LINE, ""+node.position().startChar(), true, true);
 //                document.addPair(URL, file.getPath()+":"+node.position().startLine(), true, true);
             }
 //            System.out.println("FQN_NAME="+className);
@@ -554,8 +554,7 @@ public class MirahIndexer extends EmbeddingIndexer {
         {
     //        sb.append(file.getPath());
     //        sb.append(':');
-            if ( node.position() != null )
-            sb.append(node.position().startLine());
+            if ( node.position() != null ) sb.append(node.position().startChar());
 //            sb.append(';');
         }
 

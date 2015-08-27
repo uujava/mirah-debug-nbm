@@ -38,12 +38,15 @@ import mirah.lang.ast.AnnotationList;
 import mirah.lang.ast.Call;
 import mirah.lang.ast.ClassDefinition;
 import mirah.lang.ast.Import;
+import mirah.lang.ast.MethodDefinition;
 import mirah.lang.ast.ModifierList;
 import mirah.lang.ast.Node;
+import mirah.lang.ast.NodeScanner;
 import mirah.lang.ast.Script;
 import mirah.lang.ast.SimpleString;
 import mirah.lang.ast.TypeName;
 import mirah.lang.ast.TypeNameList;
+import mirah.lang.ast.TypeRefImpl;
 import org.mirah.typer.ResolvedType;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
@@ -109,8 +112,21 @@ public class MirahDeclarationFinder implements DeclarationFinder {
     
     public static FileObject getFileObject(Document doc) {
         DataObject od = (DataObject) doc.getProperty(Document.StreamDescriptionProperty);
-        
         return od != null ? od.getPrimaryFile() : null;
+    }
+    
+    private String getCurrentPackage( Node root ) {
+        if (root == null) return null;
+        
+        final String[] packages = new String[1];
+        root.accept(new NodeScanner() {
+//            @Override
+            public boolean enterPackage(Package node, Object arg) {
+                packages[0] = node.getName();
+                return false;
+            }
+        }, null);
+        return packages[0];
     }
     
     public void findSuperClass( ClassDefinition classDef )
@@ -137,14 +153,64 @@ public class MirahDeclarationFinder implements DeclarationFinder {
             {    
                 FileObject fo = parsed.getSnapshot().getSource().getFileObject();
                 BaseDocument doc = (BaseDocument)parsed.getSnapshot().getSource().getDocument(false);
-                try {
-                    return findType(imp, OffsetRange.NONE, doc, parsed, MirahIndex.get(fo));
-                } catch (BadLocationException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
+                return findType(imp, OffsetRange.NONE, doc, parsed, MirahIndex.get(fo));
             }
         }
         return DeclarationLocation.NONE;
+    }
+   
+    private DeclarationLocation processCall( Call call, ClassDefinition classDef, MirahParser.NBMirahParserResult parsed, int caretOffset, AstPath path, MirahIndex index ) // Р’С‹Р·РѕРІ РјРµС‚РѕРґР°?
+    {
+        ResolvedType type = parsed.getResolvedType(call);
+        String name = call.name().identifier();
+        String returnedType = type.name();
+        String className = classDef.name().identifier();
+        String superName = null;
+        if ( classDef.superclass() != null )
+        {
+            superName = classDef.superclass().typeref().name();
+        }
+        DeclarationLocation location = findMethod(name, null, returnedType, call, parsed, caretOffset, caretOffset, path, call,  index);
+        return location == null ? DeclarationLocation.NONE : location;
+    }
+    
+    private DeclarationLocation processImport( Import imp, BaseDocument doc, MirahParser.NBMirahParserResult info, MirahIndex index )
+    {
+        String fqName = imp.fullName().identifier();
+        return findType(fqName, OffsetRange.NONE, doc, info, index);
+    }
+    
+    // ссылка на имя класса
+    private DeclarationLocation processRef( TypeRefImpl ref, BaseDocument doc, MirahParser.NBMirahParserResult parsed, MirahIndex index )
+    {
+        String name = ref.name();
+        String fqn = null;
+        
+        // пытаюсь вычислить квалифицированное имя класса в списке импорта
+        LinkedList<String> includes = AstSupport.collectImports(parsed.getRoot());
+        for( String incl : includes )
+        {
+            if ( incl.length() > name.length() && incl.endsWith(name) && incl.charAt(incl.length() - name.length() - 1) == '.' ) 
+            {
+                fqn = incl; break;
+            }
+        }
+        
+        DeclarationLocation location = DeclarationLocation.NONE;
+        if ( fqn != null ) location = findType(fqn, OffsetRange.NONE, doc, parsed, index);
+        // не получилось, попробую найти по имени класса
+        if ( location == DeclarationLocation.NONE )
+        {
+            Set<IndexedClass> classes = index.getClasses(name, QuerySupport.Kind.EXACT);
+            for( IndexedClass iclass : classes )        
+            {
+                FileObject fileObject = iclass.getFileObject();
+                if (fileObject == null) break;
+                int offset = iclass.getOffset();
+                location = new DeclarationLocation(fileObject, offset, iclass);
+            }
+        }
+        return location;        
     }
     
     @Override
@@ -152,68 +218,110 @@ public class MirahDeclarationFinder implements DeclarationFinder {
     {
         MirahParser.NBMirahParserResult parsed = (MirahParser.NBMirahParserResult)info;
         FileObject fo = info.getSnapshot().getSource().getFileObject();
-        Document doc = info.getSnapshot().getSource().getDocument(false);
-        AstPath path = ASTUtils.getPath(info, (BaseDocument)doc, caretOffset);
-//        ResolvedType resolved = null;
-        String fqName = null;
-        DeclarationLocation location = DeclarationLocation.NONE;
-        if ( path == null ) return location;
+        BaseDocument bdoc = (BaseDocument)info.getSnapshot().getSource().getDocument(false);
+//        AstPath path = ASTUtils.getPath(info, (BaseDocument)doc, caretOffset);
+        
+        String packg = getCurrentPackage(parsed.getRoot());
+        
+//        LinkedList<String> includes = AstSupport.collectImports(parsed.getRoot());
+        
+        Node leaf = ASTUtils.findLeaf(parsed, bdoc, caretOffset);
+        if (leaf == null) return DeclarationLocation.NONE;
 
+        ClassDefinition classDef = null;
+        MethodDefinition methodDef = null;
+        Node node = leaf;
+        while( node != null) {
+            if (node instanceof ClassDefinition && classDef == null)
+                classDef = (ClassDefinition) node;
+
+            if (node instanceof MethodDefinition && methodDef == null)
+                methodDef = (MethodDefinition) node;
+            
+            node = node.parent();
+        }
+
+        String name = null;
+        node = leaf;
+        while (node != null) {
+
+            if (node instanceof Import) {
+                return processImport((Import) node, bdoc, parsed, MirahIndex.get(fo));
+            }
+
+            if (node instanceof Call) {
+                return processCall((Call) node, classDef, parsed, caretOffset, null, MirahIndex.get(fo));
+            }
+
+            if (node instanceof SimpleString) {
+                name = ((SimpleString) node).identifier();
+            }
+            
+            if (node instanceof TypeRefImpl) {
+                return processRef((TypeRefImpl) node, bdoc, parsed, MirahIndex.get(fo));
+            }
+            
+            if ( false )
+            { // goto resolved type
+                ResolvedType type = parsed.getResolvedType(node);
+                if (type == null) {
+                    continue;
+                }
+                String fqn = type.name();
+                if (primitivesMap.containsKey(fqn)) {
+                    fqn = null;
+                    continue;
+                }
+                return findType(fqn, OffsetRange.NONE, bdoc, info, MirahIndex.get(fo));
+            }
+            node = node.parent();
+        }
+  
+        /*
+        if ( path == null ) return DeclarationLocation.NONE;
+
+        ClassDefinition classDef = null;
+        MethodDefinition methodDef = null;
         for (Iterator<Node> it = path.iterator(); it.hasNext();) 
         {
             Node node = it.next();
-            if ( node instanceof ClassDefinition ) //test
+            if ( node instanceof ClassDefinition && classDef == null )
+                classDef = (ClassDefinition)node;
+
+            if ( node instanceof MethodDefinition && methodDef == null ) //test
+                methodDef = (MethodDefinition)node;
+        }
+        
+        String name = null;
+        for (Iterator<Node> it = path.iterator(); it.hasNext();) 
+        {
+            Node node = it.next();
+            if ( node instanceof Import ) 
+                return processImport((Import) node,(BaseDocument) doc, parsed, MirahIndex.get(fo));
+            
+            if ( node instanceof Call ) 
+                return processCall((Call) node, classDef, parsed, caretOffset, path, MirahIndex.get(fo));
+            
+            if ( node instanceof SimpleString )
             {
-                findSuperClass((ClassDefinition)node);
+                name = ((SimpleString)node).identifier();
+            }
+            if ( node instanceof TypeRefImpl )
+                return processRef((TypeRefImpl) node, (BaseDocument) doc, parsed, MirahIndex.get(fo));
+            
+            { // goto resolved type
+                ResolvedType type = parsed.getResolvedType(node);
+                if ( type == null ) continue;
+                String fqn = type.name();
+                if ( primitivesMap.containsKey(fqn) ) 
+                {
+                    fqn = null; continue;
+                }
+                return findType(fqn, OffsetRange.NONE, (BaseDocument)doc, info, MirahIndex.get(fo));
             }
         }
-        for (Iterator<Node> it = path.iterator(); it.hasNext();) 
-        {
-            Node node = it.next();
-            if ( node instanceof AnnotationList ||
-                 node instanceof TypeNameList ||
-                 node instanceof ModifierList )
-                continue;
-
-            try {
-                if ( node instanceof Import )
-                {
-                    fqName = ((Import)node).fullName().identifier();
-                    location = findType(fqName, OffsetRange.NONE, (BaseDocument)doc, info, MirahIndex.get(fo));
-                }
-                else if ( node instanceof Call ) // Вызов метода?
-                {
-                    Call call = (Call)node;
-                    ResolvedType type = parsed.getResolvedType(node);
-                    if ( type == null ) continue;
-                    fqName = type.name();         
-                    String name = call.name().identifier();
-                    String returnedType = null;
-//                    if ( call.typeref() != null )
-//                        returnedType = null; //call.typeref().name();
-                    location = findMethod(name, fqName, returnedType, call, parsed, caretOffset, caretOffset, path, node,  MirahIndex.get(fo));
-                }
-                else if ( node instanceof SimpleString )
-                {
-                    location = checkImportClasses(parsed,(SimpleString)node);
-                }
-                else { // goto resolved type
-                    ResolvedType type = parsed.getResolvedType(node);
-                    if ( type == null ) continue;
-                    fqName = type.name();
-                    if ( primitivesMap.containsKey(fqName) ) 
-                    {
-                        fqName = null; continue;
-                    }
-                    location = findType(fqName, OffsetRange.NONE, (BaseDocument)doc, info, MirahIndex.get(fo));
-                }
-            } catch (BadLocationException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-            if ( location != DeclarationLocation.NONE ) break;
-        }
-//        if ( fqName == null ) 
-        return location;
+        */
+        return DeclarationLocation.NONE;
     }
 
     @Override
@@ -352,7 +460,7 @@ public class MirahDeclarationFinder implements DeclarationFinder {
     }
 
     private DeclarationLocation findType(String fqName, OffsetRange range,
-            BaseDocument doc, ParserResult info, MirahIndex index) throws BadLocationException {
+            BaseDocument doc, ParserResult info, MirahIndex index) {
 
 //        LOG.log(Level.FINEST, "Looking for type: {0}", fqName); // NOI18N
         if (doc != null && range != null) {
@@ -391,12 +499,12 @@ public class MirahDeclarationFinder implements DeclarationFinder {
 //                }
             }
 */
-//            Set<IndexedClass> classes = index.getClasses(fqName, QuerySupport.Kind.EXACT);
+//          Set<IndexedClass> classes = index.getClasses(fqName, QuerySupport.Kind.EXACT);
             Set<IndexedClass> classes = index.findClassesByFqn(fqName); //.getClasses(fqName, QuerySupport.Kind.EXACT);
             if ( ! classes.isEmpty() )
             {
                 IndexedClass indexedClass = classes.iterator().next();
-                return new DeclarationLocation(indexedClass.getFileObject(), indexedClass.getLine());
+                return new DeclarationLocation(indexedClass.getFileObject(), indexedClass.getOffset());
             }
 /*            
             for (IndexedClass indexedClass : classes) {
@@ -673,12 +781,15 @@ public class MirahDeclarationFinder implements DeclarationFinder {
                 return DeclarationLocation.NONE;
             }
 
+            /*
             Node node = ASTUtils.getForeignNode(candidate);
             // negative line/column can happen due to bugs in groovy parser
             int nodeOffset = (node != null && node.position().startLine() > 0 && node.position().startColumn() > 0)
                     ? ASTUtils.getOffset(doc, node.position().startLine(), node.position().startColumn())
                     : 0;
-
+            */
+            int nodeOffset = candidate.getOffset();
+            
             DeclarationLocation loc = new DeclarationLocation(
                 fileObject, nodeOffset, candidate);
 

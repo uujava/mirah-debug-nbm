@@ -125,7 +125,8 @@ public final class MirahIndex {
 
         switch (kind) {
         case EXACT:
-            field = MirahIndexer.FQN_NAME;
+//            field = MirahIndexer.FQN_NAME;
+            field = MirahIndexer.CLASS_NAME;
             break;
         case PREFIX:
         case CAMEL_CASE:

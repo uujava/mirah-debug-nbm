@@ -25,9 +25,9 @@ public class AstPath implements Iterable<Node> {
     
     private ArrayList<Node> path = new ArrayList<Node>(30);
 
-    private int lineNumber = -1;
+//    private int lineNumber = -1;
 
-    private int columnNumber = -1;
+//    private int columnNumber = -1;
 
     public AstPath() {
         super();
@@ -41,6 +41,7 @@ public class AstPath implements Iterable<Node> {
             if (length > 0 && offset >= length) {
                 offset = length - 1;
             }
+            /*
             Scanner scanner = new Scanner(document.getText(0, offset));
             int line = 0;
             String lineText = "";
@@ -54,6 +55,8 @@ public class AstPath implements Iterable<Node> {
             this.columnNumber = column;
 
             findPathTo(root, line, column);
+             */
+            findPathTo(root, caretOffset);
         } 
 //        catch (BadLocationException ble) {
         catch (Exception ble) {
@@ -64,13 +67,14 @@ public class AstPath implements Iterable<Node> {
     /**
      * Initialize a node path to the given caretOffset
      */
+    /*
     public AstPath(Node root, int line, int column) {
         this.lineNumber = line;
         this.columnNumber = column;
 
         findPathTo(root, line, column);
     }
-
+    */
     /**
      * Find the path to the given node in the AST
      */
@@ -84,7 +88,7 @@ public class AstPath implements Iterable<Node> {
             Collections.reverse(path);
         }
     }
-
+    /*
     public int getLineNumber() {
         return lineNumber;
     }
@@ -92,7 +96,7 @@ public class AstPath implements Iterable<Node> {
     public int getColumnNumber() {
         return columnNumber;
     }
-
+    */
     public void descend(Node node) {
         path.add(node);
     }
@@ -105,6 +109,60 @@ public class AstPath implements Iterable<Node> {
      * Find the position closest to the given offset in the AST. Place the path from the leaf up to the path in the
      * passed in path list.
      */
+    @SuppressWarnings("unchecked")
+    private Node findPathTo(Node node, int offset) {
+        
+        assert node != null : "Node should not be null";
+        assert node instanceof Script : "Node must be a ModuleNode";
+//        assert line >=0 : "line number was negative: " + line + " on the ModuleNode node with main class name: " + ((Script)node).getMainClassName();
+        assert offset >= 0 : "offset was negative: " + offset;
+        
+        path.addAll(find(node, offset));
+
+        // in scripts ClassDefinition is not in path, let's add it
+        // find class that has same name as the file
+        if (path.isEmpty() || !(path.get(0) instanceof ClassDefinition)) {
+            Script script = (Script) node;
+            String name = null; //script.getContext().getName();
+            int index = name == null ? -1 : name.lastIndexOf(".mirah"); // NOI18N
+            if (index != -1) {
+                name = name.substring(0, index);
+            }
+            index = name == null ? -1 : name.lastIndexOf('.');
+            if (index != -1) {
+                name = name.substring(index + 1);
+            }
+        }
+
+        // let's fix script class - run method
+        // FIXME this should be more accurate - package
+        // and imports are not in the method ;)
+        if (!path.isEmpty() && (path.get(0) instanceof ClassDefinition)) {
+            ClassDefinition clazz = (ClassDefinition) path.get(0);
+        }
+
+        path.add(0, node);
+
+        Node result = path.get(path.size() - 1);
+
+        return result;
+    }
+    
+    // находим самый маленький узел, на котором смещение
+    public Node findLeaf() {
+        Node leaf = null;
+        for( Node node : path )
+        {
+            if ( node.position() == null ) continue;
+            if ( leaf == null 
+                || node.position().endChar() - node.position().startChar() 
+                    < leaf.position().endChar() - leaf.position().startChar())
+            leaf = node;
+        }
+        return leaf;
+    }
+    
+    /*
     @SuppressWarnings("unchecked")
     private Node findPathTo(Node node, int line, int column) {
         
@@ -136,7 +194,7 @@ public class AstPath implements Iterable<Node> {
                     break;
                 }
             }
-*/            
+*
         }
 
         // let's fix script class - run method
@@ -157,7 +215,7 @@ public class AstPath implements Iterable<Node> {
                     path.add(1, method);
                 }
             }
-*/            
+*
         }
 
         path.add(0, node);
@@ -166,6 +224,7 @@ public class AstPath implements Iterable<Node> {
 
         return result;
     }
+    */
 /*    
     private boolean isInSource(Node node) {
         if (node instanceof AnnotatedNode) {
@@ -252,6 +311,29 @@ public class AstPath implements Iterable<Node> {
     }
 */
     @SuppressWarnings("unchecked")
+    private List<Node> find(Node node, int offset) {
+        
+        assert offset >=0 : "offset was negative: " + offset;
+        assert node != null : "Node should not be null";
+        assert node instanceof Script : "Node must be a ModuleNode";
+        
+        Script script = (Script) node;
+        
+//        script.accept( new NodeScanner(){
+//            @Override
+//            public boolean enterDefault(Node node, Object arg) {
+//                if ( node != null )
+//                System.out.println(""+node+"["+node.position().startChar()+","+node.position().endChar()+"] "+node.parent());
+//                return super.enterDefault(node, arg);
+//            }
+//        }, null);
+        PathFinderVisitor pathFinder = new PathFinderVisitor(offset);
+        script.accept(pathFinder, null);
+        return pathFinder.getPath();
+//        return new ArrayList<Node>();
+    }
+    /*
+    @SuppressWarnings("unchecked")
     private List<Node> find(Node node, int line, int column) {
         
         assert line >=0 : "line number was negative: " + line;
@@ -283,7 +365,7 @@ public class AstPath implements Iterable<Node> {
         return pathFinder.getPath();
 //        return new ArrayList<Node>();
     }
-
+    */
     /**
      * Find the path to the given node in the AST
      */

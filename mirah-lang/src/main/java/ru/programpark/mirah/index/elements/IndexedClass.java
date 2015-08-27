@@ -12,17 +12,17 @@ public final class IndexedClass extends IndexedElement implements ClassElement {
 
     private String url = null; // файл с описанием класса
     
-    private int line = 0; // смещение описания класса в файле
+    private int offset = 0; // смещение описания класса в файле
     
-    protected IndexedClass(IndexResult result, String fqn, String simpleName, String attributes, int flags, int line) {
+    protected IndexedClass(IndexResult result, String fqn, String simpleName, String attributes, int flags, int offset) {
         super(result, fqn, attributes, flags);
         this.simpleName = simpleName;
-        this.line = line;
+        this.offset = offset;
     }
 
     public static IndexedClass create(String simpleName, String fqn, IndexResult result,
-        String attributes, int flags, int line ) {
-        IndexedClass c = new IndexedClass(result, fqn, simpleName, attributes, flags, line);
+        String attributes, int flags, int offset ) {
+        IndexedClass c = new IndexedClass(result, fqn, simpleName, attributes, flags, offset);
         return c;
     }
 
@@ -47,9 +47,9 @@ public final class IndexedClass extends IndexedElement implements ClassElement {
 //        this.offset = index == -1 ? 0 : Integer.parseInt(url.substring(index+1));
 //    }
 
-    public int getLine()
+    public int getOffset()
     {
-        return line;
+        return offset;
     }
     
     @Override

@@ -83,9 +83,6 @@ public class ParseMirah {
         io.getOut().println();
         io.getOut().println();
         io.getOut().println("------------- DUMP NODES ---------------------");
-        io.getOut().println("------------- DUMP NODES ---------------------");
-        io.getOut().println("------------- DUMP NODES ---------------------");
-        io.getOut().println("------------- DUMP NODES ---------------------");
         io.getOut().println();
         io.getOut().println();
         root.accept(new NodeScanner(){
@@ -97,9 +94,13 @@ public class ParseMirah {
                 for( int i = 0 ; i < levels ; i++ ) sb.append('.');
                 String prefix = sb.toString();
                 if ( node != null && node.position() != null )
-                    io.getOut().println(prefix + " "+node+"["+node.position().startChar()+","+node.position().endChar()+"] "+node.parent()+" type="+type);
+                    io.getOut().println(prefix + " "+node+
+                        " [" 
+                        + node.position().startLine() + "," + node.position().startColumn() + "-" + node.position().endLine()
+                        + "," + node.position().endColumn() + "] {" + node.position().startChar() + "-" + node.position().endChar() + "} " 
+                        + node.hashCode() + "/ parent="+node.parent()+"/ type="+type);
                 else
-                    io.getOut().println(prefix + " "+node+" pos = null "+node.parent());
+                    io.getOut().println(prefix + " "+node+" pos = null " + node.hashCode() + " parent=" + node.parent());
                 
                 if ( node instanceof ClosureDefinition )
                 {
@@ -154,6 +155,8 @@ public class ParseMirah {
         io.getOut().println();
         io.getOut().println();
         io.getOut().println("------------- DUMP ERRORS ---------------------");
+        io.getOut().println();
+        io.getOut().println();
         for( org.netbeans.modules.csl.api.Error err : pres.getErrors() )
         {
             io.getErr().println("ERROR: "+err.getDescription());
@@ -173,12 +176,6 @@ public class ParseMirah {
             
             io.getOut().println();
             io.getOut().println();
-            io.getOut().println();
-            io.getOut().println();
-            io.getOut().println();
-            io.getOut().println("------------- RESOLVED TYPES ---------------------");
-            io.getOut().println("------------- RESOLVED TYPES ---------------------");
-            io.getOut().println("------------- RESOLVED TYPES ---------------------");
             io.getOut().println("------------- RESOLVED TYPES ---------------------");
             for( Node key : pres.getResolvedTypes().keySet() )
             {
@@ -200,21 +197,27 @@ public class ParseMirah {
         if ( ! fo.getExt().equals("mirah") ) return;
         
         final InputOutput io = IOProvider.getDefault().getIO(fo.getName()+".mirah", false);
+        
+        long start = System.currentTimeMillis();
+        
         try {
             io.select();
             io.getOut().println("CaretPosition = "+focused.getCaretPosition());
             dumpTokens(doc,io);
+            final long curr = System.currentTimeMillis();
+
             ParserManager.parse(Collections.singleton (Source.create(doc)), new UserTask() {
                 @Override
                 public void run(ResultIterator resultIterator) throws Exception {
                     Result res = resultIterator.getParserResult(0); // (offset);
                     if ( res instanceof MirahParser.NBMirahParserResult )
                     {
-                       MirahParser.NBMirahParserResult pres = (MirahParser.NBMirahParserResult)res;
+                        io.getOut().println("==== PARSING TIME: " + (System.currentTimeMillis() - curr) + " msec");
+                        MirahParser.NBMirahParserResult pres = (MirahParser.NBMirahParserResult)res;
 //                       Node node = pres.getRoot();
-                       dumpNodes(pres,io);
-                       dumpResolvedTypes(pres,io);
-                       dumpErrors(pres,io);
+                        dumpNodes(pres,io);
+                        dumpResolvedTypes(pres,io);
+                        dumpErrors(pres,io);
                     }
                 }
             });
@@ -225,6 +228,7 @@ public class ParseMirah {
         }
         finally
         {
+            io.getOut().println("==== ELAPSED TIME : "+(System.currentTimeMillis()-start)+" msec");
             if ( io != null ) io.getOut().close();
             if ( io != null ) io.getErr().close();
         }

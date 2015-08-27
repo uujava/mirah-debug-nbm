@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import mirah.lang.ast.AnnotationList;
 import mirah.lang.ast.Array;
 import mirah.lang.ast.AttrAssign;
 import mirah.lang.ast.Boolean;
@@ -20,11 +21,13 @@ import mirah.lang.ast.FunctionalCall;
 import mirah.lang.ast.If;
 import mirah.lang.ast.LocalDeclaration;
 import mirah.lang.ast.MethodDefinition;
+import mirah.lang.ast.ModifierList;
 import mirah.lang.ast.Node;
 import mirah.lang.ast.NodeList;
 import mirah.lang.ast.NodeScanner;
 import mirah.lang.ast.Return;
 import mirah.lang.ast.Script;
+import mirah.lang.ast.TypeNameList;
 import mirah.lang.ast.VCall;
 import mirah.objectweb.asm.tree.ClassNode;
 
@@ -41,16 +44,22 @@ public class PathFinderVisitor extends NodeScanner {
 
 //    private final SourceUnit sourceUnit;
 
-    private final int line;
-    
-    private final int column;
+//    private final int line;
+//    
+//    private final int column;
+    private final int offset;
+    private int line_min = -1;
+    private int line_max = -1;
 
     private final List<Node> path = new ArrayList<Node>();
 
-    public PathFinderVisitor( int line, int column ) {
-        this.line = line;
-        this.column = column;
+    public PathFinderVisitor( int offset ) {
+        this.offset = offset;
     }
+//    public PathFinderVisitor( int line, int column ) {
+//        this.line = line;
+//        this.column = column;
+//    }
 //    public PathFinderVisitor(SourceUnit sourceUnit, int line, int column) {
 //        this.sourceUnit = sourceUnit;
 //        this.line = line;
@@ -561,20 +570,92 @@ public class PathFinderVisitor extends NodeScanner {
 */
     
     @Override
+    public boolean enterClosureDefinition(ClosureDefinition node, Object arg) {
+        if (node != null && node.body() != null)
+        {
+            for (Object n : node.body()) {
+                if (n instanceof Node) {
+                    enterDefault((Node) n, arg);
+                }
+            }
+        }
+        return super.enterClosureDefinition(node, arg);
+    }
+
+    @Override
+    public boolean enterMethodDefinition(MethodDefinition node, Object arg) {
+        if ( node != null && node.body() != null )
+        {
+            for (Object n : node.body()) {
+                if (n instanceof Node) {
+                    enterDefault((Node) n, arg);
+                }
+            }
+        }
+        return super.enterMethodDefinition(node,arg);       
+    }
+    
+    @Override
     public boolean enterDefault(Node node, Object arg) {
-        if ( node != null )
 //        if ( node.position() != null )
 //            System.out.println(""+node+"["+node.position().startChar()+","+node.position().endChar()+"] "+node.parent());
 //        else
 //            System.out.println(""+node+"[] "+node.parent());
-        isInside(node, line, column);
+        if ( ! isInside(node, offset) ) return false;
+//      isInside(node, line, column);
+
         return super.enterDefault(node, arg);
     }
     
-    private boolean isInside(Node node, int line, int column) {
-        return isInside(node, line, column, true);
+    private boolean isInside(Node node, int offset) {
+        return isInside(node, offset, true);
     }
+//    private boolean isInside(Node node, int line, int column) {
+//        return isInside(node, line, column, true);
+//    }
 
+    private boolean isInside(Node node, int offset, boolean addToPath) {
+        if (node == null || !isInSource(node) ) { //|| node.position() == null) {
+            return true;
+        }
+        if ( node.position() == null) {
+            return true;
+        }
+
+        fixNode(node);
+
+        int startChar = node.position().startChar();
+        int endChar = node.position().endChar();
+
+        if (LOG.isLoggable(Level.FINEST)) {
+            LOG.log(Level.FINEST, "isInside: " + node + " - " + startChar + ", " + endChar);
+        }
+
+        if (startChar == -1 || endChar == -1) {
+            // this node doesn't provide its coordinates, some wrappers do that
+            // let's say yes and visit its children
+            return addToPath ? true : false;
+        }
+
+        boolean result = (startChar <= offset && endChar > offset);
+
+        if (result && addToPath) {
+            
+            // корректирую размер блока отслеживания
+            if ( line_min < node.position().startLine() ) line_min = node.position().startLine();
+            if ( line_max == -1 || line_max > node.position().endLine() ) line_max = node.position().endLine();
+            
+            // Завершить обход дерева, если обрабатываются узлы, относящиеся к большим номерам строк
+            if ( line_max < node.position().startLine() ) return false;
+            checkNode(node);
+            LOG.log(Level.FINEST, "Path: {0}", path);
+        }
+
+        // if addToPath is false, return result, we want to know real state of affairs
+        // and not to continue traversing
+        return addToPath ? true : result;
+    }
+    /*
     private boolean isInside(Node node, int line, int column, boolean addToPath) {
         if (node == null || !isInSource(node) ) { //|| node.position() == null) {
             return false;
@@ -630,10 +711,17 @@ public class PathFinderVisitor extends NodeScanner {
         // and not to continue traversing
         return addToPath ? true : result;
     }
-
+    */
     private void checkNode(Node node)
     {
-        if ( node instanceof Script || node instanceof NodeList ) return;
+        if ( node instanceof Script ) return;
+        /*
+         if ( node instanceof NodeList ) return;
+        //todo разобраться что это такое
+        if ( node instanceof ModifierList ) return;
+        if ( node instanceof AnnotationList ) return;
+        if ( node instanceof TypeNameList ) return;
+        */
         path.add(node);
     }
 
