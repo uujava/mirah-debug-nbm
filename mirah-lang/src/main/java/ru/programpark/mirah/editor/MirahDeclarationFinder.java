@@ -159,6 +159,10 @@ public class MirahDeclarationFinder implements DeclarationFinder {
         return DeclarationLocation.NONE;
     }
    
+    // это вызов метода
+    //todo - добавить проверку имени класса и дерева наследования
+    //todo - добавить проверку сигнатуры!!!
+    //todo - добавить обработку конструкторов
     private DeclarationLocation processCall( Call call, ClassDefinition classDef, MirahParser.NBMirahParserResult parsed, int caretOffset, AstPath path, MirahIndex index ) // Р’С‹Р·РѕРІ РјРµС‚РѕРґР°?
     {
         ResolvedType type = parsed.getResolvedType(call);
@@ -173,10 +177,12 @@ public class MirahDeclarationFinder implements DeclarationFinder {
         DeclarationLocation location = findMethod(name, null, returnedType, call, parsed, caretOffset, caretOffset, path, call,  index);
         return location == null ? DeclarationLocation.NONE : location;
     }
-    
+
+    //todo - если в конце *, пропустить
     private DeclarationLocation processImport( Import imp, BaseDocument doc, MirahParser.NBMirahParserResult info, MirahIndex index )
     {
         String fqName = imp.fullName().identifier();
+        if ( fqName.endsWith(".*") ) return DeclarationLocation.NONE;
         return findType(fqName, OffsetRange.NONE, doc, info, index);
     }
     
@@ -257,6 +263,7 @@ public class MirahDeclarationFinder implements DeclarationFinder {
                 name = ((SimpleString) node).identifier();
             }
             
+            // это, скорее всего, название класса в операторе приведения типов
             if (node instanceof TypeRefImpl) {
                 return processRef((TypeRefImpl) node, bdoc, parsed, MirahIndex.get(fo));
             }

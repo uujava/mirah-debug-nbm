@@ -56,10 +56,23 @@ public final class MirahIndex {
     }
 
     public static MirahIndex get(FileObject fo) {
-        Collection<FileObject> coll = QuerySupport.findRoots(fo, Collections.singleton(ClassPath.SOURCE), null, null);
+		// Sources - ClassPath.SOURCE and translated ClassPath.COMPILE & ClassPath.BOOT
+		Collection<FileObject> srcRoots = QuerySupport.findRoots(
+				(Project)null,
+				Collections.singleton(ClassPath.SOURCE),
+				Collections.<String>emptySet(),
+				Collections.<String>emptySet());
+
+		int count = srcRoots.size();
+
+		Collection<FileObject> coll = QuerySupport.findRoots(fo, Collections.singleton(ClassPath.SOURCE), null, null);
+		int count2 = coll.size();
+		int i = 0;
         for( FileObject f1 : coll)
         {
             String n = f1.getPath();
+            LOG.info(null, "MirahIndex get [" +i + "] ="+ f1);
+            i++;
             int t = 0;
         }
         Project project = FileOwnerQuery.getOwner(fo);
@@ -135,8 +148,9 @@ public final class MirahIndex {
             break;
         case CASE_INSENSITIVE_PREFIX:
         case CASE_INSENSITIVE_REGEXP:
-            field = MirahIndexer.CASE_INSENSITIVE_CLASS_NAME;
-            break;
+//            field = MirahIndexer.CASE_INSENSITIVE_CLASS_NAME;
+			field = MirahIndexer.CLASS_NAME;
+			break;
         default:
             throw new UnsupportedOperationException(kind.toString());
         }

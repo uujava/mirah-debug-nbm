@@ -121,7 +121,21 @@ public class PrintIndex {
             
             io.getOut().println("---------------------------------------");
             MirahIndex index = MirahIndex.get(fo);
+
+            Set<IndexedClass> clss = null;
+            int count = 0;
+            
+            clss = index.getClasses("basec", QuerySupport.Kind.CASE_INSENSITIVE_PREFIX);
+            //        Set<IndexedClass> classes = index.getClasses(name, QuerySupport.Kind.CASE_INSENSITIVE_PREFIX);
+            count = clss.size();
+            clss = index.getClasses("BaseC", QuerySupport.Kind.PREFIX);
+            count = clss.size();
+
+            clss = index.getClasses("BaseController", QuerySupport.Kind.EXACT);
+            count = clss.size();
+            
             Set<IndexedClass> classes = index.getAllClasses();
+            count = classes.size();
             for (IndexedClass cls : classes) {
                 String fqName = cls.getFqn();
                 String signature = cls.getSignature();

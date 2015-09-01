@@ -105,7 +105,6 @@
         <dependency>
             <groupId>org.netbeans.api</groupId>
             <artifactId>org-netbeans-modules-options-api</artifactId>
-            <!-- version>${netbeans.version}</version -->
             <version>${netbeans.version}</version>
             <scope>provided</scope>
         </dependency>
@@ -185,11 +184,6 @@
             <version>${netbeans.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.netbeans.modules</groupId>
-            <artifactId>org-netbeans-modules-jumpto</artifactId>
-            <version>${netbeans.version}</version>
-        </dependency>
-        <dependency>
             <groupId>org.netbeans.api</groupId>
             <artifactId>org-openide-util-lookup</artifactId>
             <version>${netbeans.version}</version>
@@ -212,7 +206,6 @@
             <scope>runtime</scope>
         </dependency>
 
-        <!-- scalac transitive dependencies (scalac will check class dependencies deeply): <scope>provided</scope> -->
         <dependency>
             <groupId>org.netbeans.modules</groupId>
             <artifactId>org-netbeans-modules-parsing-lucene</artifactId>
@@ -273,7 +266,7 @@
             <artifactId>org-netbeans-modules-editor-codetemplates</artifactId>
             <type>jar</type>
             <version>${netbeans.version}</version>
-            <!-- scope>provided</scope -->
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.netbeans.api</groupId>
@@ -374,6 +367,22 @@
             <artifactId>org-netbeans-modules-java-platform</artifactId>
             <version>${netbeans.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.netbeans.modules</groupId>
+            <artifactId>org-netbeans-core-ui</artifactId>
+            <version>${netbeans.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-netbeans-modules-sampler</artifactId>
+            <version>${netbeans.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.netbeans.modules</groupId>
+            <artifactId>org-netbeans-modules-jumpto</artifactId>
+            <version>${netbeans.version}</version>
+            <!--<scope>compile</scope>-->
+        </dependency>
     </dependencies>
 
     <build>
@@ -425,9 +434,13 @@
                              <explicitValue>org.netbeans.modules.editor.lib2/1 > 1</explicitValue> 
                          </dependency>
                         <dependency> 
-                            <id>org.netbeans.api:org-netbeans-modules-jumpto</id> 
+                            <id>org.netbeans.modules:org-netbeans-modules-jumpto</id> 
                             <type>impl</type> 
-                            <explicitValue>org-netbeans-modules-jumpto/1 = 1.42</explicitValue>
+                            <!--<explicitValue>org-netbeans-modules-jumpto/1 = 1.42.1.1</explicitValue>-->
+                        </dependency>
+                        <dependency> 
+                            <id>org.netbeans.api:org-netbeans-modules-java-source</id> 
+                            <type>impl</type> 
                         </dependency>
                     </moduleDependencies>
                     <publicPackages>
