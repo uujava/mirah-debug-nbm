@@ -35,6 +35,7 @@ import mirah.lang.ast.ModifierList;
 import mirah.lang.ast.Node;
 import mirah.lang.ast.NodeScanner;
 import mirah.lang.ast.RequiredArgument;
+import mirah.lang.ast.StaticMethodDefinition;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.editor.BaseDocument;
@@ -334,7 +335,12 @@ public class MirahIndexer extends EmbeddingIndexer {
             return true;
     //            return enterMethodDefinition(node, arg);
         }
-
+        @Override
+        public boolean enterStaticMethodDefinition(StaticMethodDefinition node, Object arg)
+        {
+            return enterMethodDefinition(node,arg);
+        }
+        
         @Override
         public boolean enterPackage( mirah.lang.ast.Package node, Object arg )
         {
