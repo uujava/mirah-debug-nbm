@@ -4,7 +4,7 @@
         <groupId>ru.programpark.mirah</groupId>
         <artifactId>root</artifactId>
         <version>1.0-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
+        <!-- relativePath>../pom.xml</relativePath -->
     </parent>
     <groupId>ru.programpark.mirah</groupId>
     <artifactId>mirah-lang</artifactId>
@@ -211,7 +211,7 @@
             <groupId>org.netbeans.modules</groupId>
             <artifactId>org-netbeans-modules-parsing-lucene</artifactId>
             <version>${netbeans.version}</version>
-            <scope>provided</scope>
+            <!-- scope>provided</scope -->
         </dependency>
         <dependency>
             <groupId>org.netbeans.modules</groupId>
@@ -437,10 +437,17 @@
                         <dependency> 
                             <id>org.netbeans.modules:org-netbeans-modules-jumpto</id> 
                             <type>impl</type> 
-                            <!--<explicitValue>org-netbeans-modules-jumpto/1 = 1.42.1.1</explicitValue>-->
+                        </dependency>
+                        <dependency>
+                            <id>org.netbeans.modules:org-netbeans-modules-parsing-lucene</id> 
+                            <type>impl</type> 
                         </dependency>
                         <dependency> 
                             <id>org.netbeans.api:org-netbeans-modules-java-source</id> 
+                            <type>impl</type> 
+                        </dependency>
+                        <dependency>
+                            <id>org.netbeans.api:org-netbeans-modules-java-sourceui</id> 
                             <type>impl</type> 
                         </dependency>
                     </moduleDependencies>

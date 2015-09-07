@@ -404,6 +404,7 @@ public class MirahIndexer extends EmbeddingIndexer {
                 document.addPair(FQN_NAME, className, true, true);
                 document.addPair(CLASS_NAME, node.name().identifier(), true, true);
                 document.addPair(CLASS_LINE, ""+node.position().startChar(), true, true);
+                document.addPair(CASE_INSENSITIVE_CLASS_NAME, node.name().identifier().toLowerCase(), true, true);
 //                document.addPair(URL, file.getPath()+":"+node.position().startLine(), true, true);
             }
 //            System.out.println("FQN_NAME="+className);
@@ -411,7 +412,6 @@ public class MirahIndexer extends EmbeddingIndexer {
     //        System.out.println("FQN_NAME="+className);
     //        prepareLocation(node, sb);
 
-            //document.addPair(CASE_INSENSITIVE_CLASS_NAME, name.toLowerCase(), true, true);
             return super.enterClassDefinition(node, arg);
         }
 

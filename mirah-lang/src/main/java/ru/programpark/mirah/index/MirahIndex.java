@@ -120,7 +120,10 @@ public final class MirahIndex {
      * @param includeAll If true, return multiple IndexedClasses for the same logical
      *   class, one for each declaration point.
      */
-    public Set<IndexedClass> getClasses(String name, final QuerySupport.Kind kind) {
+    
+    //todo - добавить список полей в результатах поиска!!!
+    
+    public Set<IndexedClass> getClasses(String name, QuerySupport.Kind kind) {
         String classFqn = null;
 
         if (name != null) {
@@ -134,8 +137,9 @@ public final class MirahIndex {
         }
 
         final Set<IndexResult> result = new HashSet<>();
+        QuerySupport.Kind searchKind = kind;
+        
         String field;
-
         switch (kind) {
         case EXACT:
 //            field = MirahIndexer.FQN_NAME;
@@ -148,14 +152,17 @@ public final class MirahIndex {
             break;
         case CASE_INSENSITIVE_PREFIX:
         case CASE_INSENSITIVE_REGEXP:
-//            field = MirahIndexer.CASE_INSENSITIVE_CLASS_NAME;
-			field = MirahIndexer.CLASS_NAME;
-			break;
+            field = MirahIndexer.CASE_INSENSITIVE_CLASS_NAME;
+//          field = MirahIndexer.CLASS_NAME;
+            searchKind = QuerySupport.Kind.PREFIX;
+            name = name.toLowerCase();
+//            name = "*";
+            break;
         default:
             throw new UnsupportedOperationException(kind.toString());
         }
 
-        search(field, name, kind, result);
+        search(field, name, searchKind, result);
 
         final Set<IndexedClass> classes = new HashSet<>();
 
@@ -171,7 +178,9 @@ public final class MirahIndex {
             // Lucene returns some inexact matches, TODO investigate why this is necessary
             if ((kind == QuerySupport.Kind.PREFIX) && !simpleName.startsWith(name)) {
                 continue;
-            } else if (kind == QuerySupport.Kind.CASE_INSENSITIVE_PREFIX && !simpleName.regionMatches(true, 0, name, 0, name.length())) {
+            } else if (kind == QuerySupport.Kind.CASE_INSENSITIVE_PREFIX ) {
+                String lowerName = map.getValue(MirahIndexer.CASE_INSENSITIVE_CLASS_NAME);
+                if ( !lowerName.regionMatches(true, 0, name, 0, name.length()))
                 continue;
             }
 

@@ -1,6 +1,9 @@
 package ru.programpark.mirah.index.elements;
 
+import java.util.HashSet;
+import java.util.Set;
 import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 
 public final class IndexedClass extends IndexedElement implements ClassElement {
@@ -35,6 +38,11 @@ public final class IndexedClass extends IndexedElement implements ClassElement {
     @Override
     public String getName() {
         return simpleName;
+    }
+    
+    public Set<Modifier> getModifiers()
+    {
+        return new HashSet<Modifier>();
     }
 
 //    public String getUrl() {

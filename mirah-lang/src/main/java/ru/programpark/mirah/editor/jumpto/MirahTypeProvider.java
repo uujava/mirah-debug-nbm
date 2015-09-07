@@ -117,6 +117,12 @@ public class MirahTypeProvider implements TypeProvider {
         //todo разобраться какие файлы включать в корневой список
         if ( index == null ) {
         
+            Collection<FileObject> roots = QuerySupport.findRoots(
+                    (Project) null,
+                    Collections.singleton(ClassPath.SOURCE),
+                    Collections.<String>emptySet(),
+                    Collections.<String>emptySet());
+            /*
             Project projects[] = OpenProjects.getDefault().getOpenProjects();
             Collection<FileObject> roots = new ArrayList<FileObject>();
             for( Project p : projects )
@@ -128,6 +134,7 @@ public class MirahTypeProvider implements TypeProvider {
 //                    LOG.info(this,"coll = "+ff);
                 roots.addAll(coll);
             }
+            */
             index = MirahIndex.get(roots);
             LOG.info(this, "roots = " + roots.size());
             
@@ -165,7 +172,8 @@ public class MirahTypeProvider implements TypeProvider {
             result.addResult(td);
         }
     }
-    
+    //todo - обработка регулярных выражений, имен пакетов и тд
+    //todo - кэширование типов и символов
     @Override
     public void computeTypeNames(Context context, final Result res) {
         isCanceled = false;

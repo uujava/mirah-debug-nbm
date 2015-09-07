@@ -2,6 +2,7 @@ package ru.programpark.mirah.editor.jumpto;
 
 import ca.weblite.asm.LOG;
 import java.io.IOException;
+import java.lang.annotation.Annotation;
 import java.net.URL;
 import java.util.Collection;
 import java.util.Collections;
@@ -13,9 +14,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ElementVisitor;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.QualifiedNameable;
 import javax.lang.model.element.TypeElement;
@@ -60,6 +64,10 @@ import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Pair;
 import org.openide.util.lookup.ServiceProvider;
+import ru.programpark.mirah.editor.completion.ElementHandleSupport;
+import ru.programpark.mirah.index.MirahIndex;
+import ru.programpark.mirah.index.elements.IndexedClass;
+import ru.programpark.mirah.index.elements.IndexedMethod;
 
 /**
  *
@@ -84,17 +92,12 @@ public class MirahSymbolProvider implements SymbolProvider {
         return "MirahSymbols"; //NbBundle.getMessage(MirahTypeProvider.class, "MSG_JavaSymbols");
     }
         
+    //todo - убрать ссылки на замыкания
     public void computeSymbolNames(final Context context, final Result result) {
-        
-        for (int i = 0; i < 10; i++)
-        LOG.info(this, "*** computeSymbolNames = " + context);
-        
         
         try {
             final SearchType st = context.getSearchType();
             String textToSearch = context.getText();
-            for( int i = 0 ; i < 10 ; i++ )
-            LOG.info(this,"*** textToSearch = "+textToSearch);
             String prefix = null;
             final int dotIndex = textToSearch.lastIndexOf('.'); //NOI18N
             if (dotIndex > 0 && dotIndex != textToSearch.length()-1) {
@@ -160,11 +163,14 @@ public class MirahSymbolProvider implements SymbolProvider {
                         Collections.<String>emptySet(),
                         Collections.<String>emptySet());
 
+                final MirahIndex index = MirahIndex.get(roots);
+                /*
                 final Set<URL> rootUrls = new HashSet<URL>();
                 for(FileObject root : roots) {
                     if (canceled) {
                         return;
-                    }                    
+                    }          
+                    LOG.info(this,"ROOT: "+root.toURL());
                     rootUrls.add(root.toURL());
                 }
 
@@ -175,10 +181,91 @@ public class MirahSymbolProvider implements SymbolProvider {
                     }
                     LOGGER.log(Level.FINE, "-------------------------"); //NOI18N
                 }
+                */
+                
+                final String text = textToSearch;
+
+                
                 //Perform all queries in single op
                 IndexManager.priorityAccess(new IndexManager.Action<Void>() {
                     @Override
                     public Void run() throws IOException, InterruptedException {
+                        
+//                        Set<IndexedClass> classes = index.getClasses("Base", QuerySupport.Kind.PREFIX);
+                        Set<IndexedClass> classes = index.getClasses(text, QuerySupport.Kind.CASE_INSENSITIVE_PREFIX);
+//                        Set<IndexedClass> classes = index.getAllClasses();
+                        for( IndexedClass indexedClass : classes )
+                        {
+                            String className = indexedClass.getName();
+                            if ( className.indexOf("$Closure") != -1 || className.indexOf("$ZBinding") != -1) {
+                                int t = 0;
+                                continue;
+                            }
+                            String [] signatures = new String[] {};
+                            ElementHandle eh = ElementHandle.createTypeElementHandle(ElementKind.CLASS, "");
+                            /*
+                            result.addResult(new JavaSymbolDescriptor(
+                                    iclass.getName(),
+                                    ElementKind.CLASS,
+                                    new HashSet<Modifier>(),
+                                    eh,
+                                    eh,
+                                    FileOwnerQuery.getOwner(iclass.getFileObject()),
+                                    iclass.getFileObject(),
+                                    null));
+                            */
+                            String fqn = indexedClass.getFqn();
+                            if ( fqn.length() > className.length() + 1 )
+                                fqn = fqn.substring(0, fqn.length() - className.length() - 1);
+                            /*
+                            result.addResult(new MirahSymbolDescriptor(
+                                    indexedClass.getName(),
+                                    ElementKind.CLASS,
+                                    new HashSet<Modifier>(),
+                                    eh,
+                                    eh,
+                                    FileOwnerQuery.getOwner(indexedClass.getFileObject()),
+                                    indexedClass.getFileObject(),
+                                    fqn) );
+                            */
+                            result.addResult(new MirahSymbolDescriptor(
+                                    indexedClass.getName(),
+                                    ElementKind.CLASS,
+                                    indexedClass.getFileObject(),
+                                    indexedClass.getOffset(),
+                                    fqn));
+                        }
+                        Set<IndexedMethod> methods = index.getMethods(text, null, QuerySupport.Kind.CASE_INSENSITIVE_PREFIX);
+                        for( IndexedMethod indexedMethod : methods )
+                        {
+                            String[] signatures = new String[]{};
+//                            ElementHandle eh = ElementHandle.createTypeElementHandle(ElementKind.METHOD, "");
+//                            ElementHandle eh = ElementHandleSupport.createHandle(null, indexedMethod.getName(), org.netbeans.modules.csl.api.ElementKind.METHOD, new HashSet<Modifier>());
+                            String fqn = indexedMethod.getSignature();
+                            /*
+                            result.addResult(new MirahSymbolDescriptor(
+                                    indexedMethod.getName(),
+                                    ElementKind.METHOD,
+                                    new HashSet<Modifier>(),
+                                    eh,
+                                    eh,
+                                    FileOwnerQuery.getOwner(indexedMethod.getFileObject()),
+                                    indexedMethod.getFileObject(),
+                                    fqn));
+                            */
+                            String displayName = fqn;
+                            if ( displayName.indexOf(':') != -1 ) 
+                                displayName = displayName.substring(0,displayName.indexOf(':'));
+                            
+                            result.addResult(new MirahSymbolDescriptor(
+                                    displayName,
+                                    ElementKind.METHOD,
+                                    indexedMethod.getFileObject(),
+                                    indexedMethod.getOffset(),
+                                    indexedMethod.getIn()));
+                            
+                        }
+                        /*
                         for (URL url : rootUrls) {
                             if (canceled) {
                                 return null;
@@ -260,6 +347,7 @@ public class MirahSymbolProvider implements SymbolProvider {
 
                             }
                         }
+                        */
                         return null;
                     }
                 });
