@@ -68,7 +68,7 @@ final class IndexHyperlink implements OutputListener {
             
             EditorCookie cookie = dobj.getCookie(EditorCookie.class);
             Document doc = cookie.openDocument();
-            xline = NbEditorUtilities.getLine(doc,590,false);
+            xline = NbEditorUtilities.getLine(doc,offset,false);
             if (cookie == null) {
                 throw new java.io.FileNotFoundException();
             }

@@ -63,6 +63,9 @@ import ru.programpark.mirah.index.elements.IndexedClass;
  * @author Tomas Zezula
  * @author markiewb
  */
+
+//todo закладка со свойствами mirah в Сервис->Параметры->Разное->Mirah валится
+
 //@ServiceProvider(service=org.netbeans.spi.jumpto.type.TypeProvider.class)
 @ServiceProvider(service=TypeProvider.class)
 public class MirahTypeProvider implements TypeProvider {

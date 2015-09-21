@@ -128,6 +128,8 @@ public class MirahIndexer extends EmbeddingIndexer {
     }
  */   
     
+    //todo индексирование валится при выходе из IDE
+    
 //    private static final Logger LOG = Logger.getLogger(MirahIndexer.class.getName());
 
     @Override
