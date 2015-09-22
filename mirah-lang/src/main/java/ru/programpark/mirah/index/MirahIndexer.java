@@ -280,10 +280,11 @@ public class MirahIndexer extends EmbeddingIndexer {
         private final IndexingSupport support;
         private final Indexable indexable;
         private final List<IndexDocument> documents = new ArrayList<IndexDocument>();
-        private IndexDocument document = null;
+        private final List<IndexDocument> nestedDocuments = new ArrayList<IndexDocument>();
+//        private IndexDocument document = null;
         private String packageName = null;
         private ClassNode lastFoundClass = null;
-        private String className = null;
+        private final List<String> classNames = new ArrayList<String>();
 
 
         private HashMap fields = new HashMap();
@@ -300,7 +301,27 @@ public class MirahIndexer extends EmbeddingIndexer {
         {
             return documents;
         }
+        
+        private String getClassName() 
+        {
+            return classNames.isEmpty() ? null : classNames.get(0);
+        }
 
+        private IndexDocument getCurrentDocument() 
+        {
+            return nestedDocuments.isEmpty() ? null : nestedDocuments.get(0);
+        }
+        private IndexDocument addDocument() 
+        {
+            IndexDocument document = support != null ? support.createDocument(indexable) : null;
+            if ( document != null ) 
+            {
+                documents.add(document);
+                nestedDocuments.add(0,document);
+            }
+            return document;
+        }
+        
         public void analyze( Node node )
         {
             node.accept(this, null);
@@ -328,10 +349,12 @@ public class MirahIndexer extends EmbeddingIndexer {
             
             sb.append(';');
             prepareLocation(node, sb);
-            if ( document != null ) document.addPair(METHOD_NAME, sb.toString(), true, true);
+//            if ( document != null ) document.addPair(METHOD_NAME, sb.toString(), true, true);
+            if (getCurrentDocument() != null)
+                getCurrentDocument().addPair(METHOD_NAME, sb.toString(), true, true);
             
 //      LOG.info(MirahIndexer.class, "enterMethodDefinition name=" + node.name().identifier()+" file="+file.getName()+" node="+node);
-            LOG.info(MirahIndexer.class, ""+className+": METHOD_NAME="+sb.toString());
+            LOG.info(MirahIndexer.class, ""+getClassName()+": METHOD_NAME="+sb.toString());
 //            if ( node.type() != null && node.type().typeref() != null )
 //            LOG.info(MirahIndexer.class, "return="+node.type().typeref().name()+" array="+node.type().typeref().isArray()+" static="+node.type().typeref().isStatic());
             return true;
@@ -366,9 +389,15 @@ public class MirahIndexer extends EmbeddingIndexer {
         }
 
         @Override
-        public boolean enterInterfaceDeclaration(InterfaceDeclaration node, Object arg ) 
+        public boolean enterInterfaceDeclaration( InterfaceDeclaration node, Object arg ) 
         {
             return enterClassDefinition(node, arg);
+        }
+
+        @Override
+        public Object exitInterfaceDeclaration( InterfaceDeclaration node, Object arg ) 
+        {
+            return exitClassDefinition(node, arg);
         }
        
         @Override
@@ -376,7 +405,12 @@ public class MirahIndexer extends EmbeddingIndexer {
         {
             return enterClassDefinition(node, arg);
         }
-        
+
+        @Override
+        public Object exitClosureDefinition(ClosureDefinition node, Object arg) {
+            return exitClassDefinition(node, arg);
+        }
+
         @Override
         public boolean enterClassDefinition( ClassDefinition node, Object arg ) 
         {
@@ -384,6 +418,7 @@ public class MirahIndexer extends EmbeddingIndexer {
                 return true;
             }
 //            String className = "";
+            String className = "";
             if ( packageName != null ) className = packageName + ".";
             className += node.name().identifier();
 
@@ -399,14 +434,13 @@ public class MirahIndexer extends EmbeddingIndexer {
     //        document.addPair(CONSTRUCTOR, "ctor()", true, true);            
             document.addPair(URL, file.getPath(), true, true);            
     */
-            document = support != null ? support.createDocument(indexable) : null;
-            if ( document != null )
+            addDocument();
+            if ( getCurrentDocument() != null )
             {
-                documents.add(document);
-                document.addPair(FQN_NAME, className, true, true);
-                document.addPair(CLASS_NAME, node.name().identifier(), true, true);
-                document.addPair(CLASS_LINE, ""+node.position().startChar(), true, true);
-                document.addPair(CASE_INSENSITIVE_CLASS_NAME, node.name().identifier().toLowerCase(), true, true);
+                getCurrentDocument().addPair(FQN_NAME, className, true, true);
+                getCurrentDocument().addPair(CLASS_NAME, node.name().identifier(), true, true);
+                getCurrentDocument().addPair(CLASS_LINE, ""+node.position().startChar(), true, true);
+                getCurrentDocument().addPair(CASE_INSENSITIVE_CLASS_NAME, node.name().identifier().toLowerCase(), true, true);
 //                document.addPair(URL, file.getPath()+":"+node.position().startLine(), true, true);
             }
 //            System.out.println("FQN_NAME="+className);
@@ -414,12 +448,16 @@ public class MirahIndexer extends EmbeddingIndexer {
     //        System.out.println("FQN_NAME="+className);
     //        prepareLocation(node, sb);
 
+            classNames.add(0,className);
+            
             return super.enterClassDefinition(node, arg);
         }
 
         @Override
         public Object exitClassDefinition( ClassDefinition node,  Object arg ) 
         {
+            classNames.remove(0);
+            nestedDocuments.remove(0);
             return super.exitClassDefinition(node, arg);
         }
 
@@ -490,9 +528,10 @@ public class MirahIndexer extends EmbeddingIndexer {
     //            }
 
 //            System.out.println("CONSTRUCTOR="+sb.toString());
-            if ( document != null ) document.addPair(CONSTRUCTOR, sb.toString(), true, true);
+            if (getCurrentDocument() != null)
+                getCurrentDocument().addPair(CONSTRUCTOR, sb.toString(), true, true);
 
-            LOG.info(MirahIndexer.class, "" + className + ": CONSTRUCTOR=" + sb.toString());
+            LOG.info(MirahIndexer.class, "" + getClassName() + ": CONSTRUCTOR=" + sb.toString());
 
             return super.enterConstructorDefinition(node, arg);
         }
@@ -508,7 +547,7 @@ public class MirahIndexer extends EmbeddingIndexer {
 //                System.out.println("FIELD_ASSIGN="+sb.toString());
 
                 // TODO - gather documentation on fields? naeh
-                if ( document != null ) document.addPair(FIELD_NAME, sb.toString(), true, true);
+                if ( getCurrentDocument() != null ) getCurrentDocument().addPair(FIELD_NAME, sb.toString(), true, true);
                 fields.put(node.name().identifier(), null);
             }
             return super.enterFieldAssign(node, arg);
@@ -539,7 +578,8 @@ public class MirahIndexer extends EmbeddingIndexer {
 //                System.out.println("FIELD_NAME="+sb.toString());
 
             // TODO - gather documentation on fields? naeh
-            if ( document != null ) document.addPair(FIELD_NAME, sb.toString(), true, true);
+            if (getCurrentDocument() != null)
+                getCurrentDocument().addPair(FIELD_NAME, sb.toString(), true, true);
             return super.enterFieldDeclaration(node, arg);
         }
     //    public boolean enterInclude(Include node, Object arg) {
