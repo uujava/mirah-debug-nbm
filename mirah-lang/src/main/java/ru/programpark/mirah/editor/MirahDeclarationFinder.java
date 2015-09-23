@@ -9,6 +9,7 @@ package ru.programpark.mirah.editor;
 import ca.weblite.netbeans.mirah.LOG;
 import ca.weblite.netbeans.mirah.cc.AstSupport;
 import ca.weblite.netbeans.mirah.hyperlinks.HyperlinkElement;
+import ca.weblite.netbeans.mirah.lexer.MirahLanguageHierarchy;
 import ca.weblite.netbeans.mirah.lexer.MirahParser;
 import ca.weblite.netbeans.mirah.lexer.MirahTokenId;
 import com.sun.source.tree.Tree;
@@ -46,13 +47,16 @@ import mirah.lang.ast.ModifierList;
 import mirah.lang.ast.Node;
 import mirah.lang.ast.NodeList;
 import mirah.lang.ast.NodeScanner;
+import mirah.lang.ast.RequiredArgument;
 import mirah.lang.ast.Script;
 import mirah.lang.ast.Self;
 import mirah.lang.ast.SimpleString;
+import mirah.lang.ast.Super;
 import mirah.lang.ast.TypeName;
 import mirah.lang.ast.TypeNameList;
 import mirah.lang.ast.TypeRef;
 import mirah.lang.ast.TypeRefImpl;
+import org.mirah.typer.MethodType;
 import org.mirah.typer.ResolvedType;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
@@ -325,6 +329,12 @@ public class MirahDeclarationFinder implements DeclarationFinder {
                 name = ((SimpleString) node).identifier();
             }
             
+            if ( node instanceof Super )
+            {
+                //todo - переход к методу суперкласса
+                //todo - анализ сигнатуры
+            }
+            
             // это, скорее всего, название класса в операторе приведения типов
             if (node instanceof TypeRefImpl) {
                 return processRef((TypeRefImpl) node, bdoc, parsed, MirahIndex.get(fo));
@@ -335,12 +345,34 @@ public class MirahDeclarationFinder implements DeclarationFinder {
                 Constant cnst = (Constant)node;
 //                cnst.typeref()
                 ResolvedType type = parsed.getResolvedTypes().get(node);
+                if ( type == null && node.parent() != null )
+                {
+                    // это тип аргумента функции
+                    /*
+                    if (node.parent() instanceof RequiredArgument) {
+                        type = parsed.getResolvedTypes().get(node.parent());
+                    }
+                    // это тип возвращаемого значения
+                    if (node.parent() instanceof MethodDefinition) {
+                        type = parsed.getResolvedTypes().get(node.parent());
+                    }
+                    */
+                    type = parsed.getResolvedTypes().get(node.parent());
+                }
+                
                 if ( type != null )
                 {
 //                    boolean b1 = type.isBlock();
 //                    boolean b2 = type.isInterface();
 //                    boolean b3 = type.isError();
+
                     String fqn = type.name();
+                    
+                    // возвращаемое значение для метода
+                    if ( type instanceof MethodType )
+                    {
+                        fqn = ((MethodType)type).returnType().name();
+                    }
                     if (!primitivesMap.containsKey(fqn)) {
                         return findType(fqn, OffsetRange.NONE, bdoc, info, MirahIndex.get(fo));
                     }
@@ -389,6 +421,7 @@ public class MirahDeclarationFinder implements DeclarationFinder {
                     return;
 
                 Token<MirahTokenId> t = ts.token();
+                Token<MirahTokenId> tprev = null;
 
                 if ( t.id().is(Tokens.tJavaDoc)) {
                     // javadoc hyperlinking (references + param names)
@@ -409,6 +442,10 @@ public class MirahDeclarationFinder implements DeclarationFinder {
                     if (!ts.moveNext())
                         return;
                     t = ts.token();
+//                    if ( ts.movePrevious() && ts.movePrevious() )
+//                    {
+//                        tprev = ts.token();
+//                    }
 //                    if (!USABLE_TOKEN_IDS.contains(t.id()))
 //                        return;
                 }
@@ -422,7 +459,9 @@ public class MirahDeclarationFinder implements DeclarationFinder {
                     t.id().is(Tokens.tSuper) ||
                     t.id().is(Tokens.tSuper) ||
                     t.id().is(Tokens.tCONSTANT) ||
-                    t.id().is(Tokens.tInstVar) ) {
+                    t.id().is(Tokens.tInstVar) ||
+                    t.id().ordinal() == MirahLanguageHierarchy.TYPE_HINT ||
+                    t.id().ordinal() == MirahLanguageHierarchy.CLASS_DECLARATION) {
                     ret[0] = new OffsetRange(ts.offset(), ts.offset() + t.length());
                 }
             }
