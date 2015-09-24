@@ -139,7 +139,7 @@ public class MirahParser extends Parser {
         );
 
         String newContent = snapshot.getText().toString();
-        LOG.info(null, "----- Parsing Start: " + snapshot.getSource().getFileObject().getNameExt() + " -----");
+//        LOG.info(null, "----- Parsing Start: " + snapshot.getSource().getFileObject().getNameExt() + " -----");
 //        LOG.info(this, "newContent = "+newContent);
         boolean changed = oldContent == null || !oldContent.equals(newContent);
 //        LOG.info(this, "changed = " + changed);
@@ -171,9 +171,8 @@ public class MirahParser extends Parser {
             {
                 LOG.exception(this,e);
             }
-            
         }
-        LOG.info(null, "----- Parsing End  : " + snapshot.getSource().getFileObject().getNameExt() + " Elapsed: "+(System.currentTimeMillis()-start)+" msec -----");
+        LOG.info(null, "Parsing " + snapshot.getSource().getFileObject().getNameExt() + " Elapsed: "+(System.currentTimeMillis()-start)+" msec");
     }
 
     public void reparse(Snapshot snapshot) throws ParseException {

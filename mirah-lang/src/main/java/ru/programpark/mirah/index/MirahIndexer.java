@@ -15,6 +15,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -36,6 +37,7 @@ import mirah.lang.ast.Node;
 import mirah.lang.ast.NodeScanner;
 import mirah.lang.ast.RequiredArgument;
 import mirah.lang.ast.StaticMethodDefinition;
+import mirah.lang.ast.TypeName;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.editor.BaseDocument;
@@ -56,29 +58,19 @@ import mirah.objectweb.asm.tree.ClassNode;
 
 public class MirahIndexer extends EmbeddingIndexer {
 
-    // class
-    public static final String FQN_NAME = "fqn"; //NOI18N
-    public static final String CLASS_NAME = "class"; //NOI18N
-    public static final String CASE_INSENSITIVE_CLASS_NAME = "class-ig"; //NOI18N
-    // not indexed
-    public static final String IN = "in"; //NOI18N
+    public static final String FQN_NAME = "fqn"; // class
+    public static final String CLASS_NAME = "class";
+    public static final String CASE_INSENSITIVE_CLASS_NAME = "class-ig";
+    public static final String IN = "in"; // not indexed
     /** Attributes: hh;nnnn where hh is a hex representing flags in IndexedClass, and nnnn is the documentation length */
-    public static final String CLASS_ATTRS = "attrs"; //NOI18N
-
-    // method
-    public static final String METHOD_NAME = "method"; //NOI18N
-
-    // constructor
-    public static final String CONSTRUCTOR = "ctor"; //NOI18N
-
-    // field
-    public static final String FIELD_NAME = "field"; //NOI18N
-
-    public static final String CLASS_LINE = "line"; //NOI18N
-//    static final String URL = "url"; //NOI18N
-    
+    public static final String CLASS_ATTRS = "attrs";
+    public static final String METHOD_NAME = "method";
+    public static final String CONSTRUCTOR = "ctor";
+    public static final String FIELD_NAME = "field";
+    public static final String CLASS_OFFSET = "offset";
+    public static final String SUPER_CLASS = "suprclass";
     /** Attributes: "i" -> private, "o" -> protected, ", "s" - static/notinstance, "d" - documented */
-    //static final String ATTRIBUTE_NAME = "attribute"; //NOI18N
+    //static final String ATTRIBUTE_NAME = "attribute";
 
     private static FileObject preindexedDb;
 
@@ -166,7 +158,7 @@ public class MirahIndexer extends EmbeddingIndexer {
             long indexerThisRunTime = indexerThisStopTime - indexerThisStartTime;
             indexerRunTime += indexerThisRunTime;
 
-            LOG.info(this, "Indexed File: " + parserResult.getSnapshot().getSource().getFileObject().getNameExt()+" Time = "+indexerThisRunTime+" ms");
+            LOG.info(null, "Indexed File: " + parserResult.getSnapshot().getSource().getFileObject().getNameExt()+" Time = "+indexerThisRunTime+" ms");
             /*
             LOG.info(this, "---------------------------------------------------------------------------------");
             LOG.info(this,"Indexed File                : "+parserResult.getSnapshot().getSource().getFileObject().getPath());
@@ -337,7 +329,11 @@ public class MirahIndexer extends EmbeddingIndexer {
     //            sb.append(';').append(org.netbeans.modules.groovy.editor.java.Utilities.translateClassLoaderTypeName(
     //                    childNode.getReturnType().getName()));
             
-            if ( node.name().identifier() == "call" )
+            if ( "call".equals(node.name().identifier()) )
+            {
+                int _t = 0;
+            }
+            if ( "build".equals(node.name().identifier()) )
             {
                 int _t = 0;
             }
@@ -354,7 +350,7 @@ public class MirahIndexer extends EmbeddingIndexer {
                 getCurrentDocument().addPair(METHOD_NAME, sb.toString(), true, true);
             
 //      LOG.info(MirahIndexer.class, "enterMethodDefinition name=" + node.name().identifier()+" file="+file.getName()+" node="+node);
-            LOG.info(MirahIndexer.class, ""+getClassName()+": METHOD_NAME="+sb.toString());
+            LOG.info(null, ""+getClassName()+": METHOD_NAME="+sb.toString());
 //            if ( node.type() != null && node.type().typeref() != null )
 //            LOG.info(MirahIndexer.class, "return="+node.type().typeref().name()+" array="+node.type().typeref().isArray()+" static="+node.type().typeref().isStatic());
             return true;
@@ -417,37 +413,30 @@ public class MirahIndexer extends EmbeddingIndexer {
             if (lastFoundClass != null) {
                 return true;
             }
-//            String className = "";
             String className = "";
             if ( packageName != null ) className = packageName + ".";
             className += node.name().identifier();
-
-    //        LOG.info(MirahIndexer.class, "enterClassDefinition className=" + className);
-
+            
+            for( Iterator it = node.interfaces().iterator() ; it.hasNext() ; )
+            {
+                TypeName typeName = (TypeName)it.next();
+                int _t = 0;
+            }
             fields.clear();
-    /*        
-            document = support.createDocument(indexable);
-            documents.add(document);
-
-            document.addPair(FQN_NAME, className, true, true);
-            document.addPair(CLASS_NAME, node.name().identifier(), true, true);
-    //        document.addPair(CONSTRUCTOR, "ctor()", true, true);            
-            document.addPair(URL, file.getPath(), true, true);            
-    */
             addDocument();
             if ( getCurrentDocument() != null )
             {
                 getCurrentDocument().addPair(FQN_NAME, className, true, true);
                 getCurrentDocument().addPair(CLASS_NAME, node.name().identifier(), true, true);
-                getCurrentDocument().addPair(CLASS_LINE, ""+node.position().startChar(), true, true);
+                getCurrentDocument().addPair(CLASS_OFFSET, ""+node.position().startChar(), true, true);
                 getCurrentDocument().addPair(CASE_INSENSITIVE_CLASS_NAME, node.name().identifier().toLowerCase(), true, true);
-//                document.addPair(URL, file.getPath()+":"+node.position().startLine(), true, true);
-            }
-//            System.out.println("FQN_NAME="+className);
-//            System.out.println("CLASS_NAME="+node.name().identifier());
-    //        System.out.println("FQN_NAME="+className);
-    //        prepareLocation(node, sb);
+                TypeName typeName = node.superclass();
+                if (typeName != null) {
+                    String nn = typeName.typeref().name();
+                    getCurrentDocument().addPair(SUPER_CLASS, typeName.typeref().name(), true, true);    
+                }
 
+            }
             classNames.add(0,className);
             
             return super.enterClassDefinition(node, arg);
@@ -490,6 +479,11 @@ public class MirahIndexer extends EmbeddingIndexer {
         @Override
         public boolean enterConstructorDefinition(ConstructorDefinition node, Object arg) 
         {
+            if (node.position() == null || node.position().startChar() == 0 ) {
+                // это конструктор, вставленный компилятором - его не надо включать в индекс
+                return super.enterConstructorDefinition(node, arg);
+            }
+            
             StringBuilder sb = new StringBuilder();
             sb.append(node.name().identifier());
 //            sb.append(';');

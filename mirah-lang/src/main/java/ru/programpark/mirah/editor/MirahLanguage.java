@@ -169,7 +169,6 @@ public class MirahLanguage extends DefaultLanguageConfig {
 
     @Override
     public OccurrencesFinder getOccurrencesFinder() {
-//        LOG.info(this,"--- getOccurrencesFinder ---");
         return null; //new MirahOccurrencesFinder();
     }
 
@@ -180,43 +179,31 @@ public class MirahLanguage extends DefaultLanguageConfig {
 
     @Override
     public StructureScanner getStructureScanner() {
-//        LOG.info(this,"--- getStructureScanner ---");
-        //LOG.putStack(null);
         return new MirahStructureAnalyzer();
     }
 
     @CheckForNull
     public EmbeddingIndexerFactory getIndexerFactory() {
-        
-//        LOG.info(this, "--- getIndexerFactory ---" );
-//        LOG.putStack(null);
         return new MirahIndexer.Factory();
     }
 
     @Override
     public DeclarationFinder getDeclarationFinder() {
-//        LOG.info(this,"--- getDeclarationFinder ---");
-//        LOG.putStack(null);
         return new MirahDeclarationFinder();
-//        return null;
     }
 
     @Override
     public InstantRenamer getInstantRenamer() {
-//        LOG.info(this,"--- getInstantRenamer ---");
         return null; //new MirahInstantRenamer();
     }
 
     @Override
     public CodeCompletionHandler getCompletionHandler() {
-//        LOG.info(this,"--- getCompletionHandler ---");
-//        return null; //new MirahCodeCompletionHandler();
         return new CompletionHandler();
     }
 
     @Override
     public KeystrokeHandler getKeystrokeHandler() {
-//        LOG.info(this,"--- getKeystrokeHandler ---");
         return null; //new MirahKeystrokeHandler();
     }
 
@@ -227,7 +214,6 @@ public class MirahLanguage extends DefaultLanguageConfig {
 
     @Override
     public Formatter getFormatter() {
-//        LOG.info(this,"--- getFormatter ---");
         return null; //new MirahFormatter();
     }
 
@@ -239,9 +225,6 @@ public class MirahLanguage extends DefaultLanguageConfig {
     // hintsProvider is registered in layer.xml under "csl-hints" folder
     @Override
     public HintsProvider getHintsProvider() {
-//        LOG.info(this,"--- getHintsProvider ---");
-//        LOG.putStack(null);
         return null; //new MirahHintsProvider();
     }
-//    @Override def getIndexerFactory = new MirahIndexer.Factory
 }

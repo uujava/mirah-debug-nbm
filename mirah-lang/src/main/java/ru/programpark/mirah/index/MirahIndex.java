@@ -604,7 +604,7 @@ public final class MirahIndex {
             flags = IndexedElement.stringToFlag(attrs, 0);
         }
 
-        String lineStr = map.getValue(MirahIndexer.CLASS_LINE);
+        String lineStr = map.getValue(MirahIndexer.CLASS_OFFSET);
         int line = lineStr != null ? Integer.parseInt(lineStr) : 0;
         
         IndexedClass c = IndexedClass.create(simpleName, fqn, map, attrs, flags, line);
