@@ -141,6 +141,8 @@ public class PrintIndex {
                 String signature = cls.getSignature();
                 io.getOut().println("class: " + signature, new IndexHyperlink(cls.getFileObject(), cls.getOffset()));
 //                io.getOut().println("class: "+signature+" "+cls.getFileObject().getPath()+"["+cls.getLine()+"]");
+                if ( cls.getSuperClass() != null && !cls.getSuperClass().isEmpty() )
+                    io.getOut().println("   >" + cls.getSuperClass());
                 Set<IndexedMethod> constructors = index.getConstructors(fqName);
                 for (IndexedMethod con : constructors) {
                     String name = con.getName();

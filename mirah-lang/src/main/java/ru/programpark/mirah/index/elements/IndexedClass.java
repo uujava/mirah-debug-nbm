@@ -13,9 +13,11 @@ public final class IndexedClass extends IndexedElement implements ClassElement {
 
     private final String simpleName;
 
-    private String url = null; // файл с описанием класса
+//    private String url = null; // файл с описанием класса
     
     private int offset = 0; // смещение описания класса в файле
+    
+    private String superClass = null;
     
     protected IndexedClass(IndexResult result, String fqn, String simpleName, String attributes, int flags, int offset) {
         super(result, fqn, attributes, flags);
@@ -45,6 +47,16 @@ public final class IndexedClass extends IndexedElement implements ClassElement {
         return new HashSet<Modifier>();
     }
 
+    public void setSuperClass( String superClass )
+    {
+        this.superClass = superClass;
+    }
+    
+    public String getSuperClass()
+    {
+        return superClass;
+    }
+    
 //    public String getUrl() {
 //        return url;
 //    }

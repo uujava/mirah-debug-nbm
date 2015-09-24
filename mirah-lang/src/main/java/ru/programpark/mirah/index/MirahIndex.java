@@ -239,6 +239,7 @@ public final class MirahIndex {
             
             IndexedClass newClass = createClass(fqn, simpleName, map);
 //            newClass.setUrl(map.getValue(MirahIndexer.URL));
+            newClass.setSuperClass(map.getValue(MirahIndexer.SUPER_CLASS));
             classes.add(newClass);
         }
 
@@ -399,6 +400,12 @@ public final class MirahIndex {
                 result.add(indexedClass);
         }
         return result;
+    }
+
+    public String findSuperClassByFqn( String fqName )
+    {
+        Set<IndexedClass> classes = findClassesByFqn(fqName);
+        return classes.isEmpty() ? null : classes.iterator().next().getSuperClass();
     }
 
     /**

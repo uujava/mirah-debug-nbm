@@ -716,9 +716,33 @@ public class MirahDeclarationFinder implements DeclarationFinder {
 
         Set<IndexedMethod> methods = new HashSet<IndexedMethod>(methodSet);
 
+        // простейший способ проверки сигнатуры метода
+        //todo нужно проверять интерфейсы
+        StringBuffer sb = new StringBuffer(methodName);
+        sb.append("(");
+        if ( parameterTypes != null )
+        {
+            for( int i = 0 ; i < parameterTypes.size() ; i++ )
+            {
+                if (i != 0) sb.append(",");
+                
+                String type = parameterTypes.get(i).toString();
+                // замыкания заменяю на суперклассы
+                if (type.indexOf("$Closure") != -1 || type.indexOf("$ZBinding") != -1) {
+                    type = index.findSuperClassByFqn(type);
+                }
+                if ( type.lastIndexOf('.') != -1 ) type = type.substring(type.lastIndexOf('.')+1);
+                sb.append(type);
+            }
+        }
+        sb.append(")");
+        
+        String signature = sb.toString();
+        
         for( IndexedMethod method : methods )
         {
-            if ( method.getName().startsWith(methodName)) return method;
+            if ( method.getSignature().startsWith(signature))
+                return method;
         }
         return null;
     }
