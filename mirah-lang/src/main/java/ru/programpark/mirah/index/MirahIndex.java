@@ -56,25 +56,14 @@ public final class MirahIndex {
     }
 
     public static MirahIndex get(FileObject fo) {
-		// Sources - ClassPath.SOURCE and translated ClassPath.COMPILE & ClassPath.BOOT
-		Collection<FileObject> srcRoots = QuerySupport.findRoots(
-				(Project)null,
-				Collections.singleton(ClassPath.SOURCE),
-				Collections.<String>emptySet(),
-				Collections.<String>emptySet());
+        // Sources - ClassPath.SOURCE and translated ClassPath.COMPILE & ClassPath.BOOT
+        Collection<FileObject> srcRoots = QuerySupport.findRoots(
+                        (Project)null,
+                        Collections.singleton(ClassPath.SOURCE),
+                        Collections.<String>emptySet(),
+                        Collections.<String>emptySet());
 
-		int count = srcRoots.size();
-
-		Collection<FileObject> coll = QuerySupport.findRoots(fo, Collections.singleton(ClassPath.SOURCE), null, null);
-		int count2 = coll.size();
-		int i = 0;
-        for( FileObject f1 : coll)
-        {
-            String n = f1.getPath();
-            LOG.info(null, "MirahIndex get [" +i + "] ="+ f1);
-            i++;
-            int t = 0;
-        }
+        Collection<FileObject> coll = QuerySupport.findRoots(fo, Collections.singleton(ClassPath.SOURCE), null, null);
         Project project = FileOwnerQuery.getOwner(fo);
         if ( project != null ) coll.add(project.getProjectDirectory());
 
@@ -121,7 +110,7 @@ public final class MirahIndex {
      *   class, one for each declaration point.
      */
     
-    //todo - добавить список полей в результатах поиска!!!
+     //todo - добавить список полей в результатах поиска!!!
     
     public Set<IndexedClass> getClasses(String name, QuerySupport.Kind kind) {
         String classFqn = null;
@@ -423,7 +412,7 @@ public final class MirahIndex {
                 staticFields.add(field);
             }
         }
-        return staticFields;
+        return staticFields;   
     }
 
     public Set<IndexedField> getFields(final String name, final String clz, QuerySupport.Kind kind) {
