@@ -13,8 +13,7 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import ru.programpark.mirah.editor.ast.AstPath;
 import ru.programpark.mirah.editor.ast.Variable;
-import ru.programpark.mirah.tests.LexUtilities;
-import sun.tools.tree.CatchStatement;
+import ru.programpark.mirah.editor.utils.LexUtilities;
 
 /**
  * Visitor that find variables usable at given offset. This include

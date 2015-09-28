@@ -1,27 +1,13 @@
 package ru.programpark.mirah.index;
 
-import ca.weblite.asm.ClassFinder;
-import ca.weblite.asm.MirahClassIndex;
-import ca.weblite.asm.MirahClassLoader;
-import ca.weblite.asm.WLMirahCompiler;
 import ca.weblite.netbeans.mirah.LOG;
 import ca.weblite.netbeans.mirah.lexer.MirahParser;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import mirah.lang.ast.Arguments;
 import mirah.lang.ast.ClassDefinition;
 import mirah.lang.ast.ClosureDefinition;
@@ -38,22 +24,16 @@ import mirah.lang.ast.NodeScanner;
 import mirah.lang.ast.RequiredArgument;
 import mirah.lang.ast.StaticMethodDefinition;
 import mirah.lang.ast.TypeName;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
-import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexer;
 import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexDocument;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexingSupport;
-import mirah.objectweb.asm.ClassWriter;
-import mirah.objectweb.asm.Opcodes;
 import mirah.objectweb.asm.tree.ClassNode;
 
 public class MirahIndexer extends EmbeddingIndexer {
@@ -416,6 +396,8 @@ public class MirahIndexer extends EmbeddingIndexer {
             String className = "";
             if ( packageName != null ) className = packageName + ".";
             className += node.name().identifier();
+
+            LOG.info(null, "Add document " + className);
             
             for( Iterator it = node.interfaces().iterator() ; it.hasNext() ; )
             {
@@ -438,7 +420,6 @@ public class MirahIndexer extends EmbeddingIndexer {
 
             }
             classNames.add(0,className);
-            
             return super.enterClassDefinition(node, arg);
         }
 
@@ -462,6 +443,7 @@ public class MirahIndexer extends EmbeddingIndexer {
     //          }
     //          scopeStack.peek().addImport(node.fullName().identifier());
 //            System.out.println("Entering import: "+node.fullName().identifier());
+            
             return super.enterImport(node, arg);
         }
     //    public boolean enterAnnotation(Annotation node, Object arg) {
@@ -580,7 +562,34 @@ public class MirahIndexer extends EmbeddingIndexer {
         @Override
         public boolean enterMacroDefinition(MacroDefinition node, Object arg) 
         {
+            /*
+            try {
+                StringBuilder sb = new StringBuilder(); //ASTUtils.getDefSignature(childNode));
+                sb.append(node.name().identifier());
+                prepareArguments(node.arguments(), sb);
+                sb.append(';');
+                sb.append(';');
+    //            prepareModifiers(node.modifiers(), sb);
+
+                sb.append(';');
+                prepareLocation(node, sb);
+                if (getCurrentDocument() != null) {
+                    getCurrentDocument().addPair(METHOD_NAME, sb.toString(), true, true);
+                }
+                LOG.info(null, "" + getClassName() + ": MACRO_NAME=" + sb.toString());
+            } catch (Exception e) {
+                e.printStackTrace();
+                LOG.info(null, "Add macro " + node.name().identifier() + " EXCEPTION=" + e);
+            }
+            */
             return super.enterMacroDefinition(node, arg);
+        }
+        
+        @Override
+        public Object exitMacroDefinition(MacroDefinition node, Object arg) {
+//            classNames.remove(0);
+//            nestedDocuments.remove(0);
+            return super.exitMacroDefinition(node, arg);
         }
     //    public boolean enterModifier(Modifier node, Object arg) {
     //    public boolean enterOptionalArgument(OptionalArgument node, Object arg) {

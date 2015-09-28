@@ -755,11 +755,11 @@ public final class MirahIndex {
             return false;
         }
     }
-
+    /*
     public static void setClusterUrl(String url) {
         clusterUrl = url;
     }
-
+    
     static String getPreindexUrl(String url) {
         String s = getClusterUrl();
 
@@ -769,7 +769,7 @@ public final class MirahIndex {
 
         return url;
     }
-
+    
     static String getClusterUrl() {
         if (clusterUrl == null) {
             File f =
@@ -792,4 +792,5 @@ public final class MirahIndex {
 
         return clusterUrl;
     }
-}
+    */
+}   

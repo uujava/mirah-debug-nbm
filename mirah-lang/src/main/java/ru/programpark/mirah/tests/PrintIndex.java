@@ -14,11 +14,9 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.openide.cookies.EditorCookie;
-import org.openide.cookies.LineCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.text.Line;
-import org.openide.util.Exceptions;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 import org.openide.windows.OutputEvent;
@@ -72,28 +70,10 @@ final class IndexHyperlink implements OutputListener {
             if (cookie == null) {
                 throw new java.io.FileNotFoundException();
             }
-            
-            /*
-            LineCookie cookie = dobj.getCookie(LineCookie.class);
-            if (cookie == null) {
-                throw new java.io.FileNotFoundException();
-            } else {
-                xline = cookie.getLineSet().getCurrent(line-1);
-            }
-                    */
         } catch (Exception e) {
             e.printStackTrace();
         }
         if ( xline != null ) xline.show(Line.SHOW_GOTO);
-//        Line nbLine = NbEditorUtilities.getLine(
-//                editorPane.getDocument,
-//                documentOffsetForLine,
-//                false);
-//// display to the output window
-//        ow.println(theLineNumber.toString, new OutList(nbLine, offset));
-
-        
-        
         
     }
 }
@@ -155,13 +135,6 @@ public class PrintIndex {
                     io.getOut().println("... "+meth.getSignature());
                 }
             }
-//            Set<IndexedMethod> methods = index.getMethods(null, null, QuerySupport.Kind.PREFIX);
-//            for( IndexedMethod me : methods )
-//            {
-//                String name = me.getName();
-//                String signature = me.getSignature();
-//                io.getOut().println("method: "+signature);
-//            }
         }
         catch( Exception e ) 
         {

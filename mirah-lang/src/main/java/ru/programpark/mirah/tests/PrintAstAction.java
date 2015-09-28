@@ -5,18 +5,11 @@
  */
 package ru.programpark.mirah.tests;
 
-import ca.weblite.netbeans.mirah.LOG;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.File;
-import java.lang.reflect.Method;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLClassLoader;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionRegistration;
-import org.openide.util.Lookup;
 
 /**
  *
@@ -24,10 +17,6 @@ import org.openide.util.Lookup;
  */
 @ActionID(category = "File",id = "ru.programpark.mirah.tests.PrintAstAction")
 @ActionRegistration(displayName = "Print Ast Path")
-//@ActionReferences({@ActionReference(path = "Menu/File",position = 1200)
-//,@ActionReference(path = "Menu/Window",position = 1200)
-//,@ActionReference(path = "Menu/Edit",position = 1200)
-//})
 @ActionReference(path = "Menu/File",position = 1220)
 public final class PrintAstAction implements ActionListener {
     

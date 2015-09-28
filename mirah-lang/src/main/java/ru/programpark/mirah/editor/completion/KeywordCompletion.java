@@ -14,7 +14,7 @@ import ru.programpark.mirah.editor.api.completion.CaretLocation;
 import ru.programpark.mirah.editor.api.completion.CompletionItem;
 import ru.programpark.mirah.editor.api.completion.KeywordCategory;
 import ru.programpark.mirah.editor.api.completion.MirahKeyword;
-import ru.programpark.mirah.tests.LexUtilities;
+import ru.programpark.mirah.editor.utils.LexUtilities;
 
 /**
  * Complete Groovy or Java Keywords.

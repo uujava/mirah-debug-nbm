@@ -29,20 +29,8 @@ import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
-import ru.programpark.mirah.tests.LexUtilities;
+import ru.programpark.mirah.editor.utils.LexUtilities;
 import ru.programpark.mirah.index.elements.IndexedElement;
-//import ru.programpark.mirah.editor.ast.expr.ClassExpression;
-//import ru.programpark.mirah.editor.ast.expr.ClosureExpression;
-//import ru.programpark.mirah.editor.ast.expr.ConstantExpression;
-//import ru.programpark.mirah.editor.ast.expr.ConstructorCallExpression;
-//import ru.programpark.mirah.editor.ast.expr.Expression;
-//import ru.programpark.mirah.editor.ast.expr.MethodCallExpression;
-//import ru.programpark.mirah.editor.ast.expr.VariableExpression;
-//import ru.programpark.mirah.editor.ast.stmt.BlockStatement;
-//import ru.programpark.mirah.editor.ast.stmt.ForStatement;
-//import ru.programpark.mirah.editor.ast.stmt.Statement;
-//import ru.programpark.mirah.editor.utils.LexUtilities;
-//import ru.programpark.mirah.index.elements.IndexedElement;
 
 /**
  *

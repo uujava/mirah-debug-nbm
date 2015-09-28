@@ -6,27 +6,21 @@
 
 package ru.programpark.mirah.editor;
 
-import ca.weblite.netbeans.mirah.LOG;
 import ca.weblite.netbeans.mirah.cc.AstSupport;
-import ca.weblite.netbeans.mirah.hyperlinks.HyperlinkElement;
 import ca.weblite.netbeans.mirah.lexer.MirahLanguageHierarchy;
 import ca.weblite.netbeans.mirah.lexer.MirahParser;
 import ca.weblite.netbeans.mirah.lexer.MirahTokenId;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.Trees;
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
-import java.util.logging.Level;
-import java.util.regex.Pattern;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
@@ -36,25 +30,20 @@ import javax.lang.model.util.Elements;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import mirah.impl.Tokens;
-import mirah.lang.ast.AnnotationList;
 import mirah.lang.ast.Call;
 import mirah.lang.ast.ClassDefinition;
 import mirah.lang.ast.Constant;
 import mirah.lang.ast.FunctionalCall;
 import mirah.lang.ast.Import;
 import mirah.lang.ast.MethodDefinition;
-import mirah.lang.ast.ModifierList;
 import mirah.lang.ast.Node;
 import mirah.lang.ast.NodeList;
 import mirah.lang.ast.NodeScanner;
-import mirah.lang.ast.RequiredArgument;
 import mirah.lang.ast.Script;
 import mirah.lang.ast.Self;
 import mirah.lang.ast.SimpleString;
 import mirah.lang.ast.Super;
 import mirah.lang.ast.TypeName;
-import mirah.lang.ast.TypeNameList;
-import mirah.lang.ast.TypeRef;
 import mirah.lang.ast.TypeRefImpl;
 import org.mirah.typer.MethodType;
 import org.mirah.typer.ResolvedType;
@@ -67,33 +56,23 @@ import org.netbeans.api.java.source.Task;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.DeclarationFinder;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.parsing.api.ParserManager;
-import org.netbeans.modules.parsing.api.ResultIterator;
-import org.netbeans.modules.parsing.api.Source;
-import org.netbeans.modules.parsing.api.UserTask;
-import org.netbeans.modules.parsing.spi.ParseException;
-import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
 import ru.programpark.mirah.editor.ast.ASTUtils;
 import ru.programpark.mirah.editor.ast.AstPath;
 import ru.programpark.mirah.editor.java.ElementDeclaration;
 import ru.programpark.mirah.editor.java.ElementSearch;
-import ru.programpark.mirah.editor.utils.MirahUtils;
+import ru.programpark.mirah.editor.utils.LexUtilities;
 import ru.programpark.mirah.index.MirahIndex;
 import ru.programpark.mirah.index.elements.IndexedClass;
 import ru.programpark.mirah.index.elements.IndexedElement;
 import ru.programpark.mirah.index.elements.IndexedMethod;
-import ru.programpark.mirah.tests.LexUtilities;
 
 /**
  *
@@ -202,7 +181,9 @@ public class MirahDeclarationFinder implements DeclarationFinder {
         {
             superClassName = classDef.superclass().typeref().name();
         }
-        DeclarationLocation location = findMethod(methodName, null, returnType, parameterTypes, parsed, index);
+        ResolvedType rtype = parsed.getResolvedType(call);
+        String fqn = (rtype != null) ? rtype.name() : null;
+        DeclarationLocation location = findMethod(methodName, fqn, returnType, parameterTypes, parsed, index);
         return location == null ? DeclarationLocation.NONE : location;
     }
 
@@ -944,9 +925,10 @@ public class MirahDeclarationFinder implements DeclarationFinder {
                     if (typeElement != null) {
                         for (ExecutableElement javaMethod : ElementFilter.methodsIn(typeElement.getEnclosedElements())) {
 //                            if (Methods.isSameMethod(javaMethod, methodCall)) {
-                            Name n = javaMethod.getSimpleName();
-                            String simpleName = n.toString();
-                            if ( javaMethod.getSimpleName().equals(methodName)) {
+                            Name name = javaMethod.getSimpleName();
+                            String simpleName = name.toString();
+//                            if ( javaMethod.getSimpleName().equals(methodName)) {
+                            if (simpleName.equals(methodName)) {
                                 handles[0] = ElementHandle.create(javaMethod);
                             }
                         }

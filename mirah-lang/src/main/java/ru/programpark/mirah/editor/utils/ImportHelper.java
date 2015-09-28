@@ -1,9 +1,7 @@
 
 package ru.programpark.mirah.editor.utils;
 
-import ru.programpark.mirah.tests.LexUtilities;
 import ca.weblite.netbeans.mirah.lexer.MirahTokenId;
-import java.awt.Dialog;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -34,11 +32,8 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.csl.api.EditList;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
-import org.openide.util.NbBundle;
 import ru.programpark.mirah.index.MirahIndex;
 import ru.programpark.mirah.index.elements.IndexedClass;
 

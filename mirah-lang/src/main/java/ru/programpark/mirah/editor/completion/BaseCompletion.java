@@ -15,7 +15,7 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.CompletionProposal;
 import org.openide.filesystems.FileObject;
 import ru.programpark.mirah.editor.api.completion.util.CompletionContext;
-import ru.programpark.mirah.tests.LexUtilities;
+import ru.programpark.mirah.editor.utils.LexUtilities;
 
 /**
  *

@@ -5,52 +5,24 @@
  */
 package ru.programpark.mirah.tests;
 
-import ca.weblite.netbeans.mirah.LOG;
 import ca.weblite.netbeans.mirah.lexer.MirahParser;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.net.URL;
-import java.net.URLConnection;
 import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
-import mirah.lang.ast.AnnotationList;
 import mirah.lang.ast.Node;
-import mirah.lang.ast.*;
 import org.mirah.typer.ResolvedType;
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.csl.api.CodeCompletionContext;
-import org.netbeans.modules.csl.api.CodeCompletionHandler;
-import org.netbeans.modules.csl.api.CodeCompletionResult;
-import org.netbeans.modules.csl.api.CompletionProposal;
-import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
-import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.Parser.Result;
-import org.openide.cookies.LineCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
-import org.openide.text.Line;
-import org.openide.util.Exceptions;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
-import org.openide.windows.OutputEvent;
-import org.openide.windows.OutputListener;
-import static ru.programpark.mirah.tests.ParseMirah.dumpTokens;
 import static ru.programpark.mirah.tests.ParseMirah.getFileObject;
-import ru.programpark.mirah.editor.api.completion.CompletionHandler;
 import ru.programpark.mirah.editor.ast.ASTUtils;
-import ru.programpark.mirah.editor.ast.AstPath;
 
 /**
  *
@@ -58,20 +30,10 @@ import ru.programpark.mirah.editor.ast.AstPath;
  */
 public class PrintAst {
 
-//    static String mirah_file_name = "c:\\mirah-debug\\mavenproject1\\src\\main\\java\\ru\\pp\\MirahClass22.mirah";
-    
-//    public static void putProposals(List<CompletionProposal> proposals)
-    
-    
     public static void putException( Exception e)
     {
         final InputOutput io = IOProvider.getDefault().getIO("Proposals", false);
         try {
-//            io.getOut().println("proposal count = "+proposals.size());
-//            for( CompletionProposal proposal : proposals )
-//            {
-//                io.getOut().println("proposal = "+proposal);
-//            }
             for( StackTraceElement st : e.getStackTrace() )
                 io.getOut().println(">>"+st);
         }
@@ -105,49 +67,6 @@ public class PrintAst {
         long curr = System.currentTimeMillis();
         try {
             io.getOut().println("------------- caretOffset=" + caretOffset + " ---------------------");
-            /*
-            AstPath path = ASTUtils.getPath(parsed, bdoc, caretOffset);
-            io.getOut().println("==== PREPARE AST PATH TIME: " + (System.currentTimeMillis() - curr) + " msec");
-            if (path == null) {
-                return;
-            }
-            for (Iterator<Node> it = path.iterator(); it.hasNext();) {
-                Node node = it.next();
-                if (node instanceof AnnotationList
-                || node instanceof TypeNameList
-                || node instanceof Arguments
-                || node instanceof OptionalArgumentList
-                || node instanceof RequiredArgumentList
-                || node instanceof ModifierList) {
-                   // continue;
-                }
-                putNode(parsed,node,io);
-                /*
-                ResolvedType type = parsed.getResolvedTypes().get(node);
-                if ( type != null )
-                io.getOut().println("AST: "+node
-                            + " ["+ node.position().startLine()+"," + node.position().startColumn() + "-"+node.position().endLine() 
-                            + "," + node.position().endColumn() +"] {" + node.position().startChar() + "-" + node.position().endChar() + "} "
-                            + node.hashCode() + "/ parent=" + node.parent()+ "/ type: " + type);
-                else
-                io.getOut().println("AST: "+node
-                            + " ["+ node.position().startLine()+","+node.position().startColumn()+"-"+node.position().endLine() 
-                            + "," + node.position().endColumn() +"] {"+node.position().startChar() + "-" + node.position().endChar() + "} " 
-                            + node.hashCode() + "/ parent="+node.parent());
-                *
-            }
-            
-            io.getOut().println("==== LEAF: ");
-            */
-            /*
-            Node leaf = path.findLeaf();
-            while( l1 != null ) 
-            {
-                putNode(parsed, l1, io);
-                leaf = l1.parent();
-            }
-            io.getOut().println("==== LEAF2: ");
-            */
             Node leaf = ASTUtils.findLeaf(parsed, bdoc, caretOffset);
             while (leaf != null) {
                 putNode(parsed, leaf, io);
@@ -163,6 +82,7 @@ public class PrintAst {
     /**
      * Represents a hyperlinked line in an InputOutput.
      */
+    /*
     static final class Hyperlink implements OutputListener {
 
         private final int line;
@@ -217,6 +137,7 @@ public class PrintAst {
             Exceptions.printStackTrace(ex);
         }
     }
+    
     /*
     public static void printAst()
     {

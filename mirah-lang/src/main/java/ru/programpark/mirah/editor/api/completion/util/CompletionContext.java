@@ -6,7 +6,6 @@ import java.util.Set;
 import javax.swing.text.BadLocationException;
 import mirah.impl.Tokens;
 import mirah.lang.ast.ClassDefinition;
-import mirah.lang.ast.FieldDeclaration;
 import mirah.lang.ast.MethodDefinition;
 import mirah.lang.ast.Node;
 import mirah.lang.ast.Script;
@@ -20,7 +19,7 @@ import ru.programpark.mirah.editor.api.completion.CaretLocation;
 import ru.programpark.mirah.editor.ast.ASTUtils;
 import ru.programpark.mirah.editor.ast.AstPath;
 import ru.programpark.mirah.editor.completion.AccessLevel;
-import ru.programpark.mirah.tests.LexUtilities;
+import ru.programpark.mirah.editor.utils.LexUtilities;
 
 /**
  *

@@ -5,18 +5,11 @@
  */
 package ru.programpark.mirah.tests;
 
-import ca.weblite.netbeans.mirah.LOG;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.File;
-import java.lang.reflect.Method;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLClassLoader;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionRegistration;
-import org.openide.util.Lookup;
 
 /**
  *
@@ -37,4 +30,5 @@ public final class PrintIndexAction implements ActionListener {
         };
         action.run();
     }
+    
 }
