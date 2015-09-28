@@ -19,6 +19,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import javax.lang.model.element.Element;
@@ -33,10 +34,12 @@ import mirah.impl.Tokens;
 import mirah.lang.ast.Call;
 import mirah.lang.ast.ClassDefinition;
 import mirah.lang.ast.Constant;
+import mirah.lang.ast.FieldAssign;
 import mirah.lang.ast.FunctionalCall;
 import mirah.lang.ast.Import;
 import mirah.lang.ast.MethodDefinition;
 import mirah.lang.ast.Node;
+import mirah.lang.ast.NodeFilter;
 import mirah.lang.ast.NodeList;
 import mirah.lang.ast.NodeScanner;
 import mirah.lang.ast.Script;
@@ -159,31 +162,38 @@ public class MirahDeclarationFinder implements DeclarationFinder {
         String returnType = type == null ? null : type.name();
         String thisClassName = classDef.name().identifier();
         Node target = call.target();
-        NodeList parameters = call.parameters();
-//        while( parameters.iterator().hasNext() )
-//        {
-//        }
-        
         if ( target instanceof Self ) {
             
         }
         
         ArrayList<String> parameterTypes = new ArrayList<String>();
+        NodeList parameters = call.parameters();
         for (Iterator<Node> it = parameters.iterator(); it.hasNext();) {
             Node pnode = (Node) it.next();
             ResolvedType rtype = parsed.getResolvedType(pnode);
             String ptype = rtype == null ? null : rtype.name();
             parameterTypes.add(ptype);
         }
-//        TypeRef typeRef = call.typeref();
-        String superClassName = null;
+        /*
+        String superFqn = null;
         if ( classDef.superclass() != null )
         {
-            superClassName = classDef.superclass().typeref().name();
+//            superClassName = classDef.superclass().typeref().name();
+            ResolvedType stype = parsed.getResolvedType(classDef);
+            if ( stype != null ) superFqn = stype.name();
         }
-        ResolvedType rtype = parsed.getResolvedType(call);
-        String fqn = (rtype != null) ? rtype.name() : null;
+        */
+        ResolvedType ttype = parsed.getResolvedType(target);
+        String fqn = (ttype != null) ? ttype.name() : null;
         DeclarationLocation location = findMethod(methodName, fqn, returnType, parameterTypes, parsed, index);
+        if ( location == null || location == DeclarationLocation.NONE )
+        {
+            // пытаюсь найти в супкрклассе
+            fqn = index.findSuperClassByFqn(fqn);
+            if ( fqn != null && ! fqn.isEmpty())
+                location = findMethod(methodName, fqn, returnType, parameterTypes, parsed, index);
+        }
+        
         return location == null ? DeclarationLocation.NONE : location;
     }
 
