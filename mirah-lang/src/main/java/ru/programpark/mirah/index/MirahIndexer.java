@@ -23,6 +23,7 @@ import mirah.lang.ast.Node;
 import mirah.lang.ast.NodeScanner;
 import mirah.lang.ast.RequiredArgument;
 import mirah.lang.ast.StaticMethodDefinition;
+import mirah.lang.ast.Super;
 import mirah.lang.ast.TypeName;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.Parser.Result;
@@ -35,6 +36,7 @@ import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexDocument;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexingSupport;
 import mirah.objectweb.asm.tree.ClassNode;
+import org.mirah.typer.ResolvedType;
 
 public class MirahIndexer extends EmbeddingIndexer {
 
@@ -116,10 +118,10 @@ public class MirahIndexer extends EmbeddingIndexer {
             Node ast = null; 
             if ( parserResult instanceof MirahParser.NBMirahParserResult )
             {
-                ast = ((MirahParser.NBMirahParserResult)parserResult).getRoot();
-            }
-            if ( ast != null )
-            {
+//                ast = ((MirahParser.NBMirahParserResult)parserResult).getRoot();
+//            }
+//            if ( ast != null )
+//            {
                 IndexingSupport support;
                 try {
                     support = IndexingSupport.getInstance(context);
@@ -127,8 +129,8 @@ public class MirahIndexer extends EmbeddingIndexer {
     //                LOG.exception(this, ioe);
                     return;
                 }
-                IndexScanner scanner = new IndexScanner(parserResult.getSnapshot(),support,indexable);
-                scanner.analyze(ast);
+                IndexScanner scanner = new IndexScanner((MirahParser.NBMirahParserResult)parserResult,support,indexable);
+                scanner.analyze();
                 for (IndexDocument doc : scanner.getDocuments()) {
                     support.addDocument(doc);
                 }
@@ -257,14 +259,14 @@ public class MirahIndexer extends EmbeddingIndexer {
         private String packageName = null;
         private ClassNode lastFoundClass = null;
         private final List<String> classNames = new ArrayList<String>();
-
+        private MirahParser.NBMirahParserResult parsed;
 
         private HashMap fields = new HashMap();
 
-        public IndexScanner( Snapshot snapshot, IndexingSupport support, Indexable indexable )
+        public IndexScanner( MirahParser.NBMirahParserResult parsed, IndexingSupport support, Indexable indexable )
         {
-    //            this.result = result;
-            this.file = snapshot.getSource().getFileObject();
+            this.parsed = parsed;
+            this.file = parsed.getSnapshot().getSource().getFileObject();
             this.support = support;
             this.indexable = indexable;
         }
@@ -294,9 +296,10 @@ public class MirahIndexer extends EmbeddingIndexer {
             return document;
         }
         
-        public void analyze( Node node )
+        public void analyze()
         {
-            node.accept(this, null);
+            Node node = parsed.getRoot();
+            if ( node != null ) node.accept(this, null);
         }
 
         // В индекс записывается строка #{method_name}(#{arguments});#{returned_value};#{modifiers};#{line_number}
@@ -378,7 +381,7 @@ public class MirahIndexer extends EmbeddingIndexer {
        
         @Override
         public boolean enterClosureDefinition(ClosureDefinition node, Object arg ) 
-        {
+        { 
             return enterClassDefinition(node, arg);
         }
 
@@ -412,17 +415,18 @@ public class MirahIndexer extends EmbeddingIndexer {
                 getCurrentDocument().addPair(CLASS_NAME, node.name().identifier(), true, true);
                 getCurrentDocument().addPair(CLASS_OFFSET, ""+node.position().startChar(), true, true);
                 getCurrentDocument().addPair(CASE_INSENSITIVE_CLASS_NAME, node.name().identifier().toLowerCase(), true, true);
-                TypeName typeName = node.superclass();
-                if (typeName != null) {
-                    String nn = typeName.typeref().name();
-                    getCurrentDocument().addPair(SUPER_CLASS, typeName.typeref().name(), true, true);    
+                if ( node instanceof ClosureDefinition ) {
+                    TypeName typeName = node.superclass();
+                    if (typeName != null) {
+                        String nn = typeName.typeref().name();
+                        getCurrentDocument().addPair(SUPER_CLASS, typeName.typeref().name(), true, true);    
+                    }
                 }
-
             }
             classNames.add(0,className);
             return super.enterClassDefinition(node, arg);
         }
-
+        
         @Override
         public Object exitClassDefinition( ClassDefinition node,  Object arg ) 
         {
@@ -446,6 +450,20 @@ public class MirahIndexer extends EmbeddingIndexer {
             
             return super.enterImport(node, arg);
         }
+
+        // единственный известный мне способ получить полное имя суперкласса
+        @Override
+        public boolean enterSuper(Super node, Object arg)
+        {
+            ResolvedType type = parsed.getResolvedType(node);
+            if ( type != null ) {
+                String typeName = type.name();
+                getCurrentDocument().addPair(SUPER_CLASS, typeName, true, true);    
+            }
+            return super.enterSuper(node, arg);
+        }
+
+        
     //    public boolean enterAnnotation(Annotation node, Object arg) {
     //    public boolean enterAnnotationList(AnnotationList node, Object arg) {
     //    @Override
