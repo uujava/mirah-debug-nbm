@@ -42,6 +42,10 @@ import mirah.lang.ast.Node;
 import mirah.lang.ast.NodeFilter;
 import mirah.lang.ast.NodeList;
 import mirah.lang.ast.NodeScanner;
+import mirah.lang.ast.OptionalArgument;
+import mirah.lang.ast.OptionalArgumentList;
+import mirah.lang.ast.RequiredArgument;
+import mirah.lang.ast.RequiredArgumentList;
 import mirah.lang.ast.Script;
 import mirah.lang.ast.Self;
 import mirah.lang.ast.SimpleString;
@@ -324,6 +328,24 @@ public class MirahDeclarationFinder implements DeclarationFinder {
             {
                 //todo - переход к методу суперкласса
                 //todo - анализ сигнатуры
+                if (methodDef == null ) return DeclarationLocation.NONE;
+                
+                ArrayList<String> parameterTypes = new ArrayList<String>();
+                RequiredArgumentList args = methodDef.arguments().required();
+                for (int i = 0; i < args.size(); i++) {
+                    RequiredArgument argument = args.get(i);
+                    TypeName typeName = argument.type();
+                    parameterTypes.add(typeName.typeref().name());
+                }
+                OptionalArgumentList opts = methodDef.arguments().optional();
+                for (int i = 0; i < opts.size(); i++) {
+                    OptionalArgument argument = opts.get(i);
+                    TypeName typeName = argument.type();
+                    parameterTypes.add(typeName.typeref().name());
+                }
+                ResolvedType type = parsed.getResolvedType(node);
+                String fqn = (type != null) ? type.name() : null;
+                return findMethod(methodDef.name().identifier(), fqn, methodDef.type().typeref().name(), parameterTypes, parsed, MirahIndex.get(fo));
             }
             
             // это, скорее всего, название класса в операторе приведения типов
