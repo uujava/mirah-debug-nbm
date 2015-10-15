@@ -51,6 +51,7 @@ import mirah.lang.ast.Self;
 import mirah.lang.ast.SimpleString;
 import mirah.lang.ast.Super;
 import mirah.lang.ast.TypeName;
+import mirah.lang.ast.TypeRef;
 import mirah.lang.ast.TypeRefImpl;
 import org.mirah.typer.MethodType;
 import org.mirah.typer.ResolvedType;
@@ -153,6 +154,23 @@ public class MirahDeclarationFinder implements DeclarationFinder {
             }
         }
         return DeclarationLocation.NONE;
+    }
+
+    public String fingClassFqn( MirahParser.NBMirahParserResult parsed, String className )
+    {
+        Node root = parsed.getRoot();
+        if ( root != null )
+        {
+            LinkedList<String> imports = AstSupport.collectImports(root);
+            for( String imp : imports )
+            if ( imp.endsWith(className) && imp.charAt(imp.length() - className.length() - 1) == '.' )
+            {    
+                FileObject fo = parsed.getSnapshot().getSource().getFileObject();
+                BaseDocument doc = (BaseDocument)parsed.getSnapshot().getSource().getDocument(false);
+                return imp;
+            }
+        }
+        return null;
     }
    
     // это вызов метода
@@ -360,6 +378,16 @@ public class MirahDeclarationFinder implements DeclarationFinder {
                 ResolvedType type = parsed.getResolvedTypes().get(node);
                 if ( type == null && node.parent() != null )
                 {
+                    // проверяю ссылку на суперкласс
+                    if (node.parent() instanceof ClassDefinition ) { //&& ((ClassDefinition) node.parent())..s) {
+                       TypeName typeName = ((ClassDefinition) node.parent()).superclass();
+                       if ( typeName == node ) {
+                           String fqn = fingClassFqn(parsed, cnst.identifier());
+                           if (fqn != null) {
+                               return findType(fqn, OffsetRange.NONE, bdoc, info, MirahIndex.get(fo));
+                           }
+                       }
+                    }
                     // это тип аргумента функции
                     /*
                     if (node.parent() instanceof RequiredArgument) {
