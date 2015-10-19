@@ -44,6 +44,7 @@ import mirah.lang.ast.NodeList;
 import mirah.lang.ast.NodeScanner;
 import mirah.lang.ast.OptionalArgument;
 import mirah.lang.ast.OptionalArgumentList;
+import mirah.lang.ast.Package;
 import mirah.lang.ast.RequiredArgument;
 import mirah.lang.ast.RequiredArgumentList;
 import mirah.lang.ast.Script;
@@ -117,15 +118,15 @@ public class MirahDeclarationFinder implements DeclarationFinder {
         
         final String[] packages = new String[1];
         root.accept(new NodeScanner() {
-//            @Override
+            @Override
             public boolean enterPackage(Package node, Object arg) {
-                packages[0] = node.getName();
+                packages[0] = node.name().identifier();
                 return false;
             }
         }, null);
         return packages[0];
     }
-    
+
     public void findSuperClass( ClassDefinition classDef )
     {
         Class cl = classDef.getClass();
@@ -382,10 +383,16 @@ public class MirahDeclarationFinder implements DeclarationFinder {
                     if (node.parent() instanceof ClassDefinition ) { //&& ((ClassDefinition) node.parent())..s) {
                        TypeName typeName = ((ClassDefinition) node.parent()).superclass();
                        if ( typeName == node ) {
+                           // ищу ссылку в списке include's
                            String fqn = fingClassFqn(parsed, cnst.identifier());
                            if (fqn != null) {
                                return findType(fqn, OffsetRange.NONE, bdoc, info, MirahIndex.get(fo));
                            }
+                           // ищу в текущем пакете
+                           fqn = packg + "." + cnst.identifier();
+                           DeclarationLocation location = findType(fqn, OffsetRange.NONE, bdoc, info, MirahIndex.get(fo));
+                           if ( location != DeclarationLocation.NONE ) return location;
+                           
                        }
                     }
                     // это тип аргумента функции
