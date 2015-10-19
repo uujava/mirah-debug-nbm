@@ -63,4 +63,26 @@ public class AstSupport {
         return includes;
     }
   
+    public static LinkedList<String> collectAsteriskImports( Node node )
+    {
+        final LinkedList<String> includes = new LinkedList<>();
+        
+        node.accept( new NodeScanner(){
+            public boolean enterImport( Import node, Object arg ) 
+            {
+                if ( node.simpleName().identifier().equals("*"))
+                    includes.add(node.fullName().identifier());
+                return super.enterImport(node, arg);
+            }
+            
+        }, null);
+
+//        for( int i = 0 ; i < includes.size() ; i++ )
+//        {
+//            String s = includes.get(i);
+//            System.out.println(s);
+//        }
+        return includes;
+    }
+  
 }

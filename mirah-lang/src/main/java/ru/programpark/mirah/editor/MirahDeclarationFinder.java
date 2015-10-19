@@ -52,6 +52,7 @@ import mirah.lang.ast.Self;
 import mirah.lang.ast.SimpleString;
 import mirah.lang.ast.Super;
 import mirah.lang.ast.TypeName;
+import mirah.lang.ast.TypeNameList;
 import mirah.lang.ast.TypeRef;
 import mirah.lang.ast.TypeRefImpl;
 import org.mirah.typer.MethodType;
@@ -157,7 +158,7 @@ public class MirahDeclarationFinder implements DeclarationFinder {
         return DeclarationLocation.NONE;
     }
 
-    public String fingClassFqn( MirahParser.NBMirahParserResult parsed, String className )
+    public String findClassFqn( MirahParser.NBMirahParserResult parsed, String className )
     {
         Node root = parsed.getRoot();
         if ( root != null )
@@ -174,6 +175,21 @@ public class MirahDeclarationFinder implements DeclarationFinder {
         return null;
     }
    
+    public ArrayList<String> findAsteriskClassFqns( MirahParser.NBMirahParserResult parsed, String className )
+    {
+        ArrayList<String> fqns = new ArrayList<String>();
+        Node root = parsed.getRoot();
+        if ( root != null )
+        {
+            LinkedList<String> imports = AstSupport.collectAsteriskImports(root);
+            for( String imp : imports )
+            {    
+                fqns.add(imp+"."+className);
+            }
+        }
+        return fqns.size() == 0 ? null : fqns;
+    }
+    
     // это вызов метода
     //todo - добавить проверку имени класса и дерева наследования
     //todo - добавить проверку сигнатуры!!!
@@ -293,7 +309,34 @@ public class MirahDeclarationFinder implements DeclarationFinder {
         }
         return location;        
     }
+    
+    DeclarationLocation tryToFindClass( BaseDocument bdoc, MirahParser.NBMirahParserResult parsed, FileObject fo, String packg, String className ) 
+    {
+        DeclarationLocation location = null;
+    
+        // ищу полное имя класса в списке импорта
+        String fqn = findClassFqn(parsed, className);
+        if (fqn != null) {
+            location = findType(fqn, OffsetRange.NONE, bdoc, parsed, MirahIndex.get(fo));
+            if (location != DeclarationLocation.NONE) return location;
+        }
+        // ищу в текущем пакете
+        fqn = packg + "." + className;
+        location = findType(fqn, OffsetRange.NONE, bdoc, parsed, MirahIndex.get(fo));
+        if (location != DeclarationLocation.NONE) return location;
 
+        // ищу среди импортированных пакетов
+        ArrayList<String> fqns = findAsteriskClassFqns(parsed, className);
+        if ( fqns != null ) {
+            for (String fqnn : fqns) {
+                location = findType(fqnn, OffsetRange.NONE, bdoc, parsed, MirahIndex.get(fo));
+                if (location != DeclarationLocation.NONE) return location;
+            }
+        }
+        return null;
+    }
+
+    
     @Override
     public DeclarationLocation findDeclaration(ParserResult info, int caretOffset) 
     {
@@ -367,7 +410,7 @@ public class MirahDeclarationFinder implements DeclarationFinder {
                 return findMethod(methodDef.name().identifier(), fqn, methodDef.type().typeref().name(), parameterTypes, parsed, MirahIndex.get(fo));
             }
             
-            // это, скорее всего, название класса в операторе приведения типов
+            // это, скорее всего,                                название класса в операторе приведения типов
             if (node instanceof TypeRefImpl) {
                 return processRef((TypeRefImpl) node, bdoc, parsed, MirahIndex.get(fo));
             }
@@ -380,20 +423,17 @@ public class MirahDeclarationFinder implements DeclarationFinder {
                 if ( type == null && node.parent() != null )
                 {
                     // проверяю ссылку на суперкласс
-                    if (node.parent() instanceof ClassDefinition ) { //&& ((ClassDefinition) node.parent())..s) {
+                    if ( node.parent() instanceof ClassDefinition ) { //&& ((ClassDefinition) node.parent())..s) {
                        TypeName typeName = ((ClassDefinition) node.parent()).superclass();
                        if ( typeName == node ) {
-                           // ищу ссылку в списке include's
-                           String fqn = fingClassFqn(parsed, cnst.identifier());
-                           if (fqn != null) {
-                               return findType(fqn, OffsetRange.NONE, bdoc, info, MirahIndex.get(fo));
-                           }
-                           // ищу в текущем пакете
-                           fqn = packg + "." + cnst.identifier();
-                           DeclarationLocation location = findType(fqn, OffsetRange.NONE, bdoc, info, MirahIndex.get(fo));
-                           if ( location != DeclarationLocation.NONE ) return location;
-                           
+                           DeclarationLocation location = tryToFindClass(bdoc,parsed,fo,packg,cnst.identifier());
+                           if (location != DeclarationLocation.NONE) return location;
                        }
+                    }
+                    // список интерфейсов в описании класса
+                    if ( node.parent() instanceof TypeNameList && node.parent().parent() != null && node.parent().parent() instanceof ClassDefinition) {
+                        DeclarationLocation location = tryToFindClass(bdoc, parsed, fo, packg, cnst.identifier());
+                        if (location != DeclarationLocation.NONE) return location;
                     }
                     // это тип аргумента функции
                     /*
