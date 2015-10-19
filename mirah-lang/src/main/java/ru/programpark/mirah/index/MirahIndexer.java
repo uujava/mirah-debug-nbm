@@ -36,6 +36,7 @@ import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexDocument;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexingSupport;
 import mirah.objectweb.asm.tree.ClassNode;
+import org.mirah.typer.MethodType;
 import org.mirah.typer.ResolvedType;
 
 public class MirahIndexer extends EmbeddingIndexer {
@@ -322,7 +323,17 @@ public class MirahIndexer extends EmbeddingIndexer {
             }
             prepareArguments(node.arguments(), sb);
             sb.append(';');
-            if ( node.type() != null && node.type().typeref() != null ) sb.append(node.type().typeref().name());
+//            if ( node.type() != null && node.type().typeref() != null ) sb.append(node.type().typeref().name());
+//            sb.append("^" + node.type());
+            
+            ResolvedType type = this.parsed.getResolvedType(node);
+//            sb.append("*"+type);
+            if ( type != null && type instanceof MethodType ) {
+                sb.append(((MethodType)type).returnType().name());
+            }
+            else if (node.type() != null && node.type().typeref() != null) {
+                sb.append(node.type().typeref().name());
+            }
             sb.append(';');
             prepareModifiers(node.modifiers(), sb);
             
@@ -634,7 +645,13 @@ public class MirahIndexer extends EmbeddingIndexer {
             {
                 RequiredArgument a = arguments.required().get(i);
                 sb.append(a.name().identifier());
-                if ( a.type() != null )
+                ResolvedType type = this.parsed.getResolvedType(a);
+                if (type != null) {
+                    sb.append(':');
+                    sb.append(type.name()+",");
+                    sb.append(',');
+                } 
+                else if ( a.type() != null )
                 {
                     sb.append(':');
                     sb.append(a.type().typeref().name());
