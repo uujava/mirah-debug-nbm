@@ -26,6 +26,8 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 import javax.swing.text.BadLocationException;
@@ -224,15 +226,16 @@ public class MirahDeclarationFinder implements DeclarationFinder {
         */
         ResolvedType ttype = parsed.getResolvedType(target);
         String fqn = (ttype != null) ? ttype.name() : null;
-        DeclarationLocation location = findMethod(methodName, fqn, returnType, parameterTypes, parsed, index);
-        if ( location == null || location == DeclarationLocation.NONE )
-        {
-            // пытаюсь найти в супкрклассе
+        DeclarationLocation location = null;
+        // цикл по суперклассам
+        while( true ) {
+            location = findMethod(methodName, fqn, returnType, parameterTypes, parsed, index);
+            if ( location != null && location != DeclarationLocation.NONE ) break;
+           
+            // пытаюсь найти в суперклассе
             fqn = index.findSuperClassByFqn(fqn);
-            if ( fqn != null && ! fqn.isEmpty())
-                location = findMethod(methodName, fqn, returnType, parameterTypes, parsed, index);
+            if ( fqn == null || fqn.isEmpty() ) break;
         }
-        
         return location == null ? DeclarationLocation.NONE : location;
     }
 
@@ -247,6 +250,9 @@ public class MirahDeclarationFinder implements DeclarationFinder {
 //        while( parameters.iterator().hasNext() )
 //        {
 //        }
+
+        ResolvedType classType = parsed.getResolvedType(classDef);
+        String fqn = classType == null ? null : classType.name();
         
         if ( target instanceof Self ) {
             
@@ -265,7 +271,21 @@ public class MirahDeclarationFinder implements DeclarationFinder {
         {
             superClassName = classDef.superclass().typeref().name();
         }
-        DeclarationLocation location = findMethod(methodName, null, returnType, parameterTypes, parsed, index);
+//        DeclarationLocation location = findMethod(methodName, fqn, returnType, parameterTypes, parsed, index);
+        DeclarationLocation location = null;
+        // цикл по суперклассам
+        while (true) {
+            location = findMethod(methodName, fqn, returnType, parameterTypes, parsed, index);
+            if (location != null && location != DeclarationLocation.NONE) {
+                break;
+            }
+
+            // пытаюсь найти в суперклассе
+            fqn = index.findSuperClassByFqn(fqn);
+            if (fqn == null || fqn.isEmpty()) {
+                break;
+            }
+        }
         return location == null ? DeclarationLocation.NONE : location;
     }
 
@@ -819,7 +839,8 @@ public class MirahDeclarationFinder implements DeclarationFinder {
                 if (type.indexOf("$Closure") != -1 || type.indexOf("$ZBinding") != -1) {
                     type = index.findSuperClassByFqn(type);
                 }
-                if ( type.lastIndexOf('.') != -1 ) type = type.substring(type.lastIndexOf('.')+1);
+                // теперь в сигнатуре используются квалифицированные имена классов
+                //if ( type.lastIndexOf('.') != -1 ) type = type.substring(type.lastIndexOf('.')+1);
                 sb.append(type);
             }
         }
@@ -857,7 +878,8 @@ public class MirahDeclarationFinder implements DeclarationFinder {
             FileObject fo = parsed.getSnapshot().getSource().getFileObject();
             if (fo != null) {
                 ClasspathInfo cpi = ClasspathInfo.create(fo);
-                return findJavaMethod(cpi,possibleFqn, methodName);
+                DeclarationLocation location = findJavaMethod(cpi,possibleFqn, methodName);
+                if ( location != DeclarationLocation.NONE ) return location;
             }
         }
         return DeclarationLocation.NONE;
@@ -1019,6 +1041,7 @@ public class MirahDeclarationFinder implements DeclarationFinder {
     }
 
     //todo - need check signature
+    //todo - search for superclass
     private static DeclarationLocation findJavaMethod(ClasspathInfo cpInfo, final String fqn, final String methodName ) {
         final ElementHandle[] handles = new ElementHandle[1];
         final int[] offset = new int[1];
@@ -1030,6 +1053,8 @@ public class MirahDeclarationFinder implements DeclarationFinder {
                     controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                     TypeElement typeElement = ElementSearch.getClass(controller.getElements(), fqn);
                     if (typeElement != null) {
+                        TypeMirror mirror = typeElement.getSuperclass();
+                        TypeKind kind = mirror.getKind();
                         for (ExecutableElement javaMethod : ElementFilter.methodsIn(typeElement.getEnclosedElements())) {
 //                            if (Methods.isSameMethod(javaMethod, methodCall)) {
                             Name name = javaMethod.getSimpleName();

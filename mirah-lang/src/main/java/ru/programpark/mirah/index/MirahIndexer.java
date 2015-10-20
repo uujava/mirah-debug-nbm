@@ -512,25 +512,6 @@ public class MirahIndexer extends EmbeddingIndexer {
             prepareModifiers(node.modifiers(), sb);
             sb.append(';');
             prepareLocation(node, sb);
-    //            List<String> params = node.constructor.getParameterTypes();
-    //            if (!params.isEmpty()) {
-    //                for (String paramName : params) {
-    //                    sb.append(paramName);
-    //                    sb.append(",");
-    //                }
-    //
-    //                // Removing last ","
-    //                sb.deleteCharAt(sb.length() - 1);
-    //            }
-
-    //            Set<Modifier> modifiers = constructor.getModifiers();
-    //
-    //            int flags = getMethodModifiersFlag(modifiers);
-    //            if (flags != 0) {
-    //                sb.append(';');
-    //                sb.append(IndexedElement.flagToFirstChar(flags));
-    //                sb.append(IndexedElement.flagToSecondChar(flags));
-    //            }
 
 //            System.out.println("CONSTRUCTOR="+sb.toString());
             if (getCurrentDocument() != null)
@@ -643,36 +624,30 @@ public class MirahIndexer extends EmbeddingIndexer {
             sb.append('(');
             for( int i = 0 ; i < arguments.required().size() ; i++ )
             {
+                if (i != 0) sb.append(',');
+                
                 RequiredArgument a = arguments.required().get(i);
-                sb.append(a.name().identifier());
+//                sb.append(a.name().identifier());
                 ResolvedType type = this.parsed.getResolvedType(a);
                 if (type != null) {
-                    sb.append(':');
-                    sb.append(type.name()+",");
-                    sb.append(',');
+                    sb.append(type.name());
                 } 
                 else if ( a.type() != null )
                 {
-                    sb.append(':');
                     sb.append(a.type().typeref().name());
-                    sb.append(',');
                 }
             }
-            // Removing last ","
-            if ( arguments.required().size() > 0 ) sb.deleteCharAt(sb.length() - 1);
             sb.append(")");
         }
         private void prepareModifiers(ModifierList modifiers, StringBuilder sb)
         {
             for( int i = 0 ; i < modifiers.size() ; i++ )
             {
+                if ( i != 0 ) sb.append(',');
                 mirah.lang.ast.Modifier m = modifiers.get(i);
                 sb.append(m.value());
-                sb.append(',');
     //            System.out.println("mody = "+mody.value());
-                // Removing last ","
             }
-            if ( modifiers.size() > 0 ) sb.deleteCharAt(sb.length() - 1);
 
     //        int flags = modifiers.contains(Modifier.STATIC) ? Opcodes.ACC_STATIC : 0;
     //        if (modifiers.contains(Modifier.PRIVATE)) {
