@@ -11,5 +11,4 @@ package ru.programpark.mirah.editor.completion.util;
  */
 public class MirahUtils {
  
-    
 }

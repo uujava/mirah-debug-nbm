@@ -17,7 +17,8 @@ import org.openide.awt.ActionRegistration;
  */
 @ActionID(category = "File",id = "ru.programpark.mirah.tests.ParseMirahAction")
 @ActionRegistration(displayName = "Parse Mirah File")
-@ActionReference(path = "Menu/File",position = 1210)
+//@ActionReference(path = "Menu/File",position = 1210)
+@ActionReference(path = "Editors/text/x-mirah/Popup", position = 5210,separatorBefore = 5200)
 public final class ParseMirahAction implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent e) {

@@ -7,7 +7,9 @@ import org.netbeans.modules.csl.api.CompletionProposal;
 import ru.programpark.mirah.editor.api.completion.CaretLocation;
 import ru.programpark.mirah.editor.api.completion.CompletionItem;
 import ru.programpark.mirah.editor.api.completion.util.CompletionContext;
+import ru.programpark.mirah.editor.ast.ASTUtils;
 import ru.programpark.mirah.editor.ast.Variable;
+import ru.programpark.mirah.editor.completion.util.VariablesCollector;
 
 /**
  *
@@ -21,7 +23,7 @@ public class LocalVarCompletion extends BaseCompletion {
 
         if (!(request.location == CaretLocation.INSIDE_CLOSURE || request.location == CaretLocation.INSIDE_METHOD)
                 // handle $someprefix in string
-                && !(request.location == CaretLocation.INSIDE_STRING && request.getPrefix().matches("\\$[^\\{].*"))) {
+            && !(request.location == CaretLocation.INSIDE_STRING && request.getPrefix().matches("\\$[^\\{].*"))) {
             LOG.log(Level.FINEST, "Not inside method, closure or in-string variable, bail out."); // NOI18N
             return false;
         }
@@ -36,6 +38,13 @@ public class LocalVarCompletion extends BaseCompletion {
 //                request.path, request.doc, request.astOffset);
 //        vis.collect();
 
+//        VariablesCollector vc = new VariablesCollector(ASTUtils.findLeaf(parsed, bdoc, caretOffset), bdoc, caretOffset);
+        VariablesCollector vc = new VariablesCollector(
+                ASTUtils.findLeaf(request.getParserResult(), request.doc, request.lexOffset),
+                request.doc, request.lexOffset);
+//            VariablesCollector vc = new VariablesCollector(path,bdoc,caretOffset);
+        vc.collect();
+        
         boolean updated = false;
 
         // If we are dealing with GStrings, the prefix is prefixed ;-)
@@ -43,13 +52,27 @@ public class LocalVarCompletion extends BaseCompletion {
         int anchorShift = 0;
         String varPrefix = request.getPrefix();
 
+        for (String name : vc.getVariables()) {
+            if (varPrefix.length() < 1) {
+                proposals.add(new CompletionItem.LocalVarItem(name, anchor + anchorShift));
+                updated = true;
+            } 
+            else if (!name.equals(varPrefix) && (name.startsWith(varPrefix) 
+                || (name.charAt(0) == '@' && name.startsWith("@"+varPrefix))) ) 
+            {
+                proposals.add(new CompletionItem.LocalVarItem(name, anchor + anchorShift));
+                updated = true;
+            }
+//            proposals.add(new CompletionItem.LocalVarItem(name, anchor));
+        }
+
         if (request.getPrefix().startsWith("$")) {
             varPrefix = request.getPrefix().substring(1);
             anchorShift = 1;
         }
-
+        /*
         ArrayList<Variable> list = new ArrayList<Variable>();
-        for (Variable node : list /*vis.getVariables()*/ ) {
+        for (Variable node : list /*vis.getVariables()* ) {
             String varName = node.getName();
             LOG.log(Level.FINEST, "Node found: {0}", varName); // NOI18N
 
@@ -61,7 +84,7 @@ public class LocalVarCompletion extends BaseCompletion {
                 updated = true;
             }
         }
-
+        */
         return updated;
     }
 }

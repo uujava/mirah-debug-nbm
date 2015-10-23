@@ -153,7 +153,11 @@ public class TypesCompletion extends BaseCompletion {
             if (index != null) {
                 Set<IndexedClass> classes = index.getClassesFromPackage(packageRequest.basePackage);
                 for (IndexedClass indexedClass : classes) {
-                    addToProposalUsingFilter(addedTypes, new TypeHolder(indexedClass), onlyInterfaces);
+                    // пропустим замыкания
+                    if ( indexedClass.getFqn().indexOf("$Closure") == -1 && indexedClass.getFqn().indexOf("$ZBinding") == -1 )
+                    {
+                        addToProposalUsingFilter(addedTypes, new TypeHolder(indexedClass), onlyInterfaces);
+                    }
                 }
             }
 
@@ -177,7 +181,10 @@ public class TypesCompletion extends BaseCompletion {
 
                 if (!classes.isEmpty()) {
                     for (IndexedClass indexedClass : classes) {
-                        addToProposalUsingFilter(addedTypes, new TypeHolder(indexedClass), onlyInterfaces);
+                        // пропустим замыкания
+                        if (indexedClass.getFqn().indexOf("$Closure") == -1 && indexedClass.getFqn().indexOf("$ZBinding") == -1) {
+                            addToProposalUsingFilter(addedTypes, new TypeHolder(indexedClass), onlyInterfaces);
+                        }
                     }
                 }
             }

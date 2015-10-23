@@ -7,8 +7,10 @@ package ru.programpark.mirah.tests;
 
 import ca.weblite.netbeans.mirah.lexer.MirahParser;
 import java.util.Collections;
+import java.util.Iterator;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import mirah.lang.ast.AnnotationList;
 import mirah.lang.ast.Node;
 import org.mirah.typer.ResolvedType;
 import org.netbeans.api.editor.EditorRegistry;
@@ -23,6 +25,8 @@ import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 import static ru.programpark.mirah.tests.ParseMirah.getFileObject;
 import ru.programpark.mirah.editor.ast.ASTUtils;
+import ru.programpark.mirah.editor.ast.AstPath;
+import ru.programpark.mirah.editor.completion.util.VariablesCollector;
 
 /**
  *
@@ -72,12 +76,28 @@ public class PrintAst {
                 putNode(parsed, leaf, io);
                 leaf = leaf.parent();
             }
+            io.getOut().println("====================================================================");
+            AstPath path = ASTUtils.getPath(parsed, bdoc, caretOffset);
+            if (path != null) {
+                for (Iterator<Node> it = path.iterator(); it.hasNext();) {
+                    Node node = it.next();
+                    putNode(parsed, node, io);
+                }
+            }
+            io.getOut().println("====================================================================");
+            VariablesCollector vc = new VariablesCollector(ASTUtils.findLeaf(parsed, bdoc, caretOffset),bdoc,caretOffset);
+//            VariablesCollector vc = new VariablesCollector(path,bdoc,caretOffset);
+            vc.collect();
+            for( String name : vc.getVariables())
+                io.getOut().println("VARIABLE: " + name);
+            io.getOut().println("====================================================================");
         }
         catch( Exception e )
         {
             e.printStackTrace();
         }
     }
+
 
     /**
      * Represents a hyperlinked line in an InputOutput.

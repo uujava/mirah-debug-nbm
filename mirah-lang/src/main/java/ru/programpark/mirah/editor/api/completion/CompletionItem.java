@@ -1028,16 +1028,20 @@ public abstract class CompletionItem extends DefaultCompletionProposal {
 
     public static class LocalVarItem extends CompletionItem {
 
-        private final Variable var;
+//        private final Variable var;
+        private final String name;
 
-        public LocalVarItem(Variable var, int anchorOffset) {
+//        public LocalVarItem(Variable var, int anchorOffset) {
+        public LocalVarItem(String name, int anchorOffset) {
             super(null, anchorOffset);
-            this.var = var;
+            this.name = name;
+//            this.var = var;
         }
 
         @Override
         public String getName() {
-            return var.getName();
+            return name;
+//            return var.getName();
         }
 
         @Override

@@ -17,7 +17,8 @@ import org.openide.awt.ActionRegistration;
  */
 @ActionID(category = "File",id = "ru.programpark.mirah.tests.PrintAstAction")
 @ActionRegistration(displayName = "Print Ast Path")
-@ActionReference(path = "Menu/File",position = 1220)
+//@ActionReference(path = "Menu/File",position = 1220)
+@ActionReference(path = "Editors/text/x-mirah/Popup",position = 5220)
 public final class PrintAstAction implements ActionListener {
     
     @Override

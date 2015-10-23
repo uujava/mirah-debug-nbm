@@ -288,7 +288,9 @@ public class MirahLexer implements Lexer<MirahTokenId>{
         if ( tok == null ){
             alreadyStarted = false;
             try {
-                tok = lexer.lex(lastPos); //, false);
+                // добавлена обработка комментариев, иначе лексер заменяет все tWhitespace на tComment
+                // из-за этого проблемы в автозавершении
+                tok = lexer.lex(lastPos, false);
                 
                 
             } catch ( Exception npe ){
@@ -345,7 +347,8 @@ public class MirahLexer implements Lexer<MirahTokenId>{
         } else {
             int len = tok.startpos-tok.pos;
             lastPos = tok.startpos;
-            return info.tokenFactory().createToken(MirahLanguageHierarchy.getToken(Tokens.tComment.ordinal()), len);
+//            return info.tokenFactory().createToken(MirahLanguageHierarchy.getToken(Tokens.tComment.ordinal()), len);
+            return info.tokenFactory().createToken(MirahLanguageHierarchy.getToken(Tokens.tWhitespace.ordinal()), len);
         }
         
         

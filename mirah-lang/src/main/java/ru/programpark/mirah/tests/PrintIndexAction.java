@@ -17,7 +17,8 @@ import org.openide.awt.ActionRegistration;
  */
 @ActionID(category = "File",id = "ru.programpark.mirah.tests.PrintIndexAction")
 @ActionRegistration(displayName = "Print Index")
-@ActionReference(path = "Menu/File",position = 1230)
+//@ActionReference(path = "Menu/File",position = 1230)
+@ActionReference(path = "Editors/text/x-mirah/Popup", position = 5230, separatorAfter = 5240)
 public final class PrintIndexAction implements ActionListener {
     
     @Override

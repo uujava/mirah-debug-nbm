@@ -433,7 +433,7 @@ public final class CompletionContext {
 
 
         if (active != null) {
-            if ((active.id() == MirahTokenId.WHITESPACE && difference == 0)) {
+            if ((active.id().is(Tokens.tWhitespace) && difference == 0)) {
                 ts.movePrevious();
             } 
             /*
@@ -459,9 +459,9 @@ public final class CompletionContext {
         while (ts.isValid() && ts.movePrevious() && ts.offset() >= 0) {
             Token<MirahTokenId> t = ts.token();
 //            if (t.id() == MirahTokenId.NLS) {
-            if (t.id() == MirahTokenId.NL ) {
+            if (t.id() == MirahTokenId.NL) {
                 break;
-            } else if (t.id() != MirahTokenId.WHITESPACE) {
+            } else if (!t.id().is(Tokens.tWhitespace)) {
                 if (stopAt == 0) {
                     before1 = t;
                 } else if (stopAt == 1) {
@@ -515,11 +515,12 @@ public final class CompletionContext {
 
             if (t.id() == MirahTokenId.NL) {
                 break;
-            } else if (t.id() != MirahTokenId.WHITESPACE) {
+            } else if (!t.id().is(Tokens.tWhitespace) && t != active) {
                 if (stopAt == 0) {
                     after1 = t;
                 } else if (stopAt == 1) {
                     after2 = t;
+                    break;
                 } else if (stopAt == 2) {
                     break;
                 }
@@ -530,6 +531,9 @@ public final class CompletionContext {
     }
 
     private DotCompletionContext getDotCompletionContext() {
+        
+//        if ( true ) return null;
+        
         if (dotContext != null) {
             return dotContext;
         }
@@ -546,18 +550,8 @@ public final class CompletionContext {
         // this should move us to dot or whitespace or NLS or prefix
         if (ts.isValid() && ts.movePrevious() && ts.offset() >= 0) {
             MirahTokenId tokenID = ts.token().id();
-            
-            if (
-                    
-//                    tokenID != MirahTokenId.AT &&
-                ! tokenID.is(Tokens.tDot) &&
-//                tokenID != MirahTokenId.NLS &&
-                ! tokenID.is(Tokens.tWhitespace)) {//&&
-//                tokenID != MirahTokenId.SPREAD_DOT &&
-//                tokenID != MirahTokenId.OPTIONAL_DOT &&
-//                tokenID != MirahTokenId.MEMBER_POINTER &&
-//                tokenID != MirahTokenId.ELVIS_OPERATOR) {
-
+            if ( !tokenID.is(Tokens.tDot) && !tokenID.is(Tokens.tNL) && ! tokenID.is(Tokens.tWhitespace)) 
+            {
                 // is it prefix
                 // keyword check is here because of issue #150862
                 if (tokenID.is(Tokens.tIDENTIFIER) && !tokenID.primaryCategory().equals("keyword")) {
@@ -577,51 +571,20 @@ public final class CompletionContext {
         }
         // now we should be on dot or in whitespace or NLS after the dot
         boolean remainingTokens = true;
-        /*
-        if (ts.token().id() != MirahTokenId.DOT &&
-            ts.token().id() != MirahTokenId.SPREAD_DOT &&
-            ts.token().id() != MirahTokenId.OPTIONAL_DOT &&
-            ts.token().id() != MirahTokenId.MEMBER_POINTER &&
-            ts.token().id() != MirahTokenId.ELVIS_OPERATOR) {
-
+        if ( !ts.token().id().is(Tokens.tDot) ) {
             // travel back on the token string till the token is neither a
             // WHITESPACE nor NLS
             while (ts.isValid() && (remainingTokens = ts.movePrevious()) && ts.offset() >= 0) {
                 Token<MirahTokenId> t = ts.token();
-                if (t.id() != MirahTokenId.WHITESPACE && t.id() != MirahTokenId.NLS) {
+                if (!t.id().is(Tokens.tWhitespace) && !t.id().is(Tokens.tNL)) {
                     break;
                 }
             }
         }
-        */
-        if ( !ts.token().id().is(Tokens.tDot) 
-//                &&
-//            ts.token().id() != MirahTokenId.SPREAD_DOT &&
-//            ts.token().id() != MirahTokenId.OPTIONAL_DOT &&
-//            ts.token().id() != MirahTokenId.MEMBER_POINTER &&
-//            ts.token().id() != MirahTokenId.ELVIS_OPERATOR
-                ) {
-
-            // travel back on the token string till the token is neither a
-            // WHITESPACE nor NLS
-            while (ts.isValid() && (remainingTokens = ts.movePrevious()) && ts.offset() >= 0) {
-                Token<MirahTokenId> t = ts.token();
-                if (!t.id().is(Tokens.tWhitespace) && t.id().is(Tokens.tNL)) {
-                    break;
-                }
-            }
-        }
-/*
-        if ((ts.token().id() != MirahTokenId.DOT &&
-             ts.token().id() != MirahTokenId.SPREAD_DOT &&
-             ts.token().id() != MirahTokenId.OPTIONAL_DOT &&
-             ts.token().id() != MirahTokenId.MEMBER_POINTER &&
-             ts.token().id() != MirahTokenId.ELVIS_OPERATOR)
-            || !remainingTokens) {
-
+        if (!ts.token().id().is(Tokens.tDot) || !remainingTokens) {
             return null; // no astpath
         }
-*/
+
         boolean methodsOnly = false;
 //        if (ts.token().id() == MirahTokenId.MEMBER_POINTER) {
 //            methodsOnly = true;
@@ -631,7 +594,7 @@ public final class CompletionContext {
         // WHITESPACE nor NLS
         while (ts.isValid() && ts.movePrevious() && ts.offset() >= 0) {
             Token<MirahTokenId> t = ts.token();
-            if (! t.id().is(Tokens.tWhitespace) && ! t.id().is(Tokens.tNL) ) {
+            if (!t.id().is(Tokens.tWhitespace) && !t.id().is(Tokens.tNL) ) {
                 break;
             }
         }

@@ -22,6 +22,13 @@ public class PackageCompletion extends BaseCompletion {
     public boolean complete(List<CompletionProposal> proposals, CompletionContext request, int anchor) {
         LOG.log(Level.FINEST, "-> completePackages"); // NOI18N
 
+        String b2 = request.context.before2 == null ? null : request.context.before2.text().toString();
+        String b1 = request.context.before1 == null ? null : request.context.before1.text().toString();
+        String a0 = request.context.active == null ? null : request.context.active.text().toString();
+        String a1 = request.context.after1 == null ? null : request.context.after1.text().toString();
+        String a2 = request.context.after2 == null ? null : request.context.after2.text().toString();
+        
+        
         // this can happen for ?. or similar constructs
         PackageCompletionRequest packageRequest = getPackageRequest(request);
         if (request.isBehindDot() && packageRequest.basePackage.length() <= 0) {
@@ -41,6 +48,7 @@ public class PackageCompletion extends BaseCompletion {
 
         // try to find suitable packages ...
 
+        //todo - не сканируется индекс Mirah
         Set<String> pkgSet = pathInfo.getClassIndex().getPackageNames(packageRequest.fullString, true, EnumSet.allOf(ClassIndex.SearchScope.class));
 
         for (String singlePackage : pkgSet) {
