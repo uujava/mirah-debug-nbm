@@ -63,13 +63,21 @@ public final class MirahIndex {
                         Collections.<String>emptySet(),
                         Collections.<String>emptySet());
 
+        /*
         Collection<FileObject> coll = QuerySupport.findRoots(fo, Collections.singleton(ClassPath.SOURCE), null, null);
         Project project = FileOwnerQuery.getOwner(fo);
         if ( project != null ) coll.add(project.getProjectDirectory());
-
+        */
+        Project project = FileOwnerQuery.getOwner(fo);
+        if (project != null && ! srcRoots.contains(project.getProjectDirectory())) 
+        {
+            srcRoots.add(project.getProjectDirectory());
+        }        
+        
         // FIXME index is broken when invoked on start
 //            this.index = MirahIndex.get(QuerySupport.findRoots(fo, Collections.singleton(ClassPath.SOURCE), null, null));
-        return MirahIndex.get(coll);
+//?        return MirahIndex.get(coll);
+        return MirahIndex.get(srcRoots);
     }
 
 

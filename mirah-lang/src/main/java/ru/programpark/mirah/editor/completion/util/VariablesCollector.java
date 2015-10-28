@@ -5,8 +5,10 @@
  */
 package ru.programpark.mirah.editor.completion.util;
 
+import ca.weblite.netbeans.mirah.lexer.MirahParser;
 import ca.weblite.netbeans.mirah.lexer.MirahTokenId;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -22,6 +24,7 @@ import mirah.lang.ast.NodeScanner;
 import mirah.lang.ast.RequiredArgument;
 import mirah.lang.ast.StaticMethodDefinition;
 import mirah.lang.ast.Unquote;
+import org.mirah.typer.ResolvedType;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
@@ -43,11 +46,14 @@ public class VariablesCollector extends NodeScanner {
     private Set<Node> blocks = new HashSet<Node>();
 
     private ArrayList<String> variables = new ArrayList<String>();
-    Node leaf;
+    private Node leaf;
+    private MirahParser.NBMirahParserResult parsed;
+    private HashMap uniqueNames = new HashMap();
     
 //    public VariablesCollector( AstPath path, BaseDocument doc, int cursorOffset) {
-    public VariablesCollector( Node leaf, BaseDocument doc, int cursorOffset) {
+    public VariablesCollector( MirahParser.NBMirahParserResult parsed, Node leaf, BaseDocument doc, int cursorOffset) {
 //        this.path = path;
+        this.parsed = parsed;
         this.leaf = leaf;
         this.doc = doc;
         this.cursorOffset = cursorOffset;
@@ -188,8 +194,14 @@ public class VariablesCollector extends NodeScanner {
         Object v = node.name();
         //todo это метод доступа к переменной?
         if ( v instanceof Unquote ) {
-            variables.add("@"+node.name().identifier());
+            if ( ! uniqueNames.containsKey(node.name().identifier()) )
+            {
+                variables.add("@"+node.name().identifier());
+                uniqueNames.put(node.name().identifier(),null);
+            }
         }
+        
+        ResolvedType type = parsed.getResolvedType(node);
         
         String nn = node.name().identifier();
         for (int j = 0; j < node.arguments().required_size(); j++) {
@@ -203,7 +215,11 @@ public class VariablesCollector extends NodeScanner {
     //todo удалять дубли
     @Override
     public boolean enterFieldAssign(FieldAssign node, Object arg) {
-        variables.add(node.name().identifier());
+        if (!uniqueNames.containsKey(node.name().identifier()))
+        {
+            variables.add(node.name().identifier());
+            uniqueNames.put(node.name().identifier(), null);
+        }
         return super.enterFieldAssign(node,arg);     
     }
 
@@ -220,7 +236,10 @@ public class VariablesCollector extends NodeScanner {
 //                found.add(node);
 //            }
 //        }
-        variables.add(node.name().identifier());
+        if (!uniqueNames.containsKey(node.name().identifier())) {
+            variables.add(node.name().identifier());
+            uniqueNames.put(node.name().identifier(), null);
+        }
         return super.enterFieldDeclaration(node, arg);
     }
 
@@ -246,7 +265,10 @@ public class VariablesCollector extends NodeScanner {
 //                found.add(node);
 //            }
 //        }
-        variables.add(node.name().identifier());
+        if (!uniqueNames.containsKey(node.name().identifier())) {
+            variables.add(node.name().identifier());
+            uniqueNames.put(node.name().identifier(), null);
+        }
         return super.enterLocalAssignment(node, arg);
     }      
 

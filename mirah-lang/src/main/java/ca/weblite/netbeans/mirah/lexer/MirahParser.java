@@ -331,8 +331,15 @@ public class MirahParser extends Parser {
 
                 @Override
                 public boolean enterMethodDefinition(MethodDefinition node, Object arg) {
-                    BlockNode parent = blockStack.isEmpty() ? res : blockStack.peek();
-                    blockStack.push(parent.addBlock(node, node.name().identifier(), node.position().startChar(), node.position().endChar() - node.position().startChar(), "", ElementKind.METHOD));
+                    try {
+                        System.out.println("enterMethodDefinition node="+node);
+                        BlockNode parent = blockStack.isEmpty() ? res : blockStack.peek();
+                        blockStack.push(parent.addBlock(node, node.name().identifier(), node.position().startChar(), node.position().endChar() - node.position().startChar(), "", ElementKind.METHOD));
+                    }
+                    catch( Exception e)
+                    {
+                        System.out.println("enterMethodDefinition EXCEPTION=" + e);    
+                    }
                     return super.enterMethodDefinition(node, arg);
                 }
 

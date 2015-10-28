@@ -34,40 +34,41 @@ import ru.programpark.mirah.editor.completion.util.VariablesCollector;
  */
 public class PrintAst {
 
-    public static void putException( Exception e)
-    {
+    public static void putException(Exception e) {
         final InputOutput io = IOProvider.getDefault().getIO("Proposals", false);
         try {
-            for( StackTraceElement st : e.getStackTrace() )
-                io.getOut().println(">>"+st);
-        }
-        catch( Exception ee )
-        {
+            for (StackTraceElement st : e.getStackTrace()) {
+                io.getOut().println(">>" + st);
+            }
+        } catch (Exception ee) {
             e.printStackTrace();
-        }
-        finally
-        {
-            if ( io != null ) io.getOut().close();
-            if ( io != null ) io.getErr().close();
+        } finally {
+            if (io != null) {
+                io.getOut().close();
+            }
+            if (io != null) {
+                io.getErr().close();
+            }
         }
     }
-    public static void putNode( MirahParser.NBMirahParserResult parsed, Node node, InputOutput io )
-    {
+
+    public static void putNode(MirahParser.NBMirahParserResult parsed, Node node, InputOutput io) {
         ResolvedType type = parsed.getResolvedTypes().get(node);
+        Node p = node.parent();
         if (type != null) {
             io.getOut().println("AST: " + node
                     + " [" + node.position().startLine() + "," + node.position().startColumn() + "-" + node.position().endLine()
                     + "," + node.position().endColumn() + "] {" + node.position().startChar() + "-" + node.position().endChar() + "} "
-                    + node.hashCode() + "/ parent=" + node.parent() + "/ type: " + type);
+                    + node.hashCode() + "/ parent=" + p + "["+( p != null ? p.hashCode() : "0")+ "] / type: " + type);
         } else {
             io.getOut().println("AST: " + node
                     + " [" + node.position().startLine() + "," + node.position().startColumn() + "-" + node.position().endLine()
                     + "," + node.position().endColumn() + "] {" + node.position().startChar() + "-" + node.position().endChar() + "} "
-                    + node.hashCode() + "/ parent=" + node.parent());
+                    + node.hashCode() + "/ parent=" + p+ "[" + (p != null ? p.hashCode() : "0") + "]");
         }
     }
-    public static void putAstPath( BaseDocument bdoc, MirahParser.NBMirahParserResult parsed, int caretOffset, InputOutput io )
-    {
+
+    public static void putAstPath(BaseDocument bdoc, MirahParser.NBMirahParserResult parsed, int caretOffset, InputOutput io) {
         long curr = System.currentTimeMillis();
         try {
             io.getOut().println("------------- caretOffset=" + caretOffset + " ---------------------");
@@ -85,148 +86,151 @@ public class PrintAst {
                 }
             }
             io.getOut().println("====================================================================");
-            VariablesCollector vc = new VariablesCollector(ASTUtils.findLeaf(parsed, bdoc, caretOffset),bdoc,caretOffset);
+            VariablesCollector vc = new VariablesCollector(parsed,ASTUtils.findLeaf(parsed, bdoc, caretOffset), bdoc, caretOffset);
 //            VariablesCollector vc = new VariablesCollector(path,bdoc,caretOffset);
             vc.collect();
-            for( String name : vc.getVariables())
+            for (String name : vc.getVariables()) {
                 io.getOut().println("VARIABLE: " + name);
+            }
             io.getOut().println("====================================================================");
-        }
-        catch( Exception e )
-        {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
-
 
     /**
      * Represents a hyperlinked line in an InputOutput.
      */
     /*
-    static final class Hyperlink implements OutputListener {
+     static final class Hyperlink implements OutputListener {
 
-        private final int line;
-        private final int column;
+     private final int line;
+     private final int column;
 
-        public Hyperlink(int line, int column) {
-            this.line = line;
-            this.column = column;
-        }
+     public Hyperlink(int line, int column) {
+     this.line = line;
+     this.column = column;
+     }
 
-        @Override
-        public void outputLineSelected(OutputEvent ev) {
-            goToLine(false);
-        }
+     @Override
+     public void outputLineSelected(OutputEvent ev) {
+     goToLine(false);
+     }
 
-        @Override
-        public void outputLineCleared(OutputEvent ev) {
-        }
+     @Override
+     public void outputLineCleared(OutputEvent ev) {
+     }
 
-        @Override
-        public void outputLineAction(OutputEvent ev) {
-            goToLine(true);
-        }
+     @Override
+     public void outputLineAction(OutputEvent ev) {
+     goToLine(true);
+     }
 
-        @SuppressWarnings("deprecation")
-        private void goToLine(boolean focus) {
+     @SuppressWarnings("deprecation")
+     private void goToLine(boolean focus) {
             
-            String name ="C:\\java-dao\\samples\\src\\main\\mirah\\ru\\programpark\\vector\\samples\\jfx\\controller\\tabs\\LabelsTab.mirah";
-            Line xline = null;
-            try {
-                FileObject fo = FileUtil.createData(new File(name));
-                DataObject dobj = DataObject.find(fo);
-                LineCookie cookie = dobj.getCookie(LineCookie.class);
-                if (cookie == null) {
-                    throw new java.io.FileNotFoundException();
-                } else {
-                    xline = cookie.getLineSet().getCurrent(1);
-                }
-            }
-            catch( Exception e )
-            {
-                e.printStackTrace();
-            }
-            xline.show(Line.SHOW_GOTO);
-        }
-    }
-    public static void addHyperlink( final InputOutput io )
-    {
-        try {
-            io.getOut().println("MY HYPERLINK!", new Hyperlink(0,0));
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-    }
+     String name ="C:\\java-dao\\samples\\src\\main\\mirah\\ru\\programpark\\vector\\samples\\jfx\\controller\\tabs\\LabelsTab.mirah";
+     Line xline = null;
+     try {
+     FileObject fo = FileUtil.createData(new File(name));
+     DataObject dobj = DataObject.find(fo);
+     LineCookie cookie = dobj.getCookie(LineCookie.class);
+     if (cookie == null) {
+     throw new java.io.FileNotFoundException();
+     } else {
+     xline = cookie.getLineSet().getCurrent(1);
+     }
+     }
+     catch( Exception e )
+     {
+     e.printStackTrace();
+     }
+     xline.show(Line.SHOW_GOTO);
+     }
+     }
+     public static void addHyperlink( final InputOutput io )
+     {
+     try {
+     io.getOut().println("MY HYPERLINK!", new Hyperlink(0,0));
+     } catch (IOException ex) {
+     Exceptions.printStackTrace(ex);
+     }
+     }
     
-    /*
-    public static void printAst()
-    {
-        JTextComponent focused = EditorRegistry.lastFocusedComponent();
-        Document doc = null;
-        if (focused != null ) doc = focused.getDocument();
-        if ( doc == null ) return;
-        /*
-        DocumentDebugger dbg = MirahParser.getDocumentDebugger(doc);
-        if ( dbg == null ) return;
+     /*
+     public static void printAst()
+     {
+     JTextComponent focused = EditorRegistry.lastFocusedComponent();
+     Document doc = null;
+     if (focused != null ) doc = focused.getDocument();
+     if ( doc == null ) return;
+     /*
+     DocumentDebugger dbg = MirahParser.getDocumentDebugger(doc);
+     if ( dbg == null ) return;
         
-        List nodes = dbg.compiler.compiler().getParsedNodes();
-        *
+     List nodes = dbg.compiler.compiler().getParsedNodes();
+     *
         
-        long start = System.currentTimeMillis();
+     long start = System.currentTimeMillis();
 
-        InputOutput io = null;
+     InputOutput io = null;
 
-        MirahParser parser = new MirahParser();
-        Snapshot snapshot = null;
-        try {
-//            FileObject fo = FileUtil.createData(new File(mirah_file_name));
-//            Source src = Source.create(fo);
-            Source src = Source.create(doc);
-            snapshot = src.createSnapshot();
-            FileObject fo = snapshot.getSource().getFileObject();
-            if (fo == null || !fo.getExt().equals("mirah")) return;
+     MirahParser parser = new MirahParser();
+     Snapshot snapshot = null;
+     try {
+     //            FileObject fo = FileUtil.createData(new File(mirah_file_name));
+     //            Source src = Source.create(fo);
+     Source src = Source.create(doc);
+     snapshot = src.createSnapshot();
+     FileObject fo = snapshot.getSource().getFileObject();
+     if (fo == null || !fo.getExt().equals("mirah")) return;
             
-            io = IOProvider.getDefault().getIO(fo.getNameExt(), false);
-            io.select();
+     io = IOProvider.getDefault().getIO(fo.getNameExt(), false);
+     io.select();
 
-            long curr = System.currentTimeMillis();
+     long curr = System.currentTimeMillis();
             
-            parser.reparse(snapshot); //, sb.toString());
-            Result res = parser.getResult(null);
-            Node node = null;
-            if ( res instanceof MirahParser.NBMirahParserResult )
-            {
-                MirahParser.NBMirahParserResult pres = (MirahParser.NBMirahParserResult)res;
-                node = pres.getRoot();
-//           dumpNode(node);
-            }
-            io.getOut().println("==== PARSING TIME: " + (System.currentTimeMillis() - curr) + " msec");
-            boolean b = doc instanceof BaseDocument;
-            int offset = focused.getCaretPosition();
-            BaseDocument bdoc = (BaseDocument)doc;
-            putAstPath(bdoc,(MirahParser.NBMirahParserResult)res,offset,io);
+     parser.reparse(snapshot); //, sb.toString());
+     Result res = parser.getResult(null);
+     Node node = null;
+     if ( res instanceof MirahParser.NBMirahParserResult )
+     {
+     MirahParser.NBMirahParserResult pres = (MirahParser.NBMirahParserResult)res;
+     node = pres.getRoot();
+     //           dumpNode(node);
+     }
+     io.getOut().println("==== PARSING TIME: " + (System.currentTimeMillis() - curr) + " msec");
+     boolean b = doc instanceof BaseDocument;
+     int offset = focused.getCaretPosition();
+     BaseDocument bdoc = (BaseDocument)doc;
+     putAstPath(bdoc,(MirahParser.NBMirahParserResult)res,offset,io);
 
-        } catch (Exception ex){
-            ex.printStackTrace();
-        }
-         finally {
-            if (io != null) {
-                io.getOut().println("==== ELAPSED TIME: " + (System.currentTimeMillis() - start) + " msec");
-                io.getOut().close();
-                io.getErr().close();
-            }
-        }
-    }
-    */
-    public static void printAst() 
-    {
+     } catch (Exception ex){
+     ex.printStackTrace();
+     }
+     finally {
+     if (io != null) {
+     io.getOut().println("==== ELAPSED TIME: " + (System.currentTimeMillis() - start) + " msec");
+     io.getOut().close();
+     io.getErr().close();
+     }
+     }
+     }
+     */
+    public static void printAst() {
         final JTextComponent focused = EditorRegistry.lastFocusedComponent();
-        if ( focused == null ) return;
+        if (focused == null) {
+            return;
+        }
         final Document doc = focused.getDocument();
-        if (doc == null) return;
+        if (doc == null) {
+            return;
+        }
 
         FileObject fo = getFileObject(doc);
-        if (!fo.getExt().equals("mirah")) return;
+        if (!fo.getExt().equals("mirah")) {
+            return;
+        }
 
         final InputOutput io = IOProvider.getDefault().getIO(fo.getNameExt(), false);
 
@@ -261,5 +265,5 @@ public class PrintAst {
             }
         }
     }
-    
+
 }

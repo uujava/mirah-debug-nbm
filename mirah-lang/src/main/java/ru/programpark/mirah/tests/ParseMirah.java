@@ -64,14 +64,15 @@ public class ParseMirah {
                 StringBuffer sb = new StringBuffer();
                 for( int i = 0 ; i < levels ; i++ ) sb.append('.');
                 String prefix = sb.toString();
+                Node p = node.parent();
                 if ( node != null && node.position() != null )
                     io.getOut().println(prefix + " "+node+
                         " [" 
                         + node.position().startLine() + "," + node.position().startColumn() + "-" + node.position().endLine()
                         + "," + node.position().endColumn() + "] {" + node.position().startChar() + "-" + node.position().endChar() + "} " 
-                        + node.hashCode() + "/ parent="+node.parent()+"/ type="+type);
+                        + node.hashCode() + "/ parent="+p+"[" + (p != null ? p.hashCode() : "0") + "] / type="+type);
                 else
-                    io.getOut().println(prefix + " "+node+" pos = null " + node.hashCode() + " parent=" + node.parent());
+                    io.getOut().println(prefix + " "+node+" pos = null " + node.hashCode() + " parent=" + p + "[" + (p != null ? p.hashCode() : "0")+ "]");
                 
                 if ( node instanceof ClosureDefinition )
                 {

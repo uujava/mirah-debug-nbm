@@ -142,7 +142,7 @@ public class MirahDeclarationFinder implements DeclarationFinder {
     }
 
     // Check name as imported class
-    public DeclarationLocation checkImportClasses( MirahParser.NBMirahParserResult parsed, SimpleString ss )
+    public DeclarationLocation checkImportClasses( MirahParser.NBMirahParserResult parsed, SimpleString ss, MirahIndex index )
     {
         Node root = parsed.getRoot();
         String name = ss.identifier();
@@ -154,7 +154,8 @@ public class MirahDeclarationFinder implements DeclarationFinder {
             {    
                 FileObject fo = parsed.getSnapshot().getSource().getFileObject();
                 BaseDocument doc = (BaseDocument)parsed.getSnapshot().getSource().getDocument(false);
-                return findType(imp, OffsetRange.NONE, doc, parsed, MirahIndex.get(fo));
+//                return findType(imp, OffsetRange.NONE, doc, parsed, MirahIndex.get(fo));
+                return findType(imp, OffsetRange.NONE, doc, parsed, index);
             }
         }
         return DeclarationLocation.NONE;
@@ -330,26 +331,29 @@ public class MirahDeclarationFinder implements DeclarationFinder {
         return location;        
     }
     
-    DeclarationLocation tryToFindClass( BaseDocument bdoc, MirahParser.NBMirahParserResult parsed, FileObject fo, String packg, String className ) 
+    DeclarationLocation tryToFindClass( BaseDocument bdoc, MirahParser.NBMirahParserResult parsed, FileObject fo, String packg, String className, MirahIndex index ) 
     {
         DeclarationLocation location = null;
     
         // ищу полное имя класса в списке импорта
         String fqn = findClassFqn(parsed, className);
         if (fqn != null) {
-            location = findType(fqn, OffsetRange.NONE, bdoc, parsed, MirahIndex.get(fo));
+            location = findType(fqn, OffsetRange.NONE, bdoc, parsed, index);
+//            location = findType(fqn, OffsetRange.NONE, bdoc, parsed, MirahIndex.get(fo));
             if (location != DeclarationLocation.NONE) return location;
         }
         // ищу в текущем пакете
         fqn = packg + "." + className;
-        location = findType(fqn, OffsetRange.NONE, bdoc, parsed, MirahIndex.get(fo));
+//        location = findType(fqn, OffsetRange.NONE, bdoc, parsed, MirahIndex.get(fo));
+        location = findType(fqn, OffsetRange.NONE, bdoc, parsed, index);
         if (location != DeclarationLocation.NONE) return location;
 
         // ищу среди импортированных пакетов
         ArrayList<String> fqns = findAsteriskClassFqns(parsed, className);
         if ( fqns != null ) {
             for (String fqnn : fqns) {
-                location = findType(fqnn, OffsetRange.NONE, bdoc, parsed, MirahIndex.get(fo));
+                location = findType(fqnn, OffsetRange.NONE, bdoc, parsed, index);
+//                location = findType(fqnn, OffsetRange.NONE, bdoc, parsed, MirahIndex.get(fo));
                 if (location != DeclarationLocation.NONE) return location;
             }
         }
@@ -368,6 +372,8 @@ public class MirahDeclarationFinder implements DeclarationFinder {
         String packg = getCurrentPackage(parsed.getRoot());
         
 //        LinkedList<String> includes = AstSupport.collectImports(parsed.getRoot());
+        
+        MirahIndex index = MirahIndex.get(fo);
         
         Node leaf = ASTUtils.findLeaf(parsed, bdoc, caretOffset);
         if (leaf == null) return DeclarationLocation.NONE;
@@ -391,15 +397,18 @@ public class MirahDeclarationFinder implements DeclarationFinder {
         while (node != null) {
 
             if (node instanceof Import) {
-                return processImport((Import) node, bdoc, parsed, MirahIndex.get(fo));
+//                return processImport((Import) node, bdoc, parsed, MirahIndex.get(fo));
+                return processImport((Import) node, bdoc, parsed, index);
             }
 
             if (node instanceof Call) {
-                return processCall((Call) node, classDef, parsed, caretOffset, null, MirahIndex.get(fo));
+                return processCall((Call) node, classDef, parsed, caretOffset, null, index);
+//                return processCall((Call) node, classDef, parsed, caretOffset, null, MirahIndex.get(fo));
             }
 
             if (node instanceof FunctionalCall) {
-                return processFunctionalCall((FunctionalCall) node, classDef, parsed, caretOffset, null, MirahIndex.get(fo));
+//                return processFunctionalCall((FunctionalCall) node, classDef, parsed, caretOffset, null, MirahIndex.get(fo));
+                return processFunctionalCall((FunctionalCall) node, classDef, parsed, caretOffset, null, index);
             }
 
             if (node instanceof SimpleString) {
@@ -427,12 +436,14 @@ public class MirahDeclarationFinder implements DeclarationFinder {
                 }
                 ResolvedType type = parsed.getResolvedType(node);
                 String fqn = (type != null) ? type.name() : null;
-                return findMethod(methodDef.name().identifier(), fqn, methodDef.type().typeref().name(), parameterTypes, parsed, MirahIndex.get(fo));
+                return findMethod(methodDef.name().identifier(), fqn, methodDef.type().typeref().name(), parameterTypes, parsed, index);
+//                return findMethod(methodDef.name().identifier(), fqn, methodDef.type().typeref().name(), parameterTypes, parsed, MirahIndex.get(fo));
             }
             
             // это, скорее всего,                                название класса в операторе приведения типов
             if (node instanceof TypeRefImpl) {
-                return processRef((TypeRefImpl) node, bdoc, parsed, MirahIndex.get(fo));
+                return processRef((TypeRefImpl) node, bdoc, parsed, index);
+//                return processRef((TypeRefImpl) node, bdoc, parsed, MirahIndex.get(fo));
             }
             
             if ( node instanceof Constant )
@@ -446,13 +457,13 @@ public class MirahDeclarationFinder implements DeclarationFinder {
                     if ( node.parent() instanceof ClassDefinition ) { //&& ((ClassDefinition) node.parent())..s) {
                        TypeName typeName = ((ClassDefinition) node.parent()).superclass();
                        if ( typeName == node ) {
-                           DeclarationLocation location = tryToFindClass(bdoc,parsed,fo,packg,cnst.identifier());
+                           DeclarationLocation location = tryToFindClass(bdoc,parsed,fo,packg,cnst.identifier(),index);
                            if (location != DeclarationLocation.NONE) return location;
                        }
                     }
                     // список интерфейсов в описании класса
                     if ( node.parent() instanceof TypeNameList && node.parent().parent() != null && node.parent().parent() instanceof ClassDefinition) {
-                        DeclarationLocation location = tryToFindClass(bdoc, parsed, fo, packg, cnst.identifier());
+                        DeclarationLocation location = tryToFindClass(bdoc, parsed, fo, packg, cnst.identifier(),index);
                         if (location != DeclarationLocation.NONE) return location;
                     }
                     // это тип аргумента функции
@@ -482,7 +493,8 @@ public class MirahDeclarationFinder implements DeclarationFinder {
                         fqn = ((MethodType)type).returnType().name();
                     }
                     if (!primitivesMap.containsKey(fqn)) {
-                        return findType(fqn, OffsetRange.NONE, bdoc, info, MirahIndex.get(fo));
+                        return findType(fqn, OffsetRange.NONE, bdoc, info, index);
+//                        return findType(fqn, OffsetRange.NONE, bdoc, info, MirahIndex.get(fo));
                     }
                 }
             }
@@ -498,7 +510,8 @@ public class MirahDeclarationFinder implements DeclarationFinder {
                     fqn = null;
                     continue;
                 }
-                return findType(fqn, OffsetRange.NONE, bdoc, info, MirahIndex.get(fo));
+//                return findType(fqn, OffsetRange.NONE, bdoc, info, MirahIndex.get(fo));
+                return findType(fqn, OffsetRange.NONE, bdoc, info, index);
             }
             node = node.parent();
         }
