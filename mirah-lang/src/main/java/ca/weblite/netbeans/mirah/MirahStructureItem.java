@@ -14,6 +14,7 @@ import mirah.lang.ast.ClassDefinition;
 import mirah.lang.ast.Constant;
 import mirah.lang.ast.ConstantAssign;
 import mirah.lang.ast.FieldAssign;
+import mirah.lang.ast.FieldDeclaration;
 import mirah.lang.ast.Identifier;
 import mirah.lang.ast.MethodDefinition;
 import mirah.lang.ast.Node;
@@ -33,6 +34,7 @@ import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.StructureItem;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.parsing.api.Source;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -80,12 +82,18 @@ public class MirahStructureItem implements StructureItem, ElementHandle {
         return false;
     }
 
-    Snapshot snapshot;
+    Source source;
+//    Snapshot snapshot;
     Block block;
     List<MirahStructureItem> children = null;
 
-    public MirahStructureItem(Snapshot snapshot, Block item) {
-        this.snapshot = snapshot;
+//    public MirahStructureItem(Snapshot snapshot, Block item) {
+//        this.snapshot = snapshot;
+//        this.block = item;
+//    }
+
+    public MirahStructureItem(Source source, Block item) {
+        this.source = source;
         this.block = item;
     }
 
@@ -190,6 +198,27 @@ public class MirahStructureItem implements StructureItem, ElementHandle {
                     f.append(" : ");
                     f.append(type);
                 }
+                f.append("[" + block.getOffset() + "," + block.getLength() + "]");
+            }
+            else {
+                f.append(" : "+block.getExtra().toString()+"?");
+                f.append("[" + block.getOffset() + "," + block.getLength() + "]");
+                f.append(" on="+block.getNode().originalNode());
+            }
+            return f.toString();
+        } else if (block.getNode() instanceof FieldDeclaration) {
+            f.append(block.getDescription().toString());
+            TypeName type = ((FieldDeclaration) block.getNode()).type();
+            if (type != null) {
+                f.append(" : ");
+                String typeName = type.typeref().name();
+                int i = typeName.lastIndexOf('.');
+                if ( i != -1 ) typeName = typeName.substring(i+1);
+                f.append(typeName);
+                if ( type.typeref().isArray() ) f.append("[]");
+                f.append("["+block.getOffset()+","+block.getLength()+"]");
+//                f.append(" : ");
+                f.append(" on="+block.getNode().originalNode());
             }
             return f.toString();
         } else {
@@ -275,6 +304,8 @@ public class MirahStructureItem implements StructureItem, ElementHandle {
                     f.appendText(identifier.identifier());
                     f.parameters(false);
                 }
+//                f.appendText("[" + block.getOffset() + "," + block.getLength() + "]");
+//                f.appendText(" on="+block.getNode().originalNode());
                 return f.getText();
             } else if (block.getNode() instanceof ClassDefinition) {
                 ClassDefinition clazz = (ClassDefinition) block.getNode();
@@ -314,6 +345,8 @@ public class MirahStructureItem implements StructureItem, ElementHandle {
                     }
                     f.type(false);
                 }
+//                f.appendText("[" + block.getOffset() + "," + block.getLength() + "]");
+//                f.appendText(" on="+block.getNode().originalNode());
                 return f.getText();
             } else if (block.getNode() instanceof FieldAssign || block.getNode() instanceof ConstantAssign) {
                 boolean deprecated = isDeprecated((Annotated) block.getNode());
@@ -324,16 +357,30 @@ public class MirahStructureItem implements StructureItem, ElementHandle {
                 if (deprecated) {
                     f.deprecated(false);
                 }
-                Node value = ((Assignment) block.getNode()).value();
-                if (value != null) {
-                    String type = (String) value.accept(new TypeNodeVisitor(), null);
-                    if (type != null) {
-                        f.appendHtml(" : ");
-                        f.parameters(true);
-                        f.appendText(type);
-                        f.parameters(false);
+                String typeName = block.getExtra().toString();
+                if (typeName != null && !typeName.isEmpty()) {
+                    int i = typeName.lastIndexOf('.');
+                    if (i != -1) {
+                        typeName = typeName.substring(i + 1);
+                    }
+                    f.appendHtml(" : ");
+                    f.appendText(typeName);
+                }
+                else { 
+                    Node value = ((Assignment) block.getNode()).value();
+//                    f.appendText(" 2[" + block.getOffset() + "," + block.getLength() + "]");
+                    if (value != null) {
+                        String type = (String) value.accept(new TypeNodeVisitor(), null);
+                        if (type != null) {
+                            f.appendHtml(" : ");
+                            f.parameters(true);
+                            f.appendText(type);
+                            f.parameters(false);
+                        }
                     }
                 }
+//                f.appendText("[" + block.getOffset() + "," + block.getLength() + "]");
+//                f.appendText(" on="+block.getNode().originalNode());
                 return f.getText();
             } else {
                 return getName();
@@ -419,7 +466,8 @@ public class MirahStructureItem implements StructureItem, ElementHandle {
         if (children == null) {
             children = new ArrayList<>();
             for (Block child : block.getChildren()) {
-                children.add(new MirahStructureItem(snapshot, child));
+//                children.add(new MirahStructureItem(snapshot, child));
+                children.add(new MirahStructureItem(source, child));
             }
         }
         return children;
@@ -442,7 +490,8 @@ public class MirahStructureItem implements StructureItem, ElementHandle {
 
     @Override
     public FileObject getFileObject() {
-        return snapshot.getSource().getFileObject();
+        return source.getFileObject();
+//        return snapshot.getSource().getFileObject();
     }
 
     @Override

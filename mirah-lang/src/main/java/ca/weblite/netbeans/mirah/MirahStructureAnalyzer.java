@@ -1,6 +1,7 @@
 package ca.weblite.netbeans.mirah;
 
 import ca.weblite.netbeans.mirah.lexer.Block;
+import ca.weblite.netbeans.mirah.lexer.BlockCollector;
 import ca.weblite.netbeans.mirah.lexer.DocumentQuery;
 import ca.weblite.netbeans.mirah.lexer.MirahParser.NBMirahParserResult;
 import java.util.ArrayList;
@@ -25,10 +26,17 @@ public class MirahStructureAnalyzer implements StructureScanner {
 
     @Override
     public List<? extends StructureItem> scan(ParserResult pr) {
+//        synchronize(this) {
         NBMirahParserResult res = (NBMirahParserResult) pr;
+        
+        BlockCollector coll = new BlockCollector();
+        coll.prepareBlocks(res);
+//        coll.prepareBlocks(res.getRoot());
+        
         ArrayList<StructureItem> out = new ArrayList<>();
-        for (Block block : res.getBlocks()) {
-            out.add(new MirahStructureItem(res.getSnapshot(), block));
+        for (Block block : coll.getBlocks()) {
+//        for (Block block : res.getBlocks()) {
+            out.add(new MirahStructureItem(res.getSnapshot().getSource(), block));
         }
         return out;
     }
@@ -113,7 +121,7 @@ public class MirahStructureAnalyzer implements StructureScanner {
      * @return
      */
     private List<OffsetRange> getRanges(Block block, Block parent, Map<String, List<OffsetRange>> out) {
-        // Диапазоны сохраняем только для определенных типов блоков
+        // Р”РёР°РїР°Р·РѕРЅС‹ СЃРѕС…СЂР°РЅСЏРµРј С‚РѕР»СЊРєРѕ РґР»СЏ РѕРїСЂРµРґРµР»РµРЅРЅС‹С… С‚РёРїРѕРІ Р±Р»РѕРєРѕРІ
         switch (block.getKind()) {
             case CLASS:
             case INTERFACE:

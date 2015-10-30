@@ -102,12 +102,12 @@ import ru.programpark.mirah.editor.api.completion.CompletionHandler;
 )
 public class MirahLanguage extends DefaultLanguageConfig {
 
-    @MultiViewElement.Registration(displayName = "#LBL_MirahEditorTab",
-    iconBase = "ca/weblite/netbeans/mirah/1391571312_application-x-ruby.png",
-    persistenceType = TopComponent.PERSISTENCE_ONLY_OPENED,
-    preferredID = "mirah.source",
-    mimeType = "text/x-mirah",
-    position = 1)
+//    @MultiViewElement.Registration(displayName = "#LBL_MirahEditorTab",
+//    iconBase = "ca/weblite/netbeans/mirah/1391571312_application-x-ruby.png",
+//    persistenceType = TopComponent.PERSISTENCE_ONLY_OPENED,
+//    preferredID = "mirah.source",
+//    mimeType = "text/x-mirah",
+//    position = 1)
 
     public static MultiViewEditorElement createMultiViewEditorElement(Lookup context) {
         return new MultiViewEditorElement(context);

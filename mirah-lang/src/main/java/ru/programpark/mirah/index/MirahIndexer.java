@@ -344,7 +344,7 @@ public class MirahIndexer extends EmbeddingIndexer {
                 getCurrentDocument().addPair(METHOD_NAME, sb.toString(), true, true);
             
 //      LOG.info(MirahIndexer.class, "enterMethodDefinition name=" + node.name().identifier()+" file="+file.getName()+" node="+node);
-            LOG.info(null, ""+getClassName()+": METHOD_NAME="+sb.toString());
+//            LOG.info(null, ""+getClassName()+": METHOD_NAME="+sb.toString());
 //            if ( node.type() != null && node.type().typeref() != null )
 //            LOG.info(MirahIndexer.class, "return="+node.type().typeref().name()+" array="+node.type().typeref().isArray()+" static="+node.type().typeref().isStatic());
             return true;
@@ -517,7 +517,7 @@ public class MirahIndexer extends EmbeddingIndexer {
             if (getCurrentDocument() != null)
                 getCurrentDocument().addPair(CONSTRUCTOR, sb.toString(), true, true);
 
-            LOG.info(MirahIndexer.class, "" + getClassName() + ": CONSTRUCTOR=" + sb.toString());
+//            LOG.info(MirahIndexer.class, "" + getClassName() + ": CONSTRUCTOR=" + sb.toString());
 
             return super.enterConstructorDefinition(node, arg);
         }

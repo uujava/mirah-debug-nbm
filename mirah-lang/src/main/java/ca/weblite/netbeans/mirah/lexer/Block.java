@@ -37,6 +37,10 @@ public class Block implements BlockNode {
     @Override
     public Block addBlock(Node node, CharSequence function, int offset, int length, CharSequence extra, ElementKind kind) {
         importsBlock = false;
+        if (length == 0 && node != null && node.position() != null) {
+            offset = node.position().startChar();
+            length = node.position().endChar() - node.position().startChar();
+        }
         Block block = new Block(node, function, offset, length, extra, kind);
         children.add(block);
         return block;
@@ -45,6 +49,10 @@ public class Block implements BlockNode {
     @Override
     public Block addDSL(Node node, CharSequence function, int offset, int length, CharSequence extra, ElementKind kind) {
         importsBlock = false;
+        if (length == 0 && node != null && node.position() != null) {
+            offset = node.position().startChar();
+            length = node.position().endChar() - node.position().startChar();
+        }
         Block block = new Block(node, function, offset, length, extra, kind);
         blocks.add(block);
         return block;
@@ -52,6 +60,10 @@ public class Block implements BlockNode {
 
     @Override
     public Block addImport(Node node, CharSequence function, int offset, int length, CharSequence extra, ElementKind kind) {
+        if (length == 0 && node != null && node.position() != null) {
+            offset = node.position().startChar();
+            length = node.position().endChar() - node.position().startChar();
+        }
         if (importsBlock && !imports.isEmpty()) {
             Block block = imports.get(imports.size() - 1);
             block.length = offset + length - block.offset;

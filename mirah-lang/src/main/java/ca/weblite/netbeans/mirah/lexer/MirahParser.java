@@ -140,13 +140,8 @@ public class MirahParser extends Parser {
 
         String newContent = snapshot.getText().toString();
 //        LOG.info(null, "----- Parsing Start: " + snapshot.getSource().getFileObject().getNameExt() + " -----");
-//        LOG.info(this, "newContent = "+newContent);
+//        LOG.putStack("***");
         boolean changed = oldContent == null || !oldContent.equals(newContent);
-//        LOG.info(this, "changed = " + changed);
-//        LOG.info(this, "sme = " + sme);
-//        LOG.info(this, "task = " + task);
-//        LOG.info(this, "sme.sourceChanged() = " + sme.sourceChanged());
-
         if (sme.sourceChanged() && changed) {
             lastContent.put(
                     snapshot.getSource().getDocument(false),
@@ -331,15 +326,8 @@ public class MirahParser extends Parser {
 
                 @Override
                 public boolean enterMethodDefinition(MethodDefinition node, Object arg) {
-                    try {
-                        System.out.println("enterMethodDefinition node="+node);
-                        BlockNode parent = blockStack.isEmpty() ? res : blockStack.peek();
-                        blockStack.push(parent.addBlock(node, node.name().identifier(), node.position().startChar(), node.position().endChar() - node.position().startChar(), "", ElementKind.METHOD));
-                    }
-                    catch( Exception e)
-                    {
-                        System.out.println("enterMethodDefinition EXCEPTION=" + e);    
-                    }
+                    BlockNode parent = blockStack.isEmpty() ? res : blockStack.peek();
+                    blockStack.push(parent.addBlock(node, node.name().identifier(), node.position().startChar(), node.position().endChar() - node.position().startChar(), "", ElementKind.METHOD));
                     return super.enterMethodDefinition(node, arg);
                 }
 
@@ -745,7 +733,7 @@ public class MirahParser extends Parser {
         if (debugger.resolvedTypes.size() > 0) {
             debugger.compiler = compiler.getMirahc();
             documentDebuggers.put(doc, debugger);
-            // РЎРѕС…СЂР°РЅСЏСЋ РґРµСЂРµРІРѕ СЂР°Р·Р±РѕСЂР° - СЌС‚Рѕ СЃРїРёСЃРѕРє List<Node>
+            // Сохраняю дерево разбора - это список List<Node>
             if ( debugger.compiler.compiler() != null )
             result.setParsedNodes(debugger.compiler.compiler().getParsedNodes());
             fireOnParse(doc);
