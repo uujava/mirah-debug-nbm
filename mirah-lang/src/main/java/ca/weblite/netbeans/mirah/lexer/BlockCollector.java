@@ -29,6 +29,7 @@ import mirah.lang.ast.Position;
 import mirah.lang.ast.StaticMethodDefinition;
 import mirah.lang.ast.Unquote;
 import org.mirah.typer.ResolvedType;
+import org.mirah.jvm.mirrors.JvmErrorType;
 import org.netbeans.modules.csl.api.ElementKind;
 
 /**
@@ -164,17 +165,6 @@ public class BlockCollector implements BlockNode {
             @Override
             public boolean enterClassDefinition(ClassDefinition node, Object arg) {
                 final BlockNode parent = blockStack.isEmpty() ? self : blockStack.peek();
-                Node n2 = node.originalNode();
-                Position p = node.position();
-                Position p2 = null;
-                Position p3 = null;
-                Node n3 = node.name().originalNode();
-                if (n2 != null) {
-                    p2 = n2.position();
-                }
-                if (n3 != null) {
-                    p3 = n3.position();
-                }
                 currClass = parent.addBlock(node, node.name().identifier(), 0, 0, "", ElementKind.CLASS);
                 blockStack.push(currClass);
 //                blockStack.push(parent.addBlock(node, node.name().identifier(), node.position().startChar(), node.position().endChar() - node.position().startChar(), "", ElementKind.CLASS));
@@ -190,17 +180,6 @@ public class BlockCollector implements BlockNode {
 
             @Override
             public boolean enterMethodDefinition(MethodDefinition node, Object arg) {
-                Node n2 = node.originalNode();
-                Position p = node.position();
-                Position p2 = null;
-                Position p3 = null;
-                Node n3 = node.name().originalNode();
-                if (n2 != null) {
-                    p2 = n2.position();
-                }
-                if (n3 != null) {
-                    p3 = n3.position();
-                }
 //                if (node.name() instanceof Unquote) {
 //                    return false;
 //                }
@@ -272,24 +251,16 @@ public class BlockCollector implements BlockNode {
             public boolean enterFieldAssign(FieldAssign node, Object arg) {
                 final BlockNode parent = blockStack.isEmpty() ? self : blockStack.peek();
 //                blockStack.push(parent.addBlock(node, node.name().identifier(), node.position().startChar(), node.position().endChar() - node.position().startChar(), "", ElementKind.FIELD));
-                Node n2 = node.originalNode();
-                Position p = node.position();
-                Position p2 = null;
-                Position p3 = null;
-                Node n3 = node.name().originalNode();
-                if (n2 != null) {
-                    p2 = n2.position();
-                }
-                if (n3 != null) {
-                    p3 = n3.position();
-                }
                 ResolvedType type = parsed.getResolvedTypes().get(node);
+                String name = type.name();
+                if ( type instanceof JvmErrorType ) name = ((JvmErrorType)type).getAsmType().getClassName();
                 if ( node.originalNode() != null ) {
-                    Block newBlock = currClass.addBlock(node, "@"+node.name().identifier(), p2.startChar(), p2.endChar() - p2.startChar(), "" + type, ElementKind.FIELD);
+                    Position pos = node.originalNode().position();
+                    Block newBlock = currClass.addBlock(node, "@"+node.name().identifier(), pos.startChar(), pos.endChar() - pos.startChar(), name, ElementKind.FIELD);
                     blockStack.push(newBlock);
                 }
                 else {
-                    blockStack.push(parent.addBlock(node, node.name().identifier(), 0, 0, ""+type, ElementKind.FIELD));
+                    blockStack.push(parent.addBlock(node, node.name().identifier(), 0, 0, name, ElementKind.FIELD));
                 }
                 return super.enterFieldAssign(node, arg);
             }
@@ -342,9 +313,9 @@ public class BlockCollector implements BlockNode {
             @Override
             public Object exitCall(Call node, Object arg) {
                 final String identifier = node.name().identifier();
-                if (macroNames.contains(identifier)) {
-                    blockStack.pop();
-                }
+//                if (macroNames.contains(identifier)) {
+//                    blockStack.pop();
+//                }
                 return super.exitCall(node, arg);
             }
 
@@ -362,22 +333,15 @@ public class BlockCollector implements BlockNode {
             @Override
             public Object exitFunctionalCall(FunctionalCall node, Object arg) {
                 final String identifier = node.name().identifier();
-                if (macroNames.contains(identifier)) {
-                    blockStack.pop();
-                }
+//                if (macroNames.contains(identifier)) {
+//                    blockStack.pop();
+//                }
                 return super.exitFunctionalCall(node, arg);
             }
 
             @Override
             public boolean enterFieldDeclaration(FieldDeclaration node, Object arg) {
                 final BlockNode parent = blockStack.isEmpty() ? self : blockStack.peek();
-                Node n2 = node.originalNode();
-                Position p = node.position();
-                Position p2 = null;
-                Position p3 = null;
-                Node n3 = node.name().originalNode();
-                if ( n2 != null ) p2 = n2.position();
-                if ( n3 != null ) p3 = n3.position();
 //                blockStack.push(parent.addBlock(node, "@"+node.name().identifier(), 0, 0, "", ElementKind.FIELD));
 //                blockStack.push(parent.addBlock(node, node.name().identifier(), node.position().startChar(), node.position().endChar() - node.position().startChar(), "", ElementKind.FIELD));
                 return super.enterFieldDeclaration(node, arg);
@@ -385,7 +349,7 @@ public class BlockCollector implements BlockNode {
 
             @Override
             public Object exitFieldDeclaration(FieldDeclaration node, Object arg) {
-                blockStack.pop();
+//                blockStack.pop();
                 return super.exitFieldDeclaration(node, arg);
             }
 
@@ -396,12 +360,7 @@ public class BlockCollector implements BlockNode {
             
         }, null);
         } catch( Exception ee ) {
-            System.out.println("prepareBlocks EXCCEPTION = "+ee);
-            System.out.println("prepareBlocks EXCCEPTION = "+ee);
-            System.out.println("prepareBlocks EXCCEPTION = "+ee);
-            System.out.println("prepareBlocks EXCCEPTION = "+ee);
-            System.out.println("prepareBlocks EXCCEPTION = "+ee);
-            System.out.println("prepareBlocks EXCCEPTION = "+ee);
+            System.out.println("prepareBlocks EXCEPTION = "+ee);
             ee.printStackTrace();
         }
     }
