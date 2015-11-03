@@ -411,7 +411,7 @@ public class MirahIndexer extends EmbeddingIndexer {
             if ( packageName != null ) className = packageName + ".";
             className += node.name().identifier();
 
-            LOG.info(null, "Add document " + className);
+//            LOG.info(null, "Add document " + className);
             
             for( Iterator it = node.interfaces().iterator() ; it.hasNext() ; )
             {
