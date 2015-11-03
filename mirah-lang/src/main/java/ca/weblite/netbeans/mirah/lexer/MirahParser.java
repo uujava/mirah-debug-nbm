@@ -681,6 +681,8 @@ public class MirahParser extends Parser {
         if (!"".equals(bootClassPathStr)) {
             compiler.setBootClassPath(bootClassPathStr);
         }
+        if (buildClassPath != null)
+        LOG.info(this, "0=> buildClassPath.entries().size() = " + buildClassPath.entries().size());
         String srcText = content;
         FileObject fakeFileRoot = getRoot(src);
 //        LOG.info(this,"fakeFileRoot == "+fakeFileRoot);
