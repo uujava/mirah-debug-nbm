@@ -541,7 +541,7 @@ public class MirahParser extends Parser {
         for (Project p : OpenProjects.getDefault().getOpenProjects()) {
             for (FileObject ff : QuerySupport.findRoots(p, sourcePathIds, libraryPathIds, binaryLibraryPathIds)) 
             {
-                macroPath.append(File.pathSeparator).append(ff.getPath());
+                if ( ff != null && !ff.getPath().isEmpty() ) macroPath.append(File.pathSeparator).append(ff.getPath());
             }
         }
         return macroPath.toString();
@@ -582,27 +582,10 @@ public class MirahParser extends Parser {
             }
         }
         
-
-        ClassPath compileClassPath
-                = ClassPath.getClassPath(src, ClassPath.COMPILE);
-        String compileClassPathStr = "";
-        if (compileClassPath != null) {
-            compileClassPathStr = compileClassPath.toString();
-        }
-        
-        ClassPath buildClassPath
-                = ClassPath.getClassPath(src, ClassPath.EXECUTE);
-        String buildClassPathStr = "";
-        if (buildClassPath != null) {
-            buildClassPathStr = buildClassPath.toString();
-        }
-
+        ClassPath compileClassPath = ClassPath.getClassPath(src, ClassPath.COMPILE);
+        ClassPath buildClassPath = ClassPath.getClassPath(src, ClassPath.EXECUTE);
         ClassPath srcClassPath = ClassPath.getClassPath(src, ClassPath.SOURCE);
-        String srcClassPathStr = "";
-
-        if (srcClassPath != null) {
-            srcClassPathStr = srcClassPath.toString();
-        }
+        /*
         String changedSourcePaths = RecompileQueue.getProjectQueue(project).getAndClearChangedSourcePaths();
         if (changedSourcePaths != null) {
             Set<String> set = new HashSet<>();
@@ -614,10 +597,12 @@ public class MirahParser extends Parser {
             }
             srcClassPathStr = sb.substring(0, sb.length() - File.pathSeparator.length());
         }
-       
-        compiler.setSourcePath(srcClassPathStr);
+        if (changedSourcePaths != null)
+        LOG.info(this, "2=> changedSourcePaths.length() = " + changedSourcePaths.length());
+        */
+        compiler.setSourcePath(srcClassPath == null ? "" : srcClassPath.toString());
 
-        String dest = buildClassPathStr;
+        String dest = buildClassPath == null ? "" : buildClassPath.toString();
         FileObject mirahDir = null;
         try {
             if (buildDir == null) {
@@ -632,10 +617,10 @@ public class MirahParser extends Parser {
             compiler.setJavaStubDirectory(javaStubDir);
             dest = mirahDir.getPath();
         } catch (IOException ex) {
-
         }
         compiler.setDestinationDirectory(new File(dest));
         compiler.setDiagnostics(diag);
+        /*
         List<String> paths = new ArrayList<>();
         if (!"".equals(srcClassPathStr)) {
             paths.add(srcClassPathStr);
@@ -647,24 +632,28 @@ public class MirahParser extends Parser {
             paths.add(compileClassPathStr);
         }
         StringBuilder classPath = new StringBuilder();
+        LOG.info(this, "=> paths.entries().size() = " + paths.size());
         for (String path : paths) {
             classPath.append(path);
             classPath.append(File.pathSeparator);
         }
-
+        
+        LOG.info(this, "3=> classPath.length() = " + classPath.length());
+*/
         String macroPath = getMacroPath(project);
         
-        String cp = ".";
-        if (classPath.length() >= 1) {
-            cp = classPath.toString().substring(0, classPath.length() - 1);
-        }
-        
-        //todo убрать повторы в classpath
-        compiler.setClassPath(macroPath + File.pathSeparator + cp);
+        String cp = compileClassPath == null ? "." : compileClassPath.toString();
 
-        compiler.setMacroClassPath(macroPath);
+        //todo убрать повторы в classpath
+        // не надо приклеивать macroPath - это дедается в WLMirahCompiler
+        compiler.setClassPath(cp);
+//        compiler.setClassPath(macroPath + File.pathSeparator + cp);
+
+        compiler.setMacroClassPath("");
+//        compiler.setMacroClassPath(macroPath);
         
 //        LOG.info(this, "classPath:");
+//        LOG.info(this, compileClassPath.toString());
 //        LOG.info(this, classPath.toString());
 //        LOG.info(this, "macroPath:");
 //        LOG.info(this, macroPath);
@@ -681,8 +670,8 @@ public class MirahParser extends Parser {
         if (!"".equals(bootClassPathStr)) {
             compiler.setBootClassPath(bootClassPathStr);
         }
-        if (buildClassPath != null)
-        LOG.info(this, "0=> buildClassPath.entries().size() = " + buildClassPath.entries().size());
+        if ( bootClassPath != null ) compiler.setBootClassPath(bootClassPath.toString());
+
         String srcText = content;
         FileObject fakeFileRoot = getRoot(src);
 //        LOG.info(this,"fakeFileRoot == "+fakeFileRoot);
@@ -693,7 +682,6 @@ public class MirahParser extends Parser {
         }
         String relPath = FileUtil.getRelativePath(fakeFileRoot, src);
         relPath = relPath.substring(0, relPath.lastIndexOf("."));
-//        LOG.info(this,"relPath == "+relPath);
         compiler.addFakeFile(relPath, srcText);
         FileChangeAdapter fileChangeListener = null;
         try {
@@ -703,7 +691,6 @@ public class MirahParser extends Parser {
             if (mirahDir != null) {
 
                 for (FileObject compileRoot : compileClassPath.getRoots()) {
-//                    LOG.info(this,"compileRoot = "+compileRoot);
                     if (!compileRoot.getPath().endsWith(".jar") && compileRoot.isFolder() && !mirahDir.equals(compileRoot)) {
                         copyIfChanged(new File(mirahDir.getPath()), new File(compileRoot.getPath()), new File(mirahDir.getPath()));
                     }

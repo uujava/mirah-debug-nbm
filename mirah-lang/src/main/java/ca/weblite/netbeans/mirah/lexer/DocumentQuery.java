@@ -238,7 +238,7 @@ public class DocumentQuery {
    
     public boolean requiresImport(String fqn){
         
-        LOG.info(this,"requiresImport = "+fqn);
+//        LOG.info(this,"requiresImport = "+fqn);
         if ( fqn == null ){
             return false;
         }
