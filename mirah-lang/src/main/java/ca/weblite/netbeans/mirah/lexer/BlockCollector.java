@@ -29,6 +29,8 @@ import mirah.lang.ast.Position;
 import mirah.lang.ast.StaticMethodDefinition;
 import mirah.lang.ast.Unquote;
 import org.mirah.typer.ResolvedType;
+import org.mirah.jvm.mirrors.BytecodeMirror;
+import org.mirah.jvm.mirrors.DebugError;
 import org.mirah.jvm.mirrors.JvmErrorType;
 import org.netbeans.modules.csl.api.ElementKind;
 
@@ -253,7 +255,13 @@ public class BlockCollector implements BlockNode {
 //                blockStack.push(parent.addBlock(node, node.name().identifier(), node.position().startChar(), node.position().endChar() - node.position().startChar(), "", ElementKind.FIELD));
                 Object type = parsed.getResolvedTypes().get(node);
                 String name = "";
+                //todo разобраться с неизвестными типами :error
+                if ( type instanceof BytecodeMirror ) name = ((BytecodeMirror) type).name(); //((BytecodeMirror)type).getAsmType().getClassName();
+                else
+                if ( type instanceof DebugError ) name = ((DebugError) type).name(); //((DebugError)type).toString();
+                else
                 if ( type instanceof JvmErrorType ) name = ((JvmErrorType)type).getAsmType().getClassName();
+                else
                 if ( type instanceof ResolvedType ) name = ((ResolvedType)type).name();
                 if ( node.originalNode() != null ) {
                     Position pos = node.originalNode().position();
