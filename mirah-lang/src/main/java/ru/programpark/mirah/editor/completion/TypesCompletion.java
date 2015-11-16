@@ -1,6 +1,6 @@
 package ru.programpark.mirah.editor.completion;
 
-import ca.weblite.netbeans.mirah.cc.AstSupport;
+import ru.programpark.mirah.editor.ast.AstSupport;
 import ca.weblite.netbeans.mirah.lexer.MirahTokenId;
 import java.io.IOException;
 import java.util.*;

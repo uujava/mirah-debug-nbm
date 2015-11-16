@@ -593,8 +593,8 @@ public class MirahParser extends Parser {
         appendClassPath(compileClassPath,sb,map);
         appendClassPath(buildClassPath,sb,map);
         appendClassPath(bootClassPath,sb,map);
-        LOG.info(this, "cp44:");
-        LOG.info(this, sb.toString());
+//        LOG.info(this, "cp:");
+//        LOG.info(this, sb.toString());
 
         String cp = sb.toString();
         
@@ -664,7 +664,7 @@ public class MirahParser extends Parser {
 
         if (debugger.resolvedTypes.size() > 0) {
             debugger.compiler = compiler.getMirahc();
-            documentDebuggers.put(doc, debugger);
+//            documentDebuggers.put(doc, debugger);
             // Сохраняю дерево разбора - это список List<Node>
             if ( debugger.compiler.compiler() != null )
             result.setParsedNodes(debugger.compiler.compiler().getParsedNodes());

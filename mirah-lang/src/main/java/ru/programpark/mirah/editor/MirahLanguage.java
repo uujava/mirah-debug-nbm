@@ -66,7 +66,7 @@ import org.openide.filesystems.MIMEResolver;
 import org.openide.util.Lookup;
 import org.openide.windows.TopComponent;
 import ru.programpark.mirah.index.MirahIndexer;
-import ru.programpark.mirah.editor.api.completion.CompletionHandler;
+import ru.programpark.mirah.editor.api.completion.MirahCompletionHandler;
 
 /**
  * Language/lexing configuration for Mirah
@@ -199,7 +199,7 @@ public class MirahLanguage extends DefaultLanguageConfig {
 
     @Override
     public CodeCompletionHandler getCompletionHandler() {
-        return new CompletionHandler();
+        return new MirahCompletionHandler();
     }
 
     @Override

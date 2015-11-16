@@ -1,7 +1,5 @@
 package ru.programpark.mirah.editor.completion;
 
-import ca.weblite.netbeans.mirah.cc.MirahCodeCompleter;
-import ca.weblite.netbeans.mirah.cc.MirahPropertyCompletionItem;
 import ca.weblite.netbeans.mirah.lexer.MirahParser;
 import ca.weblite.netbeans.mirah.lexer.MirahTokenId;
 import java.util.List;
@@ -26,6 +24,7 @@ import ru.programpark.mirah.editor.api.completion.FieldSignature;
 import ru.programpark.mirah.editor.api.completion.util.CompletionContext;
 import ru.programpark.mirah.editor.api.completion.util.ContextHelper;
 import ru.programpark.mirah.editor.completion.provider.CompleteElementHandler;
+import ru.programpark.mirah.editor.utils.MirahUtils;
 
 /**
  * Complete the fields for a class. There are two principal completions for fields:
@@ -128,7 +127,7 @@ public class FieldCompletion extends BaseCompletion {
             int p = caretOffset-1;
             if ( p < 0 ) return;
             
-            TokenSequence<MirahTokenId> toks = MirahCodeCompleter.mirahTokenSequence(doc, caretOffset, true);
+            TokenSequence<MirahTokenId> toks = MirahUtils.mirahTokenSequence(doc, caretOffset, true);
             if ( toks == null ) return;
             
             Token<MirahTokenId> foundToken = null;
@@ -176,7 +175,7 @@ public class FieldCompletion extends BaseCompletion {
                 
             if ( foundToken == null ) return;
                 
-            FieldDeclaration[] fields = MirahCodeCompleter.findFields(dbg, anchor, isClassVar);
+            FieldDeclaration[] fields = MirahUtils.findFields(dbg, anchor, isClassVar);
 /*                
                 if ( fields.length == 0 ){
 
@@ -200,7 +199,7 @@ public class FieldCompletion extends BaseCompletion {
 
                     dbg = MirahParser.getDocumentDebugger(doc);
                     //printNodes(dbg.compiler.compiler(), rightEdgeFinal);
-                    fields = MirahCodeCompleter.findFields(dbg, tAtPos, isClassVar);
+                    fields = MirahUtils.findFields(dbg, tAtPos, isClassVar);
                     
                     
                 }

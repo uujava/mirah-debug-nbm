@@ -37,16 +37,16 @@ import ru.programpark.mirah.editor.completion.ProposalsCollector;
 import ru.programpark.mirah.editor.utils.LexUtilities;
 import ru.programpark.mirah.editor.utils.MirahUtils;
 
-public class CompletionHandler implements CodeCompletionHandler {
+public class MirahCompletionHandler implements CodeCompletionHandler {
 
-    private static final Logger LOG = Logger.getLogger(CompletionHandler.class.getName());
+    private static final Logger LOG = Logger.getLogger(MirahCompletionHandler.class.getName());
     private final PropertyChangeListener docListener;
     private String jdkJavaDocBase = null;
     private String mirahJavaDocBase = null;
     private String mirahApiDocBase = null;
     private BaseDocument baseDoc = null;
 
-    public CompletionHandler() {
+    public MirahCompletionHandler() {
         JavaPlatformManager platformMan = JavaPlatformManager.getDefault();
         JavaPlatform platform = platformMan.getDefaultPlatform();
         List<URL> docfolder = platform.getJavadocFolders();
@@ -61,7 +61,7 @@ public class CompletionHandler implements CodeCompletionHandler {
 
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
-                synchronized (CompletionHandler.this) {
+                synchronized (MirahCompletionHandler.this) {
                     mirahJavaDocBase = null;
                     mirahApiDocBase = null;
                 }
@@ -429,7 +429,7 @@ public class CompletionHandler implements CodeCompletionHandler {
         String error = "error 233"; //NbBundle.getMessage(CompletionHandler.class, "GroovyCompletion_NoJavaDocFound");
         String doctext = null;
         
-        doctext = NbBundle.getMessage(CompletionHandler.class, "MirahCompletion_DummyJavaDoc");
+        doctext = NbBundle.getMessage(MirahCompletionHandler.class, "MirahCompletion_DummyJavaDoc");
         if ( true ) return doctext;
 
 //      if (element instanceof ASTMethod) {

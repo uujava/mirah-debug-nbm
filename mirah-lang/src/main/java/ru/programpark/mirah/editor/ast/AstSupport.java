@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package ca.weblite.netbeans.mirah.cc;
+package ru.programpark.mirah.editor.ast;
 
 import ca.weblite.netbeans.mirah.lexer.MirahParser;
 import java.util.LinkedList;

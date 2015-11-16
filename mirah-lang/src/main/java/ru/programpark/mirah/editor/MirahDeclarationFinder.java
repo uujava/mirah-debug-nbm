@@ -6,7 +6,7 @@
 
 package ru.programpark.mirah.editor;
 
-import ca.weblite.netbeans.mirah.cc.AstSupport;
+import ru.programpark.mirah.editor.ast.AstSupport;
 import ca.weblite.netbeans.mirah.lexer.MirahLanguageHierarchy;
 import ca.weblite.netbeans.mirah.lexer.MirahParser;
 import ca.weblite.netbeans.mirah.lexer.MirahTokenId;
@@ -58,7 +58,9 @@ import mirah.lang.ast.TypeNameList;
 import mirah.lang.ast.TypeRef;
 import mirah.lang.ast.TypeRefImpl;
 import org.mirah.typer.MethodType;
+import org.mirah.typer.ProxyNode;
 import org.mirah.typer.ResolvedType;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
@@ -263,6 +265,10 @@ public class MirahDeclarationFinder implements DeclarationFinder {
         for (Iterator<Node> it = parameters.iterator(); it.hasNext();) {
             Node pnode = (Node) it.next();
             ResolvedType rtype = parsed.getResolvedType(pnode);
+            if ( rtype == null ) { // не найден тип для mapping @button
+                if ( pnode instanceof ProxyNode )
+                    rtype = parsed.getResolvedType(((ProxyNode)pnode).get(0));
+            }
             String ptype = rtype == null ? null : rtype.name();
             parameterTypes.add(ptype);
         }
@@ -825,10 +831,65 @@ public class MirahDeclarationFinder implements DeclarationFinder {
 
         return DeclarationLocation.NONE;
     }
-    IndexedMethod findBestMethodMatch(String methodName, Set<IndexedMethod> methodSet,
+
+    static Class findClass(FileObject fo, String name ) 
+    {
+        ClassPath[] paths = new ClassPath[]{
+            ClassPath.getClassPath(fo, ClassPath.SOURCE),
+            ClassPath.getClassPath(fo, ClassPath.EXECUTE),
+            ClassPath.getClassPath(fo, ClassPath.COMPILE),
+            ClassPath.getClassPath(fo, ClassPath.BOOT),};
+
+        for (int i = 0; i < paths.length; i++) {
+            ClassPath cp = paths[i];
+            try {
+                Class c = cp.getClassLoader(true).loadClass(name);
+                if (c != null) return c;
+            } catch (ClassNotFoundException ex) {
+                int t = 0;
+            }
+        }
+        return null;
+    }
+
+    private boolean compareFQNs( String type, String fqn, MirahIndex index ) 
+    {
+        // цикл по суперклассам
+        while (true) {
+            if ( type.equals(fqn) ) return true;
+            
+            // пытаюсь найти в суперклассе
+            //todo проверять интерфейсы
+            
+            fqn = index.findSuperClassByFqn(fqn);
+            if (fqn == null || fqn.isEmpty()) {
+                break;
+            }
+        }
+        return false;
+    }
+
+    private boolean compareFQNs( String type, String fqn, FileObject fo ) 
+    {
+        // цикл по суперклассам
+        while (true) {
+            if ( type.equals(fqn) ) return true;
+            
+            // пытаюсь найти в суперклассе
+            //todo проверять интерфейсы
+            Class cls = findClass(fo,fqn);
+            if ( cls == null ) break;
+            fqn = cls.getSuperclass().getName();
+        }
+        return false;
+    }
+
+    
+    private IndexedMethod findBestMethodMatch(String methodName, 
+            Set<IndexedMethod> methodSet,
             String possibleFqn,
             String returnType,
-            ArrayList parameterTypes,
+            ArrayList<String> parameterTypes,
             MirahParser.NBMirahParserResult parsed,
             MirahIndex index)
     {
@@ -858,13 +919,31 @@ public class MirahDeclarationFinder implements DeclarationFinder {
             }
         }
         sb.append(")");
-        
+
+        // проверка на точное совпадение сигнатуры
         String signature = sb.toString();
-        
         for( IndexedMethod method : methods )
         {
             if ( method.getSignature().startsWith(signature))
                 return method;
+        }
+        // проверка дерева наследования у параметров методов
+        for (IndexedMethod method : methods) {
+            String sign = method.getSignature();
+            int open = sign.indexOf('(');
+            int close = sign.indexOf(')');
+            if ( open == -1 || close == -1 ) continue;
+            String [] params = sign.substring(open+1,close).split(",");
+            if ( params.length != parameterTypes.size() ) continue;
+            // сравниваю FQN типов параметров
+            int i = 0;
+            for( ; i < params.length ; i++ )
+            {
+                // если не совпадают, пытыюсь проверить
+//                if ( ! compareFQNs(params[i],parameterTypes.get(i),index) ) break;
+                if ( ! compareFQNs(params[i],parameterTypes.get(i),parsed.getSnapshot().getSource().getFileObject()) ) break;
+            }
+            if ( i >= params.length ) return method;
         }
         return null;
     }
@@ -872,7 +951,7 @@ public class MirahDeclarationFinder implements DeclarationFinder {
     private DeclarationLocation findMethod( String methodName, 
             String possibleFqn, 
             String returnType, 
-            ArrayList parameterTypes, 
+            ArrayList<String> parameterTypes, 
             MirahParser.NBMirahParserResult parsed,
             MirahIndex index) 
     {
@@ -899,7 +978,7 @@ public class MirahDeclarationFinder implements DeclarationFinder {
     }
 
     private Set<IndexedMethod> getApplicableMethods(String methodName, String possibleFqn,
-            String returnType, ArrayList parameters, MirahIndex index) 
+            String returnType, ArrayList<String> parameters, MirahIndex index) 
     {
         Set<IndexedMethod> methods = index.getMethods(methodName,possibleFqn,QuerySupport.Kind.EXACT);
         String fqn = possibleFqn;

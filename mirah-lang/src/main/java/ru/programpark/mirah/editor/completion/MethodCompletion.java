@@ -1,9 +1,6 @@
 package ru.programpark.mirah.editor.completion;
 
 import ca.weblite.netbeans.mirah.LOG;
-import ca.weblite.netbeans.mirah.cc.MirahCodeCompleter;
-import ca.weblite.netbeans.mirah.cc.MirahConstructorCompletionItem;
-import ca.weblite.netbeans.mirah.cc.MirahMethodCompletionItem;
 import ca.weblite.netbeans.mirah.lexer.DocumentQuery;
 import ca.weblite.netbeans.mirah.lexer.MirahParser;
 import ca.weblite.netbeans.mirah.lexer.MirahParser.DocumentDebugger;
@@ -784,14 +781,14 @@ public class MethodCompletion extends BaseCompletion {
 
         
 /*        
-//        int bol = MirahCodeCompleter.getBeginningOfLine(doc, lexOffset);
-//        int eol = MirahCodeCompleter.getEndOfLine(doc, lexOffset);
+//        int bol = MirahUtils.getBeginningOfLine(doc, lexOffset);
+//        int eol = MirahUtils.getEndOfLine(doc, lexOffset);
         int dotPos = dotToken.offset(hi);
 
         DocumentDebugger dbg = MirahParser.getDocumentDebugger(doc);
 
 
-        Node foundNode = MirahCodeCompleter.findNode(dbg, subjectToken.offset(hi)+subjectToken.length());
+        Node foundNode = MirahUtils.findNode(dbg, subjectToken.offset(hi)+subjectToken.length());
 
         ResolvedType type = null;
         if ( foundNode != null ){
@@ -826,7 +823,7 @@ public class MethodCompletion extends BaseCompletion {
             }
 
             //printNodes(dbg.compiler.compiler(), rightEdgeFinal);
-            foundNode = MirahCodeCompleter.findNode(dbg, subjectToken.offset(hi)+subjectToken.length());
+            foundNode = MirahUtils.findNode(dbg, subjectToken.offset(hi)+subjectToken.length());
             if ( foundNode != null ){
                 type = dbg.getType(foundNode);
             }
@@ -842,7 +839,7 @@ public class MethodCompletion extends BaseCompletion {
 */        
             if ( type != null ){
                 FileObject fileObject = NbEditorUtilities.getFileObject(doc);
-                Class cls = MirahCodeCompleter.findClass(fileObject, type.name());
+                Class cls = MirahUtils.findClass(fileObject, type.name());
 //                currentType = cls;
 //                LOG.info(this,"query cls=" + cls);
 
@@ -955,7 +952,7 @@ public class MethodCompletion extends BaseCompletion {
 
             int p = caretOffset-1;
             if ( p < 0 ) return;
-            TokenSequence<MirahTokenId> toks = MirahCodeCompleter.mirahTokenSequence(doc, caretOffset, true);
+            TokenSequence<MirahTokenId> toks = MirahUtils.mirahTokenSequence(doc, caretOffset, true);
 
 //                ts.move(caretOffset == 0 ? 0 : caretOffset - 1);
                 
@@ -1023,7 +1020,7 @@ public class MethodCompletion extends BaseCompletion {
 
             int dotPos = dotToken.offset(hi);
             int rightEdge = subjectToken.offset(hi)+subjectToken.length();
-//                Node foundNode = MirahCodeCompleter.findNode(dbg, rightEdge);
+//                Node foundNode = MirahUtils.findNode(dbg, rightEdge);
             Node foundNode = findNode(parserResult, rightEdge);
             ResolvedType type = null;
             if ( foundNode != null ){
@@ -1039,8 +1036,8 @@ public class MethodCompletion extends BaseCompletion {
 /*                
                 if ( foundNode == null || type == null ){
                     
-                    int bol = MirahCodeCompleter.getBeginningOfLine(doc, caretOffset);
-                    int eol = MirahCodeCompleter.getEndOfLine(doc, caretOffset);
+                    int bol = MirahUtils.getBeginningOfLine(doc, caretOffset);
+                    int eol = MirahUtils.getEndOfLine(doc, caretOffset);
                 
                     Source src = Source.create(doc);
                     MirahParser parser = new MirahParser();
@@ -1061,7 +1058,7 @@ public class MethodCompletion extends BaseCompletion {
                     }
                     dbg = MirahParser.getDocumentDebugger(doc);
                     //printNodes(dbg.compiler.compiler(), rightEdgeFinal);
-//                    foundNode = MirahCodeCompleter.findNode(dbg, subjectToken.offset(hi)+subjectToken.length());
+//                    foundNode = MirahUtils.findNode(dbg, subjectToken.offset(hi)+subjectToken.length());
                     foundNode = findNode(parserResult, subjectToken.offset(hi)+subjectToken.length());
                     if ( foundNode != null ){
                         type = dbg.getType(foundNode);
@@ -1074,7 +1071,7 @@ public class MethodCompletion extends BaseCompletion {
 //                    type = parserResult.getResolvedType(foundNode);
                 if ( type != null ){
 //                        FileObject fileObject = NbEditorUtilities.getFileObject(doc);
-                    Class cls = MirahCodeCompleter.findClass(fileObject, dbg.getType(foundNode).name());
+                    Class cls = MirahUtils.findClass(fileObject, dbg.getType(foundNode).name());
                     addClassProposals(cls,filter,initialOffset,foundNode instanceof Constant);
                 }
             } 

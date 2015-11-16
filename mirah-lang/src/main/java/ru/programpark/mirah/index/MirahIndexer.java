@@ -21,6 +21,7 @@ import mirah.lang.ast.MethodDefinition;
 import mirah.lang.ast.ModifierList;
 import mirah.lang.ast.Node;
 import mirah.lang.ast.NodeScanner;
+import mirah.lang.ast.OptionalArgument;
 import mirah.lang.ast.RequiredArgument;
 import mirah.lang.ast.StaticMethodDefinition;
 import mirah.lang.ast.Super;
@@ -622,11 +623,28 @@ public class MirahIndexer extends EmbeddingIndexer {
         private void prepareArguments(Arguments arguments, StringBuilder sb)
         {
             sb.append('(');
+            int length = sb.length();
             for( int i = 0 ; i < arguments.required().size() ; i++ )
             {
-                if (i != 0) sb.append(',');
+//                if (i != 0) sb.append(',');
+                if (length != sb.length()) sb.append(',');
                 
                 RequiredArgument a = arguments.required().get(i);
+//                sb.append(a.name().identifier());
+                ResolvedType type = this.parsed.getResolvedType(a);
+                if (type != null) {
+                    sb.append(type.name());
+                } 
+                else if ( a.type() != null )
+                {
+                    sb.append(a.type().typeref().name());
+                }
+            }
+            for( int i = 0 ; i < arguments.optional().size() ; i++ )
+            {
+                if (length != sb.length()) sb.append(',');
+                
+                OptionalArgument a = arguments.optional().get(i);
 //                sb.append(a.name().identifier());
                 ResolvedType type = this.parsed.getResolvedType(a);
                 if (type != null) {
