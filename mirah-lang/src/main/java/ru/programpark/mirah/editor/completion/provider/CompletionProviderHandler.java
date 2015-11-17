@@ -3,11 +3,10 @@ package ru.programpark.mirah.editor.completion.provider;
 import java.util.HashMap;
 import java.util.Map;
 import org.openide.util.Lookup;
-import ru.programpark.mirah.editor.api.completion.util.CompletionContext;
-import ru.programpark.mirah.editor.api.completion.CompletionItem;
-import ru.programpark.mirah.editor.api.completion.FieldSignature;
-import ru.programpark.mirah.editor.api.completion.MethodSignature;
-import ru.programpark.mirah.editor.spi.completion.CompletionProvider;
+import ru.programpark.mirah.editor.completion.context.CompletionContext;
+import ru.programpark.mirah.editor.completion.CompletionItem;
+import ru.programpark.mirah.editor.completion.FieldSignature;
+import ru.programpark.mirah.editor.completion.MethodSignature;
 
 /**
  *

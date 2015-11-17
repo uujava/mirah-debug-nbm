@@ -1,15 +1,14 @@
 package ru.programpark.mirah.editor.completion.provider;
 
-import ru.programpark.mirah.editor.api.completion.CompletionItem;
+import ru.programpark.mirah.editor.completion.CompletionItem;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import mirah.lang.ast.MethodDefinition;
-import ru.programpark.mirah.editor.api.completion.FieldSignature;
-import ru.programpark.mirah.editor.api.completion.MethodSignature;
-import ru.programpark.mirah.editor.api.completion.util.CompletionContext;
+import ru.programpark.mirah.editor.completion.FieldSignature;
+import ru.programpark.mirah.editor.completion.MethodSignature;
+import ru.programpark.mirah.editor.completion.context.CompletionContext;
 import org.openide.util.lookup.ServiceProvider;
-import ru.programpark.mirah.editor.spi.completion.CompletionProvider;
 import ru.programpark.mirah.editor.utils.Utilities;
 
 /**
@@ -18,10 +17,12 @@ import ru.programpark.mirah.editor.utils.Utilities;
  * @author Petr Hejl
  * @author Martin Janicek
  */
+/*
 @ServiceProvider(
     service = CompletionProvider.class,
     position = 500
 )
+*/
 public final class MetaElementsProvider implements CompletionProvider {
 
     

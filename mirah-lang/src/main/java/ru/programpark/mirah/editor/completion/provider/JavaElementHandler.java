@@ -30,9 +30,9 @@ import org.netbeans.api.java.source.Task;
 import org.netbeans.modules.csl.spi.ParserResult;
 import ru.programpark.mirah.editor.completion.AccessLevel;
 import org.openide.filesystems.FileObject;
-import ru.programpark.mirah.editor.api.completion.CompletionItem;
-import ru.programpark.mirah.editor.api.completion.FieldSignature;
-import ru.programpark.mirah.editor.api.completion.MethodSignature;
+import ru.programpark.mirah.editor.completion.CompletionItem;
+import ru.programpark.mirah.editor.completion.FieldSignature;
+import ru.programpark.mirah.editor.completion.MethodSignature;
 import ru.programpark.mirah.editor.utils.MirahUtils;
 
 /**

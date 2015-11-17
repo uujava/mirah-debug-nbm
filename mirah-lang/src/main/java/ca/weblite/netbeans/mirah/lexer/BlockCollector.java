@@ -10,6 +10,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
+import javax.swing.text.Document;
+import mirah.impl.Tokens;
 import mirah.lang.ast.Call;
 import mirah.lang.ast.ClassDefinition;
 import mirah.lang.ast.ClosureDefinition;
@@ -32,6 +34,7 @@ import org.mirah.typer.ResolvedType;
 import org.mirah.jvm.mirrors.BytecodeMirror;
 import org.mirah.jvm.mirrors.DebugError;
 import org.mirah.jvm.mirrors.JvmErrorType;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.ElementKind;
 
 /**
@@ -40,7 +43,7 @@ import org.netbeans.modules.csl.api.ElementKind;
  */
 public class BlockCollector implements BlockNode {
 
-    // РџСЂРё Array.size <= 7 РїРѕРёСЃРє РїРµСЂРµР±РѕСЂРѕРј РїРѕ РјР°СЃСЃРёРІСѓ РЅРµ РјРµРґР»РµРЅРЅРµРµ РёРЅРґРµРєСЃРёСЂРѕРІР°РЅРЅРѕРіРѕ РїРѕРёСЃРєР° РІ Map
+    // При Array.size <= 7 поиск перебором по массиву не медленнее индексированного поиска в Map
     private static final Collection<String> macroNames = new ArrayList<>();
 
     static {
@@ -54,7 +57,10 @@ public class BlockCollector implements BlockNode {
     List<Block> blockList = new ArrayList<>();
     List<Block> importList = new ArrayList<>();
     List<Block> dslList = new ArrayList<>();
-
+    List<Block> blockComments = new ArrayList<>();
+    List<Block> lineComments = new ArrayList<>();
+    List<Block> macroList = new ArrayList<>();
+    
     boolean importsBlock = false;
     boolean commentsBlock = false;
     boolean macroBlock = false;
@@ -117,6 +123,47 @@ public class BlockCollector implements BlockNode {
         }
     }
     
+    public Block addMacro(Node node, CharSequence function, int offset, int length, CharSequence extra, ElementKind kind) {
+        commentsBlock = false;
+        importsBlock = false;
+        if (length == 0 && node != null && node.position() != null) {
+            offset = node.position().startChar();
+            length = node.position().endChar() - node.position().startChar();
+        }
+        if (macroBlock && !macroList.isEmpty()) {
+            Block block = macroList.get(macroList.size() - 1);
+            block.length = offset + length - block.offset;
+            return block;
+        } else {
+            macroBlock = true;
+            Block block = new Block(node, function, offset, length, extra, kind);
+            macroList.add(block);
+            return block;
+        }
+    }
+
+    public Block addBlockComment(Node node, CharSequence function, int offset, int length, CharSequence extra, ElementKind kind) {
+        // комментарии не прерывают другие блоки, в т.ч. блоки импорта и блоки макросов атрибутики
+        commentsBlock = false;
+        Block block = new Block(node, function, offset, length, extra, kind);
+        blockComments.add(block);
+        return block;
+    }
+
+    public Block addLineComment(Node node, CharSequence function, int offset, int length, CharSequence extra, ElementKind kind) {
+        // комментарии не прерывают блоков импорта
+        if (commentsBlock && !lineComments.isEmpty()) {
+            Block block = lineComments.get(lineComments.size() - 1);
+            block.length = offset + length - block.offset;
+            return block;
+        } else {
+            commentsBlock = true;
+            Block block = new Block(node, function, offset, length, extra, kind);
+            lineComments.add(block);
+            return block;
+        }
+    }
+
     public void prepareBlocks( final NBMirahParserResult parsed ) {
         if ( parsed.getRoot() == null ) return;
         
@@ -311,40 +358,40 @@ public class BlockCollector implements BlockNode {
             @Override
             public boolean enterCall(Call node, Object arg) {
                 final String identifier = node.name().identifier();
-//                if (macroNames.contains(identifier)) {
-//                    blockStack.push(res.addMacro(node, identifier, node.position().startChar(), node.position().endChar() - node.position().startChar(), "", ElementKind.CALL));
-//                } else {
-//                    res.macroBlock = false;
-//                }
+                if (macroNames.contains(identifier)) {
+                    blockStack.push(self.addMacro(node, identifier, 0, 0, "", ElementKind.CALL));
+                } else {
+                    self.macroBlock = false;
+                }
                 return super.enterCall(node, arg);
             }
 
             @Override
             public Object exitCall(Call node, Object arg) {
                 final String identifier = node.name().identifier();
-//                if (macroNames.contains(identifier)) {
-//                    blockStack.pop();
-//                }
+                if (macroNames.contains(identifier)) {
+                    blockStack.pop();
+                }
                 return super.exitCall(node, arg);
             }
 
             @Override
             public boolean enterFunctionalCall(FunctionalCall node, Object arg) {
                 final String identifier = node.name().identifier();
-//                if (macroNames.contains(identifier)) {
-//                    blockStack.push(self.addMacro(node, identifier, node.position().startChar(), node.position().endChar() - node.position().startChar(), "", ElementKind.CALL));
-//                } else {
-//                    self.macroBlock = false;
-//                }
+                if (macroNames.contains(identifier)) {
+                    blockStack.push(self.addMacro(node, identifier, 0, 00, "", ElementKind.CALL));
+                } else {
+                    self.macroBlock = false;
+                }
                 return super.enterFunctionalCall(node, arg);
             }
 
             @Override
             public Object exitFunctionalCall(FunctionalCall node, Object arg) {
                 final String identifier = node.name().identifier();
-//                if (macroNames.contains(identifier)) {
-//                    blockStack.pop();
-//                }
+                if (macroNames.contains(identifier)) {
+                    blockStack.pop();
+                }
                 return super.exitFunctionalCall(node, arg);
             }
 
@@ -372,9 +419,58 @@ public class BlockCollector implements BlockNode {
             System.out.println("prepareBlocks EXCEPTION = "+ee);
             ee.printStackTrace();
         }
+        final Document doc = parsed.getSnapshot().getSource().getDocument(false);
+        if (doc == null) {
+//            LOG.info(this,"doc = null file="+res.getSnapshot().getSource().getFileObject().getPath());
+            return;
+        }
+        final DocumentQuery dq = new DocumentQuery(doc);
+        if (dq == null) {
+//            LOG.info(this,"dq = null file="+res.getSnapshot().getSource().getFileObject().getPath());
+            return;
+        }
+        final TokenSequence<MirahTokenId> seq = dq.getTokens(0, false);
+//        final MirahTokenId tComment = MirahTokenId.get(Tokens.tComment);
+//        final MirahTokenId tNL = MirahTokenId.get(Tokens.tNL);
+        do {
+            final MirahTokenId tokenId = seq.token().id();
+            if (!tokenId.is(Tokens.tComment) && !tokenId.is(Tokens.tJavaDoc)) {
+                if (!tokenId.is(Tokens.tNL)) {
+//                    res.commentsBlock = false;
+                }
+                continue;
+            }
+            // К сожалению, это не работает
+            // boolean inJavadoc = seq.token().id().ordinal() == Tokens.tJavaDoc.ordinal();
+            String comment = seq.token().text().toString().trim();
+            if (comment.startsWith("/*") && comment.endsWith("*/")) {
+                addBlockComment(null, "BlockComment", seq.offset(), seq.token().length(), "", ElementKind.DB);
+            } else if (comment.startsWith("#")) {
+                addLineComment(null, "LineComment", seq.offset(), seq.token().length(), "", ElementKind.TAG);
+            }
+        } while (seq.moveNext());
     }
     public List<Block> getBlocks() {
         return blockList;
+    }
+    public List<Block> getImports() {
+        return importList;
+    }
+
+    public List<Block> getDSLs() {
+        return dslList;
+    }
+
+    public List<Block> getMacroses() {
+        return macroList;
+    }
+
+    public List<Block> getLineComments() {
+        return lineComments;
+    }
+
+    public List<Block> getBlockComments() {
+        return blockComments;
     }
 
 }

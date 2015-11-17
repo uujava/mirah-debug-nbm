@@ -7,10 +7,10 @@ import java.util.Map;
 import mirah.lang.ast.ClassDefinition;
 import mirah.lang.ast.FieldDeclaration;
 import mirah.lang.ast.MethodDefinition;
-import ru.programpark.mirah.editor.api.completion.CompletionItem;
-import ru.programpark.mirah.editor.api.completion.CompletionItem.FieldItem;
-import ru.programpark.mirah.editor.api.completion.FieldSignature;
-import ru.programpark.mirah.editor.api.completion.MethodSignature;
+import ru.programpark.mirah.editor.completion.CompletionItem;
+import ru.programpark.mirah.editor.completion.CompletionItem.FieldItem;
+import ru.programpark.mirah.editor.completion.FieldSignature;
+import ru.programpark.mirah.editor.completion.MethodSignature;
 import ru.programpark.mirah.editor.utils.Utilities;
 import ru.programpark.mirah.index.MirahIndex;
 

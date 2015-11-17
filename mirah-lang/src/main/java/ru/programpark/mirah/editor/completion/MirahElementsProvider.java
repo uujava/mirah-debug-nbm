@@ -1,6 +1,7 @@
 package ru.programpark.mirah.editor.completion;
 
 
+import ru.programpark.mirah.editor.completion.context.CompletionContext;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -9,11 +10,7 @@ import javax.lang.model.element.Modifier;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.openide.filesystems.FileObject;
-import ru.programpark.mirah.editor.api.completion.CompletionItem;
-import ru.programpark.mirah.editor.api.completion.FieldSignature;
-import ru.programpark.mirah.editor.api.completion.MethodSignature;
-import ru.programpark.mirah.editor.api.completion.util.CompletionContext;
-import ru.programpark.mirah.editor.spi.completion.CompletionProvider;
+import ru.programpark.mirah.editor.completion.provider.CompletionProvider;
 import ru.programpark.mirah.editor.utils.Utilities;
 import ru.programpark.mirah.index.MirahIndex;
 import ru.programpark.mirah.index.elements.IndexedElement;

@@ -39,7 +39,7 @@
 package ru.programpark.mirah.editor;
 
 import ca.weblite.netbeans.mirah.LOG;
-import ca.weblite.netbeans.mirah.MirahStructureAnalyzer;
+import ru.programpark.mirah.editor.navigator.MirahStructureAnalyzer;
 import ca.weblite.netbeans.mirah.lexer.MirahParser;
 import ca.weblite.netbeans.mirah.lexer.MirahTokenId;
 import java.util.Set;
@@ -66,7 +66,7 @@ import org.openide.filesystems.MIMEResolver;
 import org.openide.util.Lookup;
 import org.openide.windows.TopComponent;
 import ru.programpark.mirah.index.MirahIndexer;
-import ru.programpark.mirah.editor.api.completion.MirahCompletionHandler;
+import ru.programpark.mirah.editor.completion.MirahCompletionHandler;
 
 /**
  * Language/lexing configuration for Mirah

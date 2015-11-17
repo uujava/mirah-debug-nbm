@@ -264,6 +264,10 @@ public class MirahParser extends Parser {
     }
 
     void getBlocks(final NBMirahParserResult res, String content) {
+        
+        /*
+        if ( true ) return;
+        
         mirah.impl.MirahParser parser = new mirah.impl.MirahParser();
 
         final LinkedList<Block> blockStack = new LinkedList<>();
@@ -274,6 +278,10 @@ public class MirahParser extends Parser {
             // ex.printStackTrace();
             return;
         }
+//        BlockCollector coll = new BlockCollector();
+//        coll.prepareBlocks(res);
+//        res.setBlocks(coll.getBlocks());
+
         if ( ast instanceof Node ) {            
             Node node = (Node)ast;
 
@@ -282,7 +290,14 @@ public class MirahParser extends Parser {
                 @Override
                 public boolean enterImport(Import node, Object arg) {
                     final BlockNode parent = blockStack.isEmpty() ? res : blockStack.peek();
-                    blockStack.push(parent.addImport(node, node.fullName().identifier(), node.position().startChar(), node.position().endChar() - node.position().startChar(), "", ElementKind.OTHER));
+                    int offset = 0;
+                    int length = 0;
+                    if (node != null && node.position() != null) {
+                        offset = node.position().startChar();
+                        length = node.position().endChar() - node.position().startChar();
+                    }
+                    blockStack.push(parent.addBlock(node, node.fullName().identifier(), offset, length, "", ElementKind.OTHER));
+//                    blockStack.push(parent.addImport(node, node.fullName().identifier(), node.position().startChar(), node.position().endChar() - node.position().startChar(), "", ElementKind.OTHER));
                     return super.enterImport(node, arg);
                 }
 
@@ -295,7 +310,14 @@ public class MirahParser extends Parser {
                 @Override
                 public boolean enterBlock(mirah.lang.ast.Block node, Object arg) {
                     final BlockNode parent = blockStack.isEmpty() ? res : blockStack.peek();
-                    blockStack.push(parent.addDSL(node, "DSL", node.position().startChar(), node.position().endChar() - node.position().startChar(), "", ElementKind.METHOD));
+                    int offset = 0;
+                    int length = 0;
+                    if (node != null && node.position() != null) {
+                        offset = node.position().startChar();
+                        length = node.position().endChar() - node.position().startChar();
+                    }
+                    blockStack.push(parent.addDSL(node, "DSL", offset, length, "", ElementKind.METHOD));
+//                    blockStack.push(parent.addDSL(node, "DSL", node.position().startChar(), node.position().endChar() - node.position().startChar(), "", ElementKind.METHOD));
                     return super.enterBlock(node, arg);
                 }
 
@@ -311,14 +333,28 @@ public class MirahParser extends Parser {
                         blockStack.pop();
                     }
                     final BlockNode parent = blockStack.isEmpty() ? res : blockStack.peek();
-                    blockStack.push(parent.addBlock(node, node.name().identifier(), node.position().startChar(), node.position().endChar() - node.position().startChar(), "", ElementKind.PACKAGE));
+                    int offset = 0;
+                    int length = 0;
+                    if (node != null && node.position() != null) {
+                        offset = node.position().startChar();
+                        length = node.position().endChar() - node.position().startChar();
+                    }
+                    blockStack.push(parent.addBlock(node, node.name().identifier(), offset, length, "", ElementKind.PACKAGE));
+//                    blockStack.push(parent.addBlock(node, node.name().identifier(), node.position().startChar(), node.position().endChar() - node.position().startChar(), "", ElementKind.PACKAGE));
                     return super.enterPackage(node, arg);
                 }
 
                 @Override
                 public boolean enterClassDefinition(ClassDefinition node, Object arg) {
                     final BlockNode parent = blockStack.isEmpty() ? res : blockStack.peek();
-                    blockStack.push(parent.addBlock(node, node.name().identifier(), node.position().startChar(), node.position().endChar() - node.position().startChar(), "", ElementKind.CLASS));
+                    int offset = 0;
+                    int length = 0;
+                    if (node != null && node.position() != null) {
+                        offset = node.position().startChar();
+                        length = node.position().endChar() - node.position().startChar();
+                    }
+                    blockStack.push(parent.addBlock(node, node.name().identifier(), offset, length, "", ElementKind.CLASS));
+//                    blockStack.push(parent.addBlock(node, node.name().identifier(), node.position().startChar(), node.position().endChar() - node.position().startChar(), "", ElementKind.CLASS));
                     return super.enterClassDefinition(node, arg);
                 }
 
@@ -331,7 +367,14 @@ public class MirahParser extends Parser {
                 @Override
                 public boolean enterMethodDefinition(MethodDefinition node, Object arg) {
                     BlockNode parent = blockStack.isEmpty() ? res : blockStack.peek();
-                    blockStack.push(parent.addBlock(node, node.name().identifier(), node.position().startChar(), node.position().endChar() - node.position().startChar(), "", ElementKind.METHOD));
+                    int offset = 0;
+                    int length = 0;
+                    if ( node != null && node.position() != null) {
+                        offset = node.position().startChar();
+                        length = node.position().endChar() - node.position().startChar();
+                    }
+                    blockStack.push(parent.addBlock(node, node.name().identifier(), offset, length, "", ElementKind.METHOD));
+//                    blockStack.push(parent.addBlock(node, node.name().identifier(), node.position().startChar(), node.position().endChar() - node.position().startChar(), "", ElementKind.METHOD));
                     return super.enterMethodDefinition(node, arg);
                 }
 
@@ -344,7 +387,14 @@ public class MirahParser extends Parser {
                 @Override
                 public boolean enterConstructorDefinition(ConstructorDefinition node, Object arg) {
                     final BlockNode parent = blockStack.isEmpty() ? res : blockStack.peek();
-                    blockStack.push(parent.addBlock(node, node.name().identifier(), node.position().startChar(), node.position().endChar() - node.position().startChar(), "", ElementKind.CONSTRUCTOR));
+                    int offset = 0;
+                    int length = 0;
+                    if (node != null && node.position() != null) {
+                        offset = node.position().startChar();
+                        length = node.position().endChar() - node.position().startChar();
+                    }
+                    blockStack.push(parent.addBlock(node, node.name().identifier(), offset, length, "", ElementKind.CONSTRUCTOR));
+//                    blockStack.push(parent.addBlock(node, node.name().identifier(), node.position().startChar(), node.position().endChar() - node.position().startChar(), "", ElementKind.CONSTRUCTOR));
                     return super.enterConstructorDefinition(node, arg);
                 }
 
@@ -357,7 +407,14 @@ public class MirahParser extends Parser {
                 @Override
                 public boolean enterInterfaceDeclaration(InterfaceDeclaration node, Object arg) {
                     final BlockNode parent = blockStack.isEmpty() ? res : blockStack.peek();
-                    blockStack.push(parent.addBlock(node, node.name().identifier(), node.position().startChar(), node.position().endChar() - node.position().startChar(), "", ElementKind.INTERFACE));
+                    int offset = 0;
+                    int length = 0;
+                    if (node != null && node.position() != null) {
+                        offset = node.position().startChar();
+                        length = node.position().endChar() - node.position().startChar();
+                    }
+                    blockStack.push(parent.addBlock(node, node.name().identifier(), offset, length, "", ElementKind.INTERFACE));
+//                    blockStack.push(parent.addBlock(node, node.name().identifier(), node.position().startChar(), node.position().endChar() - node.position().startChar(), "", ElementKind.INTERFACE));
                     return super.enterInterfaceDeclaration(node, arg);
                 }
 
@@ -370,7 +427,14 @@ public class MirahParser extends Parser {
                 @Override
                 public boolean enterStaticMethodDefinition(StaticMethodDefinition node, Object arg) {
                     final BlockNode parent = blockStack.isEmpty() ? res : blockStack.peek();
-                    blockStack.push(parent.addBlock(node, node.name().identifier(), node.position().startChar(), node.position().endChar() - node.position().startChar(), "", ElementKind.METHOD));
+                    int offset = 0;
+                    int length = 0;
+                    if (node != null && node.position() != null) {
+                        offset = node.position().startChar();
+                        length = node.position().endChar() - node.position().startChar();
+                    }
+                    blockStack.push(parent.addBlock(node, node.name().identifier(), offset, length, "", ElementKind.METHOD));
+//                    blockStack.push(parent.addBlock(node, node.name().identifier(), node.position().startChar(), node.position().endChar() - node.position().startChar(), "", ElementKind.METHOD));
                     return super.enterStaticMethodDefinition(node, arg);
                 }
 
@@ -383,7 +447,14 @@ public class MirahParser extends Parser {
                 @Override
                 public boolean enterFieldAssign(FieldAssign node, Object arg) {
                     final BlockNode parent = blockStack.isEmpty() ? res : blockStack.peek();
-                    blockStack.push(parent.addBlock(node, node.name().identifier(), node.position().startChar(), node.position().endChar() - node.position().startChar(), "", ElementKind.FIELD));
+                    int offset = 0;
+                    int length = 0;
+                    if (node != null && node.position() != null) {
+                        offset = node.position().startChar();
+                        length = node.position().endChar() - node.position().startChar();
+                    }
+                    blockStack.push(parent.addBlock(node, node.name().identifier(), offset, length, "", ElementKind.FIELD));
+//                    blockStack.push(parent.addBlock(node, node.name().identifier(), node.position().startChar(), node.position().endChar() - node.position().startChar(), "", ElementKind.FIELD));
                     return super.enterFieldAssign(node, arg);
                 }
 
@@ -396,7 +467,14 @@ public class MirahParser extends Parser {
                 @Override
                 public boolean enterConstantAssign(ConstantAssign node, Object arg) {
                     final BlockNode parent = blockStack.isEmpty() ? res : blockStack.peek();
-                    blockStack.push(parent.addBlock(node, node.name().identifier(), node.position().startChar(), node.position().endChar() - node.position().startChar(), "", ElementKind.CONSTANT));
+                    int offset = 0;
+                    int length = 0;
+                    if (node != null && node.position() != null) {
+                        offset = node.position().startChar();
+                        length = node.position().endChar() - node.position().startChar();
+                    }
+                    blockStack.push(parent.addBlock(node, node.name().identifier(), offset, length, "", ElementKind.CONSTANT));
+//                    blockStack.push(parent.addBlock(node, node.name().identifier(), node.position().startChar(), node.position().endChar() - node.position().startChar(), "", ElementKind.CONSTANT));
                     return super.enterConstantAssign(node, arg);
                 }
 
@@ -409,7 +487,14 @@ public class MirahParser extends Parser {
                 @Override
                 public boolean enterMacroDefinition(MacroDefinition node, Object arg) {
                     final BlockNode parent = blockStack.isEmpty() ? res : blockStack.peek();
-                    blockStack.push(parent.addBlock(node, node.name().identifier(), node.position().startChar(), node.position().endChar() - node.position().startChar(), "", ElementKind.METHOD));
+                    int offset = 0;
+                    int length = 0;
+                    if (node != null && node.position() != null) {
+                        offset = node.position().startChar();
+                        length = node.position().endChar() - node.position().startChar();
+                    }
+                    blockStack.push(parent.addBlock(node, node.name().identifier(), offset, length, "", ElementKind.METHOD));
+//                    blockStack.push(parent.addBlock(node, node.name().identifier(), node.position().startChar(), node.position().endChar() - node.position().startChar(), "", ElementKind.METHOD));
                     return super.enterMacroDefinition(node, arg);
                 }
 
@@ -423,7 +508,14 @@ public class MirahParser extends Parser {
                 public boolean enterCall(Call node, Object arg) {
                     final String identifier = node.name().identifier();
                     if (macroNames.contains(identifier)) {
-                        blockStack.push(res.addMacro(node, identifier, node.position().startChar(), node.position().endChar() - node.position().startChar(), "", ElementKind.CALL));
+                        int offset = 0;
+                        int length = 0;
+                        if (node != null && node.position() != null) {
+                            offset = node.position().startChar();
+                            length = node.position().endChar() - node.position().startChar();
+                        }
+                        blockStack.push(res.addMacro(node, node.name().identifier(), offset, length, "", ElementKind.CALL));
+//                        blockStack.push(res.addMacro(node, identifier, node.position().startChar(), node.position().endChar() - node.position().startChar(), "", ElementKind.CALL));
                     } else {
                         res.macroBlock = false;
                     }
@@ -443,7 +535,14 @@ public class MirahParser extends Parser {
                 public boolean enterFunctionalCall(FunctionalCall node, Object arg) {
                     final String identifier = node.name().identifier();
                     if (macroNames.contains(identifier)) {
-                        blockStack.push(res.addMacro(node, identifier, node.position().startChar(), node.position().endChar() - node.position().startChar(), "", ElementKind.CALL));
+                        int offset = 0;
+                        int length = 0;
+                        if (node != null && node.position() != null) {
+                            offset = node.position().startChar();
+                            length = node.position().endChar() - node.position().startChar();
+                        }
+                        blockStack.push(res.addMacro(node, node.name().identifier(), offset, length, "", ElementKind.CALL));
+//                        blockStack.push(res.addMacro(node, identifier, node.position().startChar(), node.position().endChar() - node.position().startChar(), "", ElementKind.CALL));
                     } else {
                         res.macroBlock = false;
                     }
@@ -460,7 +559,6 @@ public class MirahParser extends Parser {
                 }
             }, null);
         }
-
         final Document doc = res.getSnapshot().getSource().getDocument(false);
         if ( doc == null ) 
         {
@@ -480,19 +578,21 @@ public class MirahParser extends Parser {
             final MirahTokenId tokenId = seq.token().id();
             if (!tokenId.equals(tComment)) {
                 if (!tokenId.equals(tNL)) {
-                    res.commentsBlock = false;
+//                    res.commentsBlock = false;
                 }
                 continue;
             }
             // К сожалению, это не работает
             // boolean inJavadoc = seq.token().id().ordinal() == Tokens.tJavaDoc.ordinal();
             String comment = seq.token().text().toString().trim();
-            if (comment.startsWith("/*") && comment.endsWith("*/")) {
+            if (comment.startsWith("/*") && comment.endsWith("*??")) {
                 res.addBlockComment(null, "BlockComment", seq.offset(), seq.token().length(), "", ElementKind.DB);
             } else if (comment.startsWith("#")) {
                 res.addLineComment(null, "LineComment", seq.offset(), seq.token().length(), "", ElementKind.TAG);
             }
         } while (seq.moveNext());
+        */
+        
     }
 
     public void appendClassPath( ClassPath cp, StringBuffer sb, HashMap<Entry,Entry> map )
@@ -707,20 +807,22 @@ public class MirahParser extends Parser {
     public void removeChangeListener(ChangeListener changeListener) {
     }
 
-    public static class NBMirahParserResult extends ParserResult implements BlockNode {
+    public static class NBMirahParserResult extends ParserResult /*implements BlockNode*/ {
 
         private final MirahParseDiagnostics diagnostics;
         private boolean valid = true;
+        private BlockCollector blockCollector = null;
         List<Error> errorList = new ArrayList<>();
-        List<Block> blockList = new ArrayList<>();
-        List<Block> importList = new ArrayList<>();
-        List<Block> dslList = new ArrayList<>();
-        List<Block> lineComments = new ArrayList<>();
-        List<Block> blockComments = new ArrayList<>();
-        List<Block> macroList = new ArrayList<>();
-        boolean importsBlock = false;
-        boolean commentsBlock = false;
-        boolean macroBlock = false;
+//        List<Block> blockList = new ArrayList<>();
+//        List<Block> importList = new ArrayList<>();
+//        List<Block> dslList = new ArrayList<>();
+//        List<Block> lineComments = new ArrayList<>();
+//        List<Block> blockComments = new ArrayList<>();
+//        List<Block> macroList = new ArrayList<>();
+//        boolean importsBlock = false;
+//        boolean commentsBlock = false;
+//        boolean macroBlock = false;
+
         Node rootNode;
         List parsedNodes;
         HashMap<Node, ResolvedType> resolvedTypes = null;
@@ -752,30 +854,47 @@ public class MirahParser extends Parser {
             errorList.add(new Error(description, offset, length, getSnapshot()));
         }
 
+        public BlockCollector getBlockCollection() {
+            if ( blockCollector == null ) {
+                blockCollector = new BlockCollector();
+                blockCollector.prepareBlocks(this);
+            }
+            return blockCollector;
+        }
+        /*
         public List<Block> getBlocks() {
-            return blockList;
+//            return blockList;
+            return blockCollector.getBlocks();
         }
 
+//        public void setBlocks(List<Block> blockList ) {
+//            this.blockList = blockList;
+//        }
+
         public List<Block> getImports() {
-            return importList;
+//            return importList;
+            return blockCollector.getImports();
         }
 
         public List<Block> getDSLs() {
-            return dslList;
+//            return dslList;
+            return blockCollector.getDSLs();
         }
 
         public List<Block> getMacroses() {
-            return macroList;
+//            return macroList;
+            return blockCollector.getMacroses();
         }
 
         public List<Block> getLineComments() {
-            return lineComments;
+//            return lineComments;
+            return blockCollector.getLineComments();
         }
 
         public List<Block> getBlockComments() {
-            return blockComments;
+//            return blockComments;s
+            return blockCollector.getBlockComments();
         }
-
         @Override
         public Block addBlock(Node node, CharSequence function, int offset, int length, CharSequence extra, ElementKind kind) {
             importsBlock = false;
@@ -852,12 +971,12 @@ public class MirahParser extends Parser {
         public Block addBlock(Block parent, Node node, CharSequence function, int offset, int length, CharSequence extra, ElementKind kind) {
             return parent.addBlock(node, function, offset, length, extra, kind);
         }
-        
 //        public void setRoot( Node root )
 //        {
 //            this.rootNode = root;
 //        }
 //        
+        */
         public Node getRoot() {
             if ( parsedNodes == null ) return null;
             for( Object node : parsedNodes )

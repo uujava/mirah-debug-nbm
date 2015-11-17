@@ -26,7 +26,7 @@ import org.openide.windows.InputOutput;
 import static ru.programpark.mirah.tests.ParseMirah.getFileObject;
 import ru.programpark.mirah.editor.ast.ASTUtils;
 import ru.programpark.mirah.editor.ast.AstPath;
-import ru.programpark.mirah.editor.completion.util.VariablesCollector;
+import ru.programpark.mirah.editor.navigator.VariablesCollector;
 
 /**
  *
