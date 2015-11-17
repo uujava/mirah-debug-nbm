@@ -11,7 +11,6 @@
     <module>mirah-debugger</module>
     <module>mirah-debugger-projects</module>
     <module>mirah-lang</module>
-    <module>../mirah-ant</module>
   </modules>
   <properties>
     <deploy.version>snapshots</deploy.version>
