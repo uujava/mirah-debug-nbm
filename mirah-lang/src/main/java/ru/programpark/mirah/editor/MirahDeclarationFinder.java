@@ -6,6 +6,7 @@
 
 package ru.programpark.mirah.editor;
 
+import ca.weblite.asm.LOG;
 import ru.programpark.mirah.editor.ast.AstSupport;
 import ca.weblite.netbeans.mirah.lexer.MirahLanguageHierarchy;
 import ca.weblite.netbeans.mirah.lexer.MirahParser;
@@ -16,7 +17,7 @@ import com.sun.source.util.Trees;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.HashSet; 
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -60,6 +61,7 @@ import mirah.lang.ast.TypeRefImpl;
 import org.mirah.typer.MethodType;
 import org.mirah.typer.ProxyNode;
 import org.mirah.typer.ResolvedType;
+import org.mirah.typer.TypeFuture;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
@@ -75,6 +77,7 @@ import org.netbeans.modules.csl.api.DeclarationFinder;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
@@ -402,6 +405,19 @@ public class MirahDeclarationFinder implements DeclarationFinder {
         node = leaf;
         while (node != null) {
 
+            if (node instanceof ProxyNode) {
+                ProxyNode proxy = (ProxyNode)node;
+                TypeFuture tf = proxy.inferChildren(true);
+                ResolvedType resolved = tf.resolve();
+                if ( resolved != null && resolved instanceof MethodType )
+                {
+                    ResolvedType type = ((MethodType)resolved).returnType();
+                    if (type != null) {
+                        return findType(type.name(), OffsetRange.NONE, bdoc, info, index);
+                    }
+                }
+            }
+        
             if (node instanceof Import) {
 //                return processImport((Import) node, bdoc, parsed, MirahIndex.get(fo));
                 return processImport((Import) node, bdoc, parsed, index);
@@ -597,155 +613,50 @@ public class MirahDeclarationFinder implements DeclarationFinder {
         
     }
 
-    private DeclarationLocation findJavaClass(String fqName, 
-            /*BaseDocument doc,*/ ParserResult info ) throws BadLocationException {
-        
+    private DeclarationLocation findJavaClass(String fqName, ParserResult info ) 
+    {
             FileObject fileObject = info.getSnapshot().getSource().getFileObject();
+            if (fileObject == null) return DeclarationLocation.NONE;
 
-            if (fileObject != null) {
-                final ClasspathInfo cpi = ClasspathInfo.create(fileObject);
-
-                if (cpi != null) {
-                    JavaSource javaSource = JavaSource.create(cpi);
-
-                    if (javaSource != null) {
-                        CountDownLatch latch = new CountDownLatch(1);
-                        SourceLocator locator = new SourceLocator(fqName, cpi, latch);
-                        try {
-                            javaSource.runUserActionTask(locator, false);
-                        } catch (IOException ex) {
+            final ClasspathInfo cpi = ClasspathInfo.create(fileObject);
+            if (cpi != null) {
+                JavaSource javaSource = JavaSource.create(cpi);
+                if (javaSource != null) {
+                    CountDownLatch latch = new CountDownLatch(1);
+                    SourceLocator locator = new SourceLocator(fqName, cpi, latch);
+                    try {
+                        javaSource.runUserActionTask(locator, true);
+                    } catch (IOException ex) {
 //                            LOG.log(Level.FINEST, "Problem in runUserActionTask :  {0}", ex.getMessage());
-                            return DeclarationLocation.NONE;
-                        }
-                        try {
-                            latch.await();
-                        } catch (InterruptedException ex) {
-                            Thread.currentThread().interrupt();
-                            return DeclarationLocation.NONE;
-                        }
-                        return locator.getLocation();
-                    } else {
-//                        LOG.log(Level.FINEST, "javaSource == null"); // NOI18N
+                        return DeclarationLocation.NONE;
                     }
-                } else {
-//                    LOG.log(Level.FINEST, "classpathinfo == null"); // NOI18N
+                    try {
+                        latch.await();
+                    } catch (InterruptedException ex) {
+                        Thread.currentThread().interrupt();
+                        return DeclarationLocation.NONE;
+                    }
+                    return locator.getLocation();
                 }
-            } else {
-//                LOG.log(Level.FINEST, "fileObject == null"); // NOI18N
             }
-
             return DeclarationLocation.NONE;
     }
 
-    private DeclarationLocation findType(String fqName, OffsetRange range,
-            BaseDocument doc, ParserResult info, MirahIndex index) {
-
+    private DeclarationLocation findType(String fqName, 
+            OffsetRange range,
+            BaseDocument doc, 
+            ParserResult info, 
+            MirahIndex index) 
+    {
 //        LOG.log(Level.FINEST, "Looking for type: {0}", fqName); // NOI18N
         if (doc != null && range != null) {
-/*
-            String text = doc.getText(range.getStart(), range.getLength());
-
-            if(!MirahUtils.stripPackage(fqName).equals(text)){
-                // check for inner classes
-                String[] parts = fqName.split(Pattern.quote("$")); // NOI18N
-                if (parts.length < 2) {
-                    return DeclarationLocation.NONE;
-                }
-
-                boolean found = false;
-                StringBuilder builder = new StringBuilder();
-                for (String part : parts) {
-                    builder.append(part).append("$");
-                    if (MirahUtils.stripPackage(part).equals(text)) {
-                        found = true;
-                        break;
-                    }
-                }
-                if (!found) {
-                    return DeclarationLocation.NONE;
-                }
-
-                builder.setLength(builder.length() - 1);
-                fqName = builder.toString();
-
-//                int sepIndex = fqName.indexOf("$"); // NOI18N
-//                if (sepIndex <= 0 || !NbUtilities.stripPackage(fqName.substring(0, sepIndex)).equals(text)) {
-//                    LOG.log(Level.FINEST, "fqName != text");
-//                    return DeclarationLocation.NONE;
-//                } else {
-//                    fqName = fqName.substring(0, sepIndex);
-//                }
-            }
-*/
-//          Set<IndexedClass> classes = index.getClasses(fqName, QuerySupport.Kind.EXACT);
             Set<IndexedClass> classes = index.findClassesByFqn(fqName); //.getClasses(fqName, QuerySupport.Kind.EXACT);
             if ( ! classes.isEmpty() )
             {
                 IndexedClass indexedClass = classes.iterator().next();
                 return new DeclarationLocation(indexedClass.getFileObject(), indexedClass.getOffset());
             }
-/*            
-            for (IndexedClass indexedClass : classes) {
-                Node node = ASTUtils.getForeignNode(indexedClass);
-                if (node != null) {
-                    OffsetRange defRange = null;
-                    try {
-                        defRange = ASTUtils.getRange(node, (BaseDocument) indexedClass.getDocument());
-                    } catch (IOException ex) {
-//                        LOG.log(Level.FINEST, "IOException while getting destination range : {0}", ex.getMessage()); // NOI18N
-                    }
-                    if (defRange != null) {
-//                        LOG.log(Level.FINEST, "Found decl. for : {0}", text); // NOI18N
-//                        LOG.log(Level.FINEST, "Foreign Node    : {0}", node); // NOI18N
-//                        LOG.log(Level.FINEST, "Range start     : {0}", defRange.getStart()); // NOI18N
-
-                        return new DeclarationLocation(indexedClass.getFileObject(), defRange.getStart());
-                    }
-                }
-            }
-*/
-            // so - we haven't found this class using the groovy index,
-            // then we have to search it as a pure java type.
-
-            // simple sanity-check that the literal string in the source document
-            // matches the last part of the full-qualified name of the type.
-            // e.g. "String" means "java.lang.String"
-
-            FileObject fileObject = info.getSnapshot().getSource().getFileObject();
-
-            if (fileObject != null) {
-                final ClasspathInfo cpi = ClasspathInfo.create(fileObject);
-
-                if (cpi != null) {
-                    JavaSource javaSource = JavaSource.create(cpi);
-
-                    if (javaSource != null) {
-                        CountDownLatch latch = new CountDownLatch(1);
-                        SourceLocator locator = new SourceLocator(fqName, cpi, latch);
-                        try {
-                            javaSource.runUserActionTask(locator, false);
-                        } catch (IOException ex) {
-//                            LOG.log(Level.FINEST, "Problem in runUserActionTask :  {0}", ex.getMessage());
-                            return DeclarationLocation.NONE;
-                        }
-                        try {
-                            latch.await();
-                        } catch (InterruptedException ex) {
-                            Thread.currentThread().interrupt();
-                            return DeclarationLocation.NONE;
-                        }
-                        return locator.getLocation();
-                    } else {
-//                        LOG.log(Level.FINEST, "javaSource == null"); // NOI18N
-                    }
-                } else {
-//                    LOG.log(Level.FINEST, "classpathinfo == null"); // NOI18N
-                }
-            } else {
-//                LOG.log(Level.FINEST, "fileObject == null"); // NOI18N
-            }
-
-            return DeclarationLocation.NONE;
+            return this.findJavaClass(fqName, info);
         }
         return DeclarationLocation.NONE;
     }
@@ -775,8 +686,10 @@ public class MirahDeclarationFinder implements DeclarationFinder {
 
             if (elements != null) {
                 final javax.lang.model.element.TypeElement typeElement = ElementSearch.getClass(elements, fqName);
-
                 if (typeElement != null) {
+                    ElementHandle el = ElementHandle.create(typeElement);
+                    FileObject fo = SourceUtils.getFile(el, cpi);
+                    fo = SourceUtils.getFile(typeElement, cpi);
                     DeclarationLocation found = ElementDeclaration.getDeclarationLocation(cpi, typeElement);
                     synchronized (this) {
                         location = found;

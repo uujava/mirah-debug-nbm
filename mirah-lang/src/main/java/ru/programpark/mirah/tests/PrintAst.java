@@ -6,26 +6,41 @@
 package ru.programpark.mirah.tests;
 
 import ca.weblite.netbeans.mirah.lexer.MirahParser;
+import java.io.File;
+import java.io.IOException;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.concurrent.CountDownLatch;
+import javax.lang.model.util.Elements;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import mirah.lang.ast.AnnotationList;
 import mirah.lang.ast.Node;
 import org.mirah.typer.ResolvedType;
 import org.netbeans.api.editor.EditorRegistry;
+import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.csl.api.DeclarationFinder;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
+import ru.programpark.mirah.editor.MirahDeclarationFinder;
 import static ru.programpark.mirah.tests.ParseMirah.getFileObject;
 import ru.programpark.mirah.editor.ast.ASTUtils;
 import ru.programpark.mirah.editor.ast.AstPath;
+import ru.programpark.mirah.editor.java.ElementDeclaration;
+import ru.programpark.mirah.editor.java.ElementSearch;
 import ru.programpark.mirah.editor.navigator.VariablesCollector;
 
 /**
@@ -33,7 +48,49 @@ import ru.programpark.mirah.editor.navigator.VariablesCollector;
  * @author savushkin
  */
 public class PrintAst {
+/*
+    private static class SourceLocator implements Task<CompilationController> {
 
+        private final String fqName;
+
+        private final ClasspathInfo cpi;
+
+        private final CountDownLatch latch;
+
+        private DeclarationFinder.DeclarationLocation location = DeclarationFinder.DeclarationLocation.NONE;
+//        private Object ElementDeclaration;
+
+        public SourceLocator(String fqName, ClasspathInfo cpi, CountDownLatch latch) {
+            this.fqName = fqName;
+            this.cpi = cpi;
+            this.latch = latch;
+        }
+
+        public void run(CompilationController info) throws Exception {
+            Elements elements = info.getElements();
+
+            if (elements != null) {
+                final javax.lang.model.element.TypeElement typeElement = ElementSearch.getClass(elements, fqName);
+
+                if (typeElement != null) {
+                    DeclarationFinder.DeclarationLocation found = ElementDeclaration.getDeclarationLocation(cpi, typeElement);
+                    synchronized (this) {
+                        location = found;
+                    }
+                } else {
+//                    LOG.log(Level.FINEST, "typeElement == null"); // NOI18N
+                }
+            } else {
+//                LOG.log(Level.FINEST, "elements == null"); // NOI18N
+            }
+            latch.countDown();
+        }
+
+        public synchronized DeclarationFinder.DeclarationLocation getLocation() {
+            return location;
+        }
+    }
+    */
     public static void putException(Exception e) {
         final InputOutput io = IOProvider.getDefault().getIO("Proposals", false);
         try {
@@ -67,7 +124,56 @@ public class PrintAst {
                     + node.hashCode() + "/ parent=" + p+ "[" + (p != null ? p.hashCode() : "0") + "]");
         }
     }
+/*
+    private static DeclarationFinder.DeclarationLocation findJavaClass(String fqName,
+            FileObject fileObject ) throws BadLocationException {
 
+            final ClasspathInfo cpi = ClasspathInfo.create(fileObject);
+
+            if (cpi != null) {
+                JavaSource javaSource = JavaSource.create(cpi);
+
+                if (javaSource != null) {
+                    CountDownLatch latch = new CountDownLatch(1);
+                    SourceLocator locator = new SourceLocator(fqName, cpi, latch);
+                    try {
+                        javaSource.runUserActionTask(locator, true);
+                    } catch (IOException ex) {
+//                            LOG.log(Level.FINEST, "Problem in runUserActionTask :  {0}", ex.getMessage());
+                        return DeclarationFinder.DeclarationLocation.NONE;
+                    }
+                    try {
+                        latch.await();
+                    } catch (InterruptedException ex) {
+                        Thread.currentThread().interrupt();
+                        return DeclarationFinder.DeclarationLocation.NONE;
+                    }
+                    return locator.getLocation();
+                } else {
+//                        LOG.log(Level.FINEST, "javaSource == null"); // NOI18N
+                }
+            } else {
+//                    LOG.log(Level.FINEST, "classpathinfo == null"); // NOI18N
+            }
+        return DeclarationFinder.DeclarationLocation.NONE;
+    }
+
+    public static void putClasspathInfo( String fileName, InputOutput io )
+    {
+        try {
+            FileObject fileObject = FileUtil.toFileObject(new File(fileName));
+            ClasspathInfo cpi = ClasspathInfo.create(fileObject);
+            io.getOut().println("------------- ClasspathInfo=" + fileName + " ---------------------");
+            io.getOut().println("CPI: "+cpi.toString());
+            DeclarationFinder.DeclarationLocation location = findJavaClass("javafx.scene.control.ContextMenu",fileObject);
+            io.getOut().println("LOCATION: " + location);
+        }
+        catch( Exception ex ) {
+            ex.printStackTrace();
+            io.getOut().println("CPI: " + ex);
+        }
+    } 
+    */
     public static void putAstPath(BaseDocument bdoc, MirahParser.NBMirahParserResult parsed, int caretOffset, InputOutput io) {
         long curr = System.currentTimeMillis();
         try {
@@ -253,6 +359,9 @@ public class PrintAst {
                     }
                 }
             });
+      //      putClasspathInfo("C:\\java-dao\\samples\\src\\main\\mirah\\ru\\programpark\\vector\\samples\\jfx\\controller\\RootController.mirah",io);
+      //      putClasspathInfo("C:\\java-dao\\mirah-jfxui\\src\\main\\java\\ru\\programpark\\vector\\jfx\\FXContextMenu.java",io);
+
         } catch (Exception e) {
             e.printStackTrace();
         } finally {

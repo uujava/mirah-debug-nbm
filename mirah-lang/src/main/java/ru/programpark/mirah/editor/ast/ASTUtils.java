@@ -11,6 +11,7 @@ import mirah.lang.ast.ClassDefinition;
 import mirah.lang.ast.MethodDefinition;
 import mirah.lang.ast.Node;
 import mirah.lang.ast.NodeScanner;
+import mirah.lang.ast.Position;
 import mirah.lang.ast.Script;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.lexer.Token;
@@ -809,14 +810,28 @@ public class ASTUtils {
         root.accept(new NodeScanner() {
             @Override
             public boolean enterDefault(Node node, Object arg) {
-                if ( node != null && node.position() != null 
-                    && offset >= node.position().startChar()
-                    && offset < node.position().endChar())
+                
+                Position p = null;
+                Node n = node;
+                if ( node != null ) {
+                    p = node.position();
+                    if ( p == null && node.originalNode() != null ) 
+                    {
+                        n = node.originalNode();
+                        p = n.position();
+                    }
+                }
+                
+                if ( p != null && offset >= p.startChar() && offset < p.endChar())
                 {
-                    if (leaf[0] == null
-                    || node.position().endChar() - node.position().startChar()
-                    < leaf[0].position().endChar() - leaf[0].position().startChar())
-                    leaf[0] = node;
+                    if (leaf[0] == null ) leaf[0] = n;
+                    else {
+                        Position lp = leaf[0].position();
+                        if ( lp == null && leaf[0].originalNode() != null )
+                            lp = leaf[0].originalNode().position();
+                        if ( p.endChar() - p.startChar() < lp.endChar() - lp.startChar())
+                            leaf[0] = n;
+                    }
                 }
                 return super.enterDefault(node, arg); //To change body of generated methods, choose Tools | Templates.
             }

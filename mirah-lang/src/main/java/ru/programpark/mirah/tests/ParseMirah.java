@@ -16,6 +16,7 @@ import mirah.lang.ast.Node;
 import mirah.lang.ast.NodeScanner;
 import org.mirah.typer.ResolvedType;
 import org.netbeans.api.editor.EditorRegistry;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.parsing.api.ParserManager;
@@ -157,6 +158,24 @@ public class ParseMirah {
             }
         }
     }
+
+    public static void dumpClassPath( FileObject fo, String group, final InputOutput io )
+    {
+        ClassPath cp = ClassPath.getClassPath(fo,group);
+        if ( cp != null && io != null )
+            io.getOut().println("CP["+group+"] = "+cp.toString());
+        
+    }
+    public static void dumpClassPathes( FileObject fo, final InputOutput io )
+    {
+        dumpClassPath(fo,ClassPath.COMPILE,io);
+        dumpClassPath(fo,ClassPath.BOOT,io);
+        dumpClassPath(fo,ClassPath.EXECUTE,io);
+        dumpClassPath(fo,ClassPath.SOURCE,io);
+        dumpClassPath(fo,ClassPath.PROP_ENTRIES,io);
+        dumpClassPath(fo,ClassPath.PROP_INCLUDES,io);
+        dumpClassPath(fo,ClassPath.PROP_ROOTS,io);
+    }
     
     public static void dumpDocument()
     {
@@ -175,6 +194,7 @@ public class ParseMirah {
         try {
             io.select();
             io.getOut().println("CaretPosition = "+focused.getCaretPosition());
+            dumpClassPathes(fo,io);
             dumpTokens(doc,io);
             final long curr = System.currentTimeMillis();
 

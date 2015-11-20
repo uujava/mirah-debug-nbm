@@ -75,7 +75,7 @@ public class SourceQuery implements List<Node>{
         {
             if ( dbg == null || dbg.compiler == null || dbg.compiler.compiler() == null )
             {
-                //LOG.info("findPackage DEBUGGER is NULL!!!");
+                //LOG.info(this,"findPackage DEBUGGER is NULL!!!");
                 return null;
             }
             list = dbg.compiler.compiler().getParsedNodes();
@@ -96,7 +96,7 @@ public class SourceQuery implements List<Node>{
     public SourceQuery findClasses(int offset){
 
         if (dbg == null || dbg.compiler == null || dbg.compiler.compiler() == null) {
-            //LOG.info("findClasses DEBUGGER is NULL!!!");
+            //LOG.info(this,"findClasses DEBUGGER is NULL!!!");
             return null;
         }
         ClassScanner scanner = new ClassScanner();
@@ -104,12 +104,14 @@ public class SourceQuery implements List<Node>{
         for( Object node : dbg.compiler.compiler().getParsedNodes() ){
             ((Node)node).accept(scanner, null);
         }
+        //LOG.info(this,"findClasses scanner.found: "+scanner.found);
+        if ( scanner.found == null ) return null;
         return new SourceQuery(doc, scanner.found);
     }
     
     public SourceQuery findMethods(int offset){
         if (dbg == null || dbg.compiler == null || dbg.compiler.compiler() == null) {
-            //LOG.info("findMethods DEBUGGER is NULL!!!");
+            //LOG.info(this,"findMethods DEBUGGER is NULL!!!");
             return null;
         }
         MethodOffsetScanner scanner = new MethodOffsetScanner();
@@ -117,6 +119,8 @@ public class SourceQuery implements List<Node>{
         for( Object node : dbg.compiler.compiler().getParsedNodes() ){
             ((Node)node).accept(scanner, null);
         }
+        //LOG.info(this,"findMethods scanner.found: " + scanner.found);
+        if (scanner.found == null) return null;
         return new SourceQuery(doc, scanner.found);
     }
     
@@ -125,7 +129,7 @@ public class SourceQuery implements List<Node>{
         int currRange = -1;
         for ( Node n : findMethods(offset)){
             if ( cdef == null
-                    || n.position().endChar()- n.position().startChar() < currRange ){
+            || (n.position() != null && n.position().endChar()- n.position().startChar() < currRange)){
                 cdef = (MethodDefinition)n;
                 currRange = n.position().endChar()-n.position().startChar();
             }
@@ -178,7 +182,7 @@ public class SourceQuery implements List<Node>{
         {
             for ( Node n : sq ){
                 if ( cdef == null
-                        || n.position().endChar()- n.position().startChar() < currRange ){
+                || (n.position() != null && n.position().endChar()- n.position().startChar() < currRange)){
                     cdef = (ClassDefinition)n;
                     currRange = n.position().endChar()-n.position().startChar();
                 }

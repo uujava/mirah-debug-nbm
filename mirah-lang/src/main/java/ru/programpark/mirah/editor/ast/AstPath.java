@@ -153,7 +153,13 @@ public class AstPath implements Iterable<Node> {
         Node leaf = null;
         for( Node node : path )
         {
-            if ( node.position() == null ) continue;
+            // для гиперпереходов из параметром макросов
+            if ( node.position() == null ) {
+                node = node.originalNode();
+            }
+            if (node == null || node.position() == null) {
+                continue;
+            }
             if ( leaf == null 
                 || node.position().endChar() - node.position().startChar() 
                     < leaf.position().endChar() - leaf.position().startChar())

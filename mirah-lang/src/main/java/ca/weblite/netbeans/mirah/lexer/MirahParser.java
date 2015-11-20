@@ -254,18 +254,17 @@ public class MirahParser extends Parser {
     }
 
     // При Array.size <= 7 поиск перебором по массиву не медленнее индексированного поиска в Map
-    private static final Collection<String> macroNames = new ArrayList<>();
-    static {
-        macroNames.add("attr_reader");
-        macroNames.add("attr_writer");
-        macroNames.add("attr_accessor");
-        macroNames.add("fx_component");
-        macroNames.add("entity_attr");
-    }
+//    private static final Collection<String> macroNames = new ArrayList<>();
+//    static {
+//        macroNames.add("attr_reader");
+//        macroNames.add("attr_writer");
+//        macroNames.add("attr_accessor");
+//        macroNames.add("fx_component");
+//        macroNames.add("entity_attr");
+//    }
 
     void getBlocks(final NBMirahParserResult res, String content) {
         
-        /*
         if ( true ) return;
         
         mirah.impl.MirahParser parser = new mirah.impl.MirahParser();
@@ -281,7 +280,7 @@ public class MirahParser extends Parser {
 //        BlockCollector coll = new BlockCollector();
 //        coll.prepareBlocks(res);
 //        res.setBlocks(coll.getBlocks());
-
+        /*
         if ( ast instanceof Node ) {            
             Node node = (Node)ast;
 
@@ -687,7 +686,7 @@ public class MirahParser extends Parser {
         compiler.setDiagnostics(diag);
         
         //todo убрать повторы в classpath
-        // не надо приклеивать macroPath - это дедается в WLMirahCompiler
+        // не надо приклеивать macroPath - это делается в WLMirahCompiler
         HashMap<Entry, Entry> map = new HashMap<Entry, Entry>();
         StringBuffer sb = new StringBuffer();
         appendClassPath(compileClassPath,sb,map);
@@ -764,7 +763,7 @@ public class MirahParser extends Parser {
 
         if (debugger.resolvedTypes.size() > 0) {
             debugger.compiler = compiler.getMirahc();
-//            documentDebuggers.put(doc, debugger);
+            documentDebuggers.put(doc, debugger);
             // Сохраняю дерево разбора - это список List<Node>
             if ( debugger.compiler.compiler() != null )
             result.setParsedNodes(debugger.compiler.compiler().getParsedNodes());
@@ -854,7 +853,7 @@ public class MirahParser extends Parser {
             errorList.add(new Error(description, offset, length, getSnapshot()));
         }
 
-        public BlockCollector getBlockCollection() {
+        public synchronized BlockCollector getBlockCollection() {
             if ( blockCollector == null ) {
                 blockCollector = new BlockCollector();
                 blockCollector.prepareBlocks(this);
