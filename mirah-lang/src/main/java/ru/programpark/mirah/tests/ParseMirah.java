@@ -7,13 +7,16 @@ package ru.programpark.mirah.tests;
 
 import ca.weblite.netbeans.mirah.lexer.MirahParser;
 import ca.weblite.netbeans.mirah.lexer.MirahTokenId;
+import java.io.IOException;
 import java.util.Collections;
+import javax.lang.model.type.ErrorType;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import mirah.lang.ast.ClosureDefinition;
 import mirah.lang.ast.MethodDefinition;
 import mirah.lang.ast.Node;
 import mirah.lang.ast.NodeScanner;
+import org.mirah.jvm.mirrors.DebugError;
 import org.mirah.typer.ResolvedType;
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -26,6 +29,7 @@ import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
+import org.openide.util.Exceptions;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 import ru.programpark.mirah.editor.utils.LexUtilities;
@@ -130,10 +134,57 @@ public class ParseMirah {
         io.getOut().println("------------- DUMP ERRORS ---------------------");
         io.getOut().println();
         io.getOut().println();
+        
+//        io.getErr().println("getErrors: " + pres.getErrors());
+//        io.getErr().println("getMirahDiagnostics: " + pres.getMirahDiagnostics());
+//        io.getErr().println("getDiagnostics: " + pres.getDiagnostics());
+//        io.getErr().println("getMirahDiagnostics.errorCount: " + pres.getMirahDiagnostics().errorCount());
+//        io.getErr().println("getMirahDiagnostics.getErrors: " + pres.getMirahDiagnostics().getErrors());
+
+        
+        for( MirahParser.MirahParseDiagnostics.SyntaxError err : pres.getMirahDiagnostics().getErrors())
+        {
+//            io.getErr().println("SYNTAX: " + err.message);
+//            io.getErr().println("SYNTAX: " + err.kind+" "+err.getClass());
+//            io.getErr().println("SYNTAX: " + err.position);
+            try {
+                io.getOut().println(""+err.kind + ": "+err.message, new IndexHyperlink(pres.getSnapshot().getSource().getFileObject(),(int)err.start));
+//                io.getOut().println(""+err.kind + ": "+err.message, new IndexHyperlink(pres.getSnapshot().getSource().getFileObject(), Integer.valueOf(err.position).intValue()));
+            } catch (IOException ex) {}
+        }
+        /*
         for( org.netbeans.modules.csl.api.Error err : pres.getErrors() )
         {
             io.getErr().println("ERROR: "+err.getDescription());
         }
+        io.getErr().println("===========================");
+        try {
+            for( ResolvedType type : pres.getResolvedTypes().values() )
+            {
+                if ( type instanceof DebugError )
+                {
+                    if ( ((DebugError) type).isError() )
+                    {
+                        io.getErr().println("DebugError: " + ((DebugError)type));
+                        for( Object e : ((DebugError) type).message())
+                        {
+                            io.getErr().println("DebugError: " + ((DebugError)type).name()+" e="+e);
+                        }
+                    }
+                    
+                }
+                else if (type instanceof ErrorType) {
+                    io.getErr().println("ErrorType: " + ((ErrorType)type)+" kind="+((ErrorType) type).getKind());
+
+                }
+//                io.getErr().println("RESOLVED: " + type.getClass() + " "+type);
+            }
+        }
+        catch( Exception ex ) {
+            io.getErr().println("EXCEPTION = "+ex);
+        }
+        io.getErr().println("===========================");
+        */
     }
     
     public static void dumpResolvedTypes( MirahParser.NBMirahParserResult pres, final InputOutput io )
@@ -194,6 +245,7 @@ public class ParseMirah {
         try {
             io.select();
             io.getOut().println("CaretPosition = "+focused.getCaretPosition());
+            io.getOut().reset();
             dumpClassPathes(fo,io);
             dumpTokens(doc,io);
             final long curr = System.currentTimeMillis();

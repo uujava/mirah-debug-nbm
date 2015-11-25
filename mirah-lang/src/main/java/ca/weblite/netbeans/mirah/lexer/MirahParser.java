@@ -19,6 +19,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Queue;
 import java.util.Set;
 import java.util.SortedSet;
@@ -837,7 +838,13 @@ public class MirahParser extends Parser {
 
         @Override
         public List<? extends Error> getDiagnostics() {
-            return new ArrayList<>();
+            if ( errorList.isEmpty() ) {
+                for( MirahParseDiagnostics.SyntaxError syntaxError : this.diagnostics.errors )
+                {
+//                    addError(syntaxError.message,(int)syntaxError.start,(int)(syntaxError.end - syntaxError.start));
+                }
+            }
+            return errorList; //new ArrayList<>();
         }
 
         @Override
@@ -1085,16 +1092,27 @@ public class MirahParser extends Parser {
 
     public static class MirahParseDiagnostics extends SimpleDiagnostics {
 
-        static class SyntaxError {
+        public static class SyntaxError {
 
             SyntaxError(Diagnostic.Kind k, String pos, String msg) {
                 kind = k;
                 position = pos;
                 message = msg;
             }
-            Diagnostic.Kind kind;
-            String position;
-            String message;
+            SyntaxError(Diagnostic.Kind k, long start, long end, long line, String msg) {
+                kind = k;
+                position = null;
+                message = msg;
+                this.start = start;
+                this.end = end;
+                this.line = line;
+            }
+            public Diagnostic.Kind kind;
+            public String position;
+            public String message;
+            public long start;
+            public long end;
+            public long line;
         }
 
         private List<SyntaxError> errors = new ArrayList<>();
@@ -1119,6 +1137,15 @@ public class MirahParser extends Parser {
         public List<SyntaxError> getErrors() {
             return errors;
         }
+        
+        @Override
+        public void report(Diagnostic dgnstc) {
+//            log(dgnstc.getKind(),""+dgnstc.getPosition(),dgnstc.getMessage(Locale.getDefault()));
+            String message = dgnstc.getMessage(Locale.getDefault());
+            if (!"ERROR_TO_PREVENT_COMPILING".equals(message)) {
+                errors.add(new SyntaxError(dgnstc.getKind(), dgnstc.getStartPosition(), dgnstc.getEndPosition(), dgnstc.getLineNumber(), message));
+            }
+        }        
     }
 
     public static class DocumentDebugger implements DebuggerInterface {

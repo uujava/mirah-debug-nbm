@@ -37,8 +37,8 @@ public class MirahOnSaveTask implements OnSaveTask {
         
 //        RepositoryUpdater.getDefault().enforcedFileListUpdate(null, null);
         
-//        LOG.info(this,"performTask!!!");
         FileObject fo = NbEditorUtilities.getFileObject(context.getDocument());
+//        LOG.info(this,"performTask fo="+fo.getNameExt());
         Project project = FileOwnerQuery.getOwner(fo);
 //        LOG.info(this,"fo = "+fo+" project = "+project);
         if (!MirahExtender.isActive(project)) {

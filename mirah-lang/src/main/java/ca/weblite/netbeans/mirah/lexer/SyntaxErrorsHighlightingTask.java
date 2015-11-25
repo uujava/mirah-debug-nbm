@@ -97,7 +97,8 @@ class SyntaxErrorsHighlightingTask extends ParserResultTask {
                         }
                     }
                 }  else {
-                    LOG.info(this,"Syntax error position is null");
+                    //LOG.info(this,"Syntax error position is null");
+                    line = (int)syntaxError.line;
                 }
                 if ( line == -1 ){
                     

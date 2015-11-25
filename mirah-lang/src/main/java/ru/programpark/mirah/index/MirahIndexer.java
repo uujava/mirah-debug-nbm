@@ -22,6 +22,7 @@ import mirah.lang.ast.ModifierList;
 import mirah.lang.ast.Node;
 import mirah.lang.ast.NodeScanner;
 import mirah.lang.ast.OptionalArgument;
+import mirah.lang.ast.Position;
 import mirah.lang.ast.RequiredArgument;
 import mirah.lang.ast.StaticMethodDefinition;
 import mirah.lang.ast.Super;
@@ -616,7 +617,13 @@ public class MirahIndexer extends EmbeddingIndexer {
         {
     //        sb.append(file.getPath());
     //        sb.append(':');
-            if ( node.position() != null ) sb.append(node.position().startChar());
+            Position p = node.position();
+            if ( /*p == null &&*/ node.originalNode() != null )
+            {
+                // для позиционирования методов из макроса fx_attr
+                p = node.originalNode().position();
+            }
+            if ( p != null ) sb.append(p.startChar());
 //            sb.append(';');
         }
 
