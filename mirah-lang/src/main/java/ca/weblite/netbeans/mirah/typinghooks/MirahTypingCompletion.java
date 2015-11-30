@@ -702,8 +702,8 @@ public class MirahTypingCompletion {
             }
             int dotPosition = context.getCaretOffset();
             ts.move(dotPosition);
-            if (!((ts.moveNext() || ts.movePrevious()) && (ts.token().id() == MirahTokenId.WHITESPACE) || ts.token().id() == MirahTokenId.NL)) {                
-               return false;
+            if (!((ts.moveNext() || ts.movePrevious()) && (ts.token().id() == MirahTokenId.WHITESPACE) || ts.token().id() == MirahTokenId.NL)) {
+                    return false;
             }
 
             int jdoffset = dotPosition - (javadoc ? 3 : 2);
