@@ -49,9 +49,10 @@ public class MirahTypedBreakInterceptor implements TypedBreakInterceptor{
         } else if (MirahTypingCompletion.blockCommentCompletion(context)) {
             // Перехват и завершение начала java-комментариев видов /* и /**
             blockCommentComplete(doc, dotPos, context);
-        } else if (seq.token() != null && seq.token().id().is(Tokens.tComment)) {
+        } else if (seq.token() != null && (seq.token().id().is(Tokens.tComment) || seq.token().id().is(Tokens.tJavaDoc))) {
             // К сожалению, это не работает...
-            // boolean inJavadoc = seq.token().id().ordinal() == Tokens.tJavaDoc.ordinal();
+            boolean inJavadoc = seq.token().id().is(Tokens.tJavaDoc);
+//            boolean inJavadoc = seq.token().id().ordinal() == Tokens.tJavaDoc.ordinal();
             String comment = seq.token().text().toString().trim();
             if (comment.startsWith("/*") && comment.endsWith("*/")) {
                 blockCommentExtend(doc, dotPos, context);

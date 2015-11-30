@@ -436,7 +436,7 @@ public class BlockCollector implements BlockNode {
             final MirahTokenId tokenId = seq.token().id();
             if (!tokenId.is(Tokens.tComment) && !tokenId.is(Tokens.tJavaDoc)) {
                 if (!tokenId.is(Tokens.tNL)) {
-//                    res.commentsBlock = false;
+                    commentsBlock = false;
                 }
                 continue;
             }
