@@ -149,6 +149,7 @@ public class ParseMirah {
 //            io.getErr().println("SYNTAX: " + err.position);
             try {
                 io.getOut().println(""+err.kind + ": "+err.message, new IndexHyperlink(pres.getSnapshot().getSource().getFileObject(),(int)err.start));
+                io.getOut().println(""+err.kind + ": "+err.message+" class="+err.getClass()+" hash="+err.hashCode());
 //                io.getOut().println(""+err.kind + ": "+err.message, new IndexHyperlink(pres.getSnapshot().getSource().getFileObject(), Integer.valueOf(err.position).intValue()));
             } catch (IOException ex) {}
         }

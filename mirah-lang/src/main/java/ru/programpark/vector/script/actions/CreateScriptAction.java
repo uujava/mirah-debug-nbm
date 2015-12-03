@@ -21,9 +21,13 @@ import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
+import org.openide.util.Utilities;
+import org.openide.windows.TopComponent;
+import org.openide.windows.WindowManager;
 
 @ActionID(
         category = "Edit",
@@ -40,22 +44,61 @@ import org.openide.util.NbBundle.Messages;
 @Messages("CTL_CreateScriptAction=Новый скрипт")
 public final class CreateScriptAction implements ActionListener {
 
+    public static final String PROJECT_LOGICAL_TAB_ID = "projectTabLogical_tc";
+    
     @Override
     public void actionPerformed(ActionEvent e) {
 
-        JTextComponent focused = EditorRegistry.lastFocusedComponent();
-        if (focused == null) return;
-        
-        Document doc = focused.getDocument();
-        if (doc == null) return;
+        // нахожу проект выбранный в закладке "Проекты"
+        Project project = getSelectedProject();
+        if ( project == null ) {
+            // если не найден, то ищу проект, в котором открытый файл
+            JTextComponent focused = EditorRegistry.lastFocusedComponent();
+            if (focused == null) return;
 
-        FileObject fo = getFileObject(doc);
-        Project project = FileOwnerQuery.getOwner(fo);
+            Document doc = focused.getDocument();
+            if (doc == null) return;
+
+            FileObject fo = getFileObject(doc);
+            project = FileOwnerQuery.getOwner(fo);
+        }
         if ( project == null ) return;
 
 //        Project project = OpenProjects.getDefault().getMainProject();
         FileObject folder = project.getProjectDirectory();
         createScript(folder,"Скрипт","mirah");
+    }
+    
+    public static Project getSelectedProject() 
+    {
+        TopComponent projectsTab = WindowManager.getDefault().findTopComponent(PROJECT_LOGICAL_TAB_ID);
+        if (projectsTab == null) return null;
+
+        // Look for the current project in the Projects window when activated and handle 
+        // special case at startup when lastProject hasn't been initialized.            
+        Node[] nodes = projectsTab.getActivatedNodes();
+        // Find and use the first project that owns a node
+        if (nodes != null) {
+            for (Node node : nodes) {
+                Project project = findProjectThatOwnsNode(node);
+                if (project != null) return project;
+            }
+        }
+        return null;
+    }
+    private static Project findProjectThatOwnsNode(Node node) {
+        if (node != null) {
+            Project project = node.getLookup().lookup(Project.class);
+            if (project == null) {
+                DataObject dataObject = node.getLookup().lookup(DataObject.class);
+                if (dataObject != null) {
+                    project = FileOwnerQuery.getOwner(dataObject.getPrimaryFile());
+                }
+            }
+            return (project == null) ? findProjectThatOwnsNode(node.getParentNode()) : project;
+        } else {
+            return null;
+        }    
     }
     
     public static FileObject getFileObject(Document doc) {

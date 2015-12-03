@@ -645,6 +645,16 @@ public class MirahParser extends Parser {
         ClassPath buildClassPath = ClassPath.getClassPath(src, ClassPath.EXECUTE);
         ClassPath srcClassPath = ClassPath.getClassPath(src, ClassPath.SOURCE);
         ClassPath bootClassPath = ClassPath.getClassPath(src, ClassPath.BOOT);
+
+        // для скриптов
+        if ( compileClassPath == null ) 
+            compileClassPath = ClassPath.getClassPath(projectDirectory, ClassPath.COMPILE);
+        if ( buildClassPath == null )
+            buildClassPath = ClassPath.getClassPath(projectDirectory, ClassPath.EXECUTE);
+        if ( srcClassPath == null )
+            srcClassPath = ClassPath.getClassPath(projectDirectory, ClassPath.SOURCE);
+        if ( bootClassPath == null )
+            bootClassPath = ClassPath.getClassPath(projectDirectory, ClassPath.BOOT);
 //        LOG.info(this, "classPath:");
 //        LOG.info(this, compileClassPath.toString());
 //        LOG.info(this, "buildClassPath:");
@@ -1116,6 +1126,7 @@ public class MirahParser extends Parser {
         }
 
         private List<SyntaxError> errors = new ArrayList<>();
+        private int errorCount = 0;
 
         public MirahParseDiagnostics() {
             super(false);
@@ -1123,9 +1134,9 @@ public class MirahParser extends Parser {
 
         @Override
         public int errorCount() {
-            return super.errorCount();
+            return errorCount;
         }
-
+        
         @Override
         public void log(Diagnostic.Kind kind, String position, String message) {
             super.log(kind, position, message);
@@ -1140,11 +1151,9 @@ public class MirahParser extends Parser {
         
         @Override
         public void report(Diagnostic dgnstc) {
-//            log(dgnstc.getKind(),""+dgnstc.getPosition(),dgnstc.getMessage(Locale.getDefault()));
             String message = dgnstc.getMessage(Locale.getDefault());
-            if (!"ERROR_TO_PREVENT_COMPILING".equals(message)) {
-                errors.add(new SyntaxError(dgnstc.getKind(), dgnstc.getStartPosition(), dgnstc.getEndPosition(), dgnstc.getLineNumber(), message));
-            }
+            errors.add(new SyntaxError(dgnstc.getKind(), dgnstc.getStartPosition(), dgnstc.getEndPosition(), dgnstc.getLineNumber(), message));
+            if ( dgnstc.getKind() == Diagnostic.Kind.ERROR ) errorCount++;
         }        
     }
 

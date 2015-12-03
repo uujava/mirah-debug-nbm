@@ -43,34 +43,22 @@ public final class RunScriptAction implements ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent ev) {
-        long start = System.currentTimeMillis();
         
         FileObject fo = context.getPrimaryFile();
         Project project = FileOwnerQuery.getOwner(fo);
         if (project == null) return;
         
-        ClassPath compileClassPath = ClassPath.getClassPath(fo, ClassPath.COMPILE);
-        ClassPath buildClassPath = ClassPath.getClassPath(fo, ClassPath.EXECUTE);
-        ClassPath srcClassPath = ClassPath.getClassPath(fo, ClassPath.SOURCE);
-        ClassPath bootClassPath = ClassPath.getClassPath(fo, ClassPath.BOOT);
-        
         InputOutput io = IOProvider.getDefault().getIO("Выполнение "+fo.getNameExt(), false);
         try {
             io.select();
             io.getOut().reset();
-            io.getOut().println("Start script execution!");
-//            io.getOut().println(fo.asText());
-            for( String line : fo.asLines() )
-                io.getOut().println(line);
-
-            ScriptExecutor se = new ScriptExecutor();
-            se.compileScript(project.getProjectDirectory(),fo);
+            ScriptExecutor se = new ScriptExecutor(io);
+            se.runScript(fo);
         }
         catch (Exception e ) {
             e.printStackTrace();
         }
         finally {
-            io.getOut().println("==== ELAPSED TIME : " + (System.currentTimeMillis() - start) + " msec");
             if (io != null) io.getOut().close();
             if (io != null) io.getErr().close();
         }
