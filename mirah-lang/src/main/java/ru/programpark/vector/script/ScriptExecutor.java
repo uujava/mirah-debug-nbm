@@ -141,7 +141,7 @@ public class ScriptExecutor implements BytecodeConsumer {
         buildFolder = fo.getParent().getPath() + "/" + fo.getName() + ".classes";
         loader = new ByteClassLoader(this.getClass().getClassLoader());
 //        loader = new ByteClassLoader(this.getClass().getClassLoader(),buildFolder);
-        console.getOut().println("Start script execution!");
+        console.getOut().println("Start script execution!"+Thread.currentThread());
 
         long start = System.currentTimeMillis();
         
@@ -165,7 +165,10 @@ public class ScriptExecutor implements BytecodeConsumer {
             console.getOut().println("Время выполнения: " + (System.currentTimeMillis() - start) + " мс");
         } 
         catch(Exception ex) {
-            console.getOut().println("unable to eval: " + ex);
+            if ( ex instanceof InterruptedException )
+                console.getOut().println("\nПрервано пользователем");
+            else
+                console.getOut().println("unable to eval: " + ex);
             ex.printStackTrace();
         }
         finally {

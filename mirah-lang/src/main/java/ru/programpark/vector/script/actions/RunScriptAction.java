@@ -8,6 +8,8 @@ package ru.programpark.vector.script.actions;
 import ca.weblite.netbeans.mirah.MirahDataObject;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.concurrent.FutureTask;
+import javax.swing.Action;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionReferences;
@@ -44,18 +46,39 @@ public final class RunScriptAction implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent ev) {
         
-        FileObject fo = context.getPrimaryFile();
+        final FileObject fo = context.getPrimaryFile();
         Project project = FileOwnerQuery.getOwner(fo);
         if (project == null) return;
         
-        InputOutput io = IOProvider.getDefault().getIO("Выполнение "+fo.getNameExt(), false);
+        InputOutput io = null;
         try {
+            StopAction stopAction = new StopAction();
+//        rerunAction = new RerunAction();
+//        io = IOProvider.getDefault().getIO(displayName,
+//                new Action[]{rerunAction, stopAction, optionsAction});
+            io = IOProvider.getDefault().getIO("Выполнение " + fo.getNameExt(), new Action[]{stopAction});
+//        InputOutput io = IOProvider.getDefault().getIO("Выполнение "+fo.getNameExt(), false);
             io.select();
             io.getOut().reset();
-            ScriptExecutor se = new ScriptExecutor(io);
-            se.runScript(fo);
+//            ScriptExecutor se = new ScriptExecutor(io);
+//            se.runScript(fo);
+            
+            final ScriptExecutor se = new ScriptExecutor(io);
+            Thread t = new Thread( 
+                new Runnable() {
+                    @Override
+                    public void run() {
+                        se.runScript(fo);
+                    }
+                });
+//            stopAction.setTask( new FutureTask(t,null) );
+            stopAction.setThread(t);
+            stopAction.setEnabled(true);
+            t.start();
+            
         }
         catch (Exception e ) {
+            io.getOut().println(""+this+" ex="+e);
             e.printStackTrace();
         }
         finally {
