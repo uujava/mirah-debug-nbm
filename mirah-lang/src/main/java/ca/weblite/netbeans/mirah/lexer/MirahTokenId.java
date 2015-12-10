@@ -86,7 +86,7 @@ public class MirahTokenId implements TokenId {
             Tokens.tOpAssign,
             Tokens.tOrEq,
             Tokens.tAndEq,
-            Tokens.tLLShift,
+//            Tokens.tLLShift,
             Tokens.tLShift,
             Tokens.tRShift,
             Tokens.tPlus,

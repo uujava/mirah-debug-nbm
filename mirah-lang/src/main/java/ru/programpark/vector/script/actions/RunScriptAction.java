@@ -8,7 +8,6 @@ package ru.programpark.vector.script.actions;
 import ca.weblite.netbeans.mirah.MirahDataObject;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.concurrent.FutureTask;
 import javax.swing.Action;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
@@ -52,23 +51,18 @@ public final class RunScriptAction implements ActionListener {
         
         InputOutput io = null;
         try {
-            StopAction stopAction = new StopAction();
-//        rerunAction = new RerunAction();
-//        io = IOProvider.getDefault().getIO(displayName,
-//                new Action[]{rerunAction, stopAction, optionsAction});
-            io = IOProvider.getDefault().getIO("Выполнение " + fo.getNameExt(), new Action[]{stopAction});
-//        InputOutput io = IOProvider.getDefault().getIO("Выполнение "+fo.getNameExt(), false);
+            final StopAction stopAction = new StopAction();
+            String name = "Выполнение " + fo.getNameExt();
+            io = IOProvider.getDefault().getIO(name, new Action[]{stopAction});
             io.select();
             io.getOut().reset();
-//            ScriptExecutor se = new ScriptExecutor(io);
-//            se.runScript(fo);
-            
             final ScriptExecutor se = new ScriptExecutor(io);
             Thread t = new Thread( 
                 new Runnable() {
                     @Override
                     public void run() {
                         se.runScript(fo);
+                        stopAction.setEnabled(false);
                     }
                 });
 //            stopAction.setTask( new FutureTask(t,null) );
@@ -82,6 +76,7 @@ public final class RunScriptAction implements ActionListener {
             e.printStackTrace();
         }
         finally {
+//            if (io != null) io.closeInputOutput();
             if (io != null) io.getOut().close();
             if (io != null) io.getErr().close();
         }

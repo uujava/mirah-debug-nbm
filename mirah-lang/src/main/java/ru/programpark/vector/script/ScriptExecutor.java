@@ -11,18 +11,21 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.Scanner;
 import javax.swing.text.Document;
 import javax.tools.Diagnostic;
 import mirah.lang.ast.StringCodeSource;
 import org.mirah.jvm.compiler.BytecodeConsumer;
+import org.mirah.jvm.compiler.JvmVersion;
 import org.mirah.jvm.mirrors.debug.ConsoleDebugger;
 import org.mirah.jvm.mirrors.debug.DebugController;
 import org.mirah.tool.MirahArguments;
 import org.mirah.tool.MirahCompiler;
 import org.mirah.util.SimpleDiagnostics;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.classpath.ClassPath.Entry;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
@@ -178,13 +181,31 @@ public class ScriptExecutor implements BytecodeConsumer {
         }
 
     }
+    
+    private ArrayList<URL> preparePath( ClassPath... paths )
+    {
+        ArrayList<URL> urls = new ArrayList<URL>();
+        for( ClassPath cp : paths) {
+            if ( cp != null )
+            {
+                for( Entry e : cp.entries() )
+                {
+                    urls.add(e.getURL());
+                }
+            }
+        }
+        return urls;
+//        return urls.toArray(new URL[urls.size()]);
+    }
+    
     private boolean compileScript( FileObject fo ) throws IOException, URISyntaxException 
     {
         long start = System.currentTimeMillis();
         
+        /*
         WLMirahCompiler compiler = new WLMirahCompiler();
         compiler.setPrecompileJavaStubs(false);
-
+        */
         ClassPath compileCP = ClassPath.getClassPath(fo, ClassPath.COMPILE);
         ClassPath buildCP = ClassPath.getClassPath(fo, ClassPath.EXECUTE);
         ClassPath sourceCP = ClassPath.getClassPath(fo, ClassPath.SOURCE);
@@ -213,20 +234,6 @@ public class ScriptExecutor implements BytecodeConsumer {
         if ( url != null ) sb.append(url.toURI().getPath());
             
         String cp = sb.toString();
-
-        MirahParser.DocumentDebugger debugger = new MirahParser.DocumentDebugger();
-
-        compiler.setDebugger(debugger);
-        compiler.setSourcePath(fo.getParent().getPath());
-        // компилится в папку скриптов
-        compiler.setDestinationDirectory(new File(buildFolder));
-//        compiler.setDestinationDirectory(FileUtil.toFile(scriptDir));
-//            compiler.setDestinationDirectory(new File("c:\\java-dao\\samples\\src\\main\\scripts"));
-        ErrorsList errors = new ErrorsList();    
-        compiler.setDiagnostics(errors);
-        compiler.setClassPath(cp);
-        compiler.setMacroClassPath("");
-        compiler.setBootClassPath(bootCP.toString());
         StringBuffer sbt = new StringBuffer();
         sbt.append("import ru.programpark.vector.script.Script\n");
         sbt.append("public class ").append(fo.getName()).append("\n");
@@ -236,9 +243,32 @@ public class ScriptExecutor implements BytecodeConsumer {
         String ss = sbt.toString();
         
         console.getOut().println(ss);
-        compiler.addFakeFile(fo.getName(), sbt.toString());
-        compiler.compile(new String[]{"--new-closures"});
-        for( Diagnostic err : errors.list() ) {
+        MirahArguments compiler_args = new MirahArguments();
+        ErrorsList errors = new ErrorsList();
+
+        compiler_args.bootclasspath_set(bootCP.toString());
+        compiler_args.classpath_set(cp);
+        compiler_args.macroclasspath_set("");
+        compiler_args.diagnostics_set(errors);
+        compiler_args.destination_set(null); //buildFolder);
+        compiler_args.setup_logging();
+
+//        ArrayList<URL> cp_urls = preparePath(compileCP, buildCP, bootCP);
+//        cp_urls.add(url);
+//        ArrayList<URL> boot_urls = preparePath(bootCP);
+        MirahCompiler compiler = new MirahCompiler(errors, compiler_args, null);
+        
+        try {
+            compiler.parse(new StringCodeSource(fo.getName(), ss));
+            compiler.infer();
+            compiler.compile(this);
+            List list = compiler.getParsedNodes();
+            
+        } catch (Throwable ex) {
+            System.out.println("Unable to compile: " + ex);
+            ex.printStackTrace();
+        }
+        for (Diagnostic err : errors.list()) {
             console.getOut().println("" + err.getKind() + ": " + err.getMessage(Locale.getDefault()), new ErrorHyperlink(fo, (int) err.getPosition()));
         }
         console.getOut().println("Время компиляции: " + (System.currentTimeMillis() - start) + " мс");
@@ -267,16 +297,7 @@ public class ScriptExecutor implements BytecodeConsumer {
     }
 
     public int call_compile(String code) {
-        try {
-            compiler.parse(new StringCodeSource("DashE", code));
-            compiler.infer();
-            compiler.compile(this);
-            return 0;
-        } catch (Throwable ex) {
-            System.out.println("Unable to compile: "+ex);
-            ex.printStackTrace();
-            return 1;
-        }
+        return 0;
     }
 
     public void consumeClass(String filename, byte bytes[]) {
@@ -295,8 +316,8 @@ public class ScriptExecutor implements BytecodeConsumer {
     private static String SCRIPT_PREFIX = "Gen_S";
     private ByteClassLoader loader;
     private DebugController debugger;
-    private MirahCompiler compiler;
-    private MirahArguments compiler_args;
+//    private MirahCompiler compiler;
+//    private MirahArguments compiler_args;
     
     private String buildFolder;
 }

@@ -4,6 +4,7 @@ import ca.weblite.netbeans.mirah.AbstractNodeVisitor;
 import mirah.lang.ast.Array;
 import mirah.lang.ast.Boolean;
 import mirah.lang.ast.Call;
+import mirah.lang.ast.FieldAnnotationRequest;
 import mirah.lang.ast.Fixnum;
 import mirah.lang.ast.FunctionalCall;
 import mirah.lang.ast.Hash;
@@ -14,6 +15,7 @@ import mirah.lang.ast.Node;
 import mirah.lang.ast.NodeList;
 import mirah.lang.ast.SimpleString;
 import mirah.lang.ast.Symbol;
+import mirah.lang.ast.SyntheticLambdaDefinition;
 
 /**
  *
@@ -119,6 +121,16 @@ public class TypeNodeVisitor extends AbstractNodeVisitor {
 
     @Override
     public Object visitJavaDoc(JavaDoc jd, Object o) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Object visitFieldAnnotationRequest(FieldAnnotationRequest far, Object o) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Object visitSyntheticLambdaDefinition(SyntheticLambdaDefinition sld, Object o) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

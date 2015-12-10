@@ -64,6 +64,7 @@ public class ByteClassLoader extends URLClassLoader {
     // загрузить все скомпилированные классы
     public void loadAllClasses(String loadPath) throws IOException {
         FileObject loadDir = FileUtil.toFileObject(new File(loadPath));
+        if ( loadDir == null ) return;
         for( FileObject fo : loadDir.getChildren() )
         {
             if ( "class".equalsIgnoreCase(fo.getExt() )) {

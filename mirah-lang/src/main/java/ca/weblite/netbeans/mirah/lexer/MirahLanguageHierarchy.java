@@ -149,7 +149,7 @@ public class MirahLanguageHierarchy extends LanguageHierarchy<MirahTokenId>{
             Tokens.tLBrace, Tokens.tRBrace, Tokens.tAt, Tokens.tBang, Tokens.tPlus, Tokens.tMinus, Tokens.tCaret, 
             Tokens.tTilde, Tokens.tPercent, Tokens.tNMatch, Tokens.tMatch, Tokens.tNE, Tokens.tLT, Tokens.tLE, 
             Tokens.tLEG, Tokens.tGT, Tokens.tGE, Tokens.tEEQ, Tokens.tEEEQ, 
-            Tokens.tLShift, Tokens.tLLShift, Tokens.tRShift, Tokens.tEQ, Tokens.tAndEq, Tokens.tOrEq, 
+            Tokens.tLShift, /*Tokens.tLLShift,*/ Tokens.tRShift, Tokens.tEQ, Tokens.tAndEq, Tokens.tOrEq, 
             Tokens.tOpAssign, Tokens.tQuestion, Tokens.tDigit, Tokens.tInteger, Tokens.tFloat, Tokens.tBacktick, 
             Tokens.tDollar, Tokens.tInstVarBacktick, Tokens.tClassVarBacktick, Tokens.tComma, Tokens.tStar, Tokens.tStars, 
             Tokens.tAmper, Tokens.tAmpers, Tokens.tPipe, Tokens.tPipes, Tokens.tRocket, Tokens.tCharacter, Tokens.tEscape, 
