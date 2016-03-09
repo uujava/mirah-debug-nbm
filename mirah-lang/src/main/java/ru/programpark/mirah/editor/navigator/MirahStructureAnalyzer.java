@@ -138,7 +138,7 @@ public class MirahStructureAnalyzer implements StructureScanner {
         switch (block.getKind()) {
             case CLASS:
             case INTERFACE:
-                if (parent.getKind() == ElementKind.PACKAGE) {
+                if (parent == null || parent.getKind() == ElementKind.PACKAGE) {
                     // Классы верхнего уровня не фолдим, чтобы не перегружать интерфейс
                     return null;
                 } else {
