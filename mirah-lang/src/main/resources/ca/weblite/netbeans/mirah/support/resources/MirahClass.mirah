@@ -11,7 +11,6 @@ package ${package}
  *
  * @author ${user}
  */
-class ${name} 
-	
-end
+class ${name}
 
+end
