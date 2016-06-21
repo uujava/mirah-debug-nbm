@@ -1,7 +1,5 @@
 package ru.programpark.mirah.index;
 
-import ca.weblite.netbeans.mirah.LOG;
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -18,7 +16,6 @@ import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.openide.filesystems.FileObject;
-import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
 import ru.programpark.mirah.index.elements.IndexedClass;
 import ru.programpark.mirah.index.elements.IndexedElement;

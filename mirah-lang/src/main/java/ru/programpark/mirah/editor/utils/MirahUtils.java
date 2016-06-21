@@ -1,20 +1,19 @@
 package ru.programpark.mirah.editor.utils;
 
-import ca.weblite.netbeans.mirah.LOG;
-import ca.weblite.netbeans.mirah.lexer.MirahParser;
-import ca.weblite.netbeans.mirah.lexer.MirahTokenId;
+import ru.programpark.mirah.LOG;
+import ru.programpark.mirah.lexer.MirahTokenId;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+
+import ru.programpark.mirah.lexer.MirahParserResult;
 import mirah.impl.Tokens;
 import mirah.lang.ast.FieldDeclaration;
 import mirah.lang.ast.Node;
 import mirah.lang.ast.NodeFilter;
 import mirah.lang.ast.NodeScanner;
-import mirah.lang.ast.Position;
-import org.mirah.typer.ResolvedType;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
@@ -202,9 +201,9 @@ public final class MirahUtils {
         ble.initCause(ex);
         return ble;
     }
-    public static FieldDeclaration[] findFields(final MirahParser.DocumentDebugger dbg, final int rightEdge, final boolean isClassVar) {
+    public static FieldDeclaration[] findFields(final MirahParserResult dbg, final int rightEdge, final boolean isClassVar) {
         final ArrayList<FieldDeclaration> foundNodes = new ArrayList<FieldDeclaration>();
-        for (Object node : dbg.compiler.compiler().getParsedNodes()) {
+        for (Object node : dbg.getParsedNodes()) {
             if (node instanceof Node) {
                 ((Node) node).accept(new NodeScanner() {
                     @Override
@@ -219,49 +218,12 @@ public final class MirahUtils {
 
                 }, null);
             }
-        };
+        }
         LOG.info(MirahUtils.class, "findFields = [[]");
 
         return foundNodes.toArray(new FieldDeclaration[0]);
     }
 
-    public static Node findNode(final MirahParser.DocumentDebugger dbg, final int rightEdge) {
-        final Node[] foundNode = new Node[1];
-
-        for (Object node : dbg.compiler.compiler().getParsedNodes()) {
-
-            if (node instanceof Node) {
-                ((Node) node).accept(new NodeScanner() {
-
-                    @Override
-                    public boolean enterDefault(Node node, Object arg) {
-                        if (node != null) {
-                            Position nodePos = node.position();
-                            ResolvedType type = dbg.getType(node);
-
-//                            if ( nodePos != null )
-//                            LOG.info(MirahUtils.class,"enterDefault node = " + node + " ["+nodePos.startLine() +"," + nodePos.startChar()+"," + nodePos.startColumn()+"-"+nodePos.endLine()+","+nodePos.endChar()+"," + nodePos.endColumn()+"] type ="+type+" rightEdge="+rightEdge);
-//                            else
-//                            LOG.info(MirahUtils.class,"enterDefault node = " + node + " pos="+nodePos +" type ="+type+" rightEdge="+rightEdge);
-                            if (type != null && nodePos != null && nodePos.endChar() == rightEdge) {
-                                foundNode[0] = node;
-                            } else if (nodePos != null && nodePos.endChar() == rightEdge) {
-
-                            } else {
-
-                            }
-                        }
-                        return super.enterDefault(node, arg); //To change body of generated methods, choose Tools | Templates.
-                    }
-                }, null);
-                //walkTree((Node)node);
-
-            }
-        };
-//        LOG.info(MirahUtils.class,"findNode node[0] = " + foundNode[0]);
-
-        return foundNode[0];
-    }
     static public Class findClass(FileObject o, String name) {
         LOG.info(MirahUtils.class, "findClass o=" + o + " name=" + name);
         return findClass(o, name, true);

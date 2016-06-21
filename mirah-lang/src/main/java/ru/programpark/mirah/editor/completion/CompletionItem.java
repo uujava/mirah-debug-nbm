@@ -18,10 +18,6 @@ import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.spi.DefaultCompletionProposal;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.openide.util.ImageUtilities;
-import ru.programpark.mirah.editor.ast.Variable;
-import ru.programpark.mirah.editor.completion.ElementHandleSupport;
-import ru.programpark.mirah.editor.completion.KeywordElement;
-import ru.programpark.mirah.editor.completion.MirahElement;
 import ru.programpark.mirah.editor.utils.MirahUtils;
 import ru.programpark.mirah.editor.utils.Utilities;
 import ru.programpark.mirah.index.elements.MethodElement.MethodParameter;
@@ -289,7 +285,7 @@ public abstract class CompletionItem extends DefaultCompletionProposal {
         @Override
         public ImageIcon getIcon() {
             if (mirahIcon == null) {
-                mirahIcon = ImageUtilities.loadImageIcon("ca/weblite/netbeans/mirah/1391571312_application-x-ruby.png", false);
+                mirahIcon = ImageUtilities.loadImageIcon("ru/programpark/mirah/1391571312_application-x-ruby.png", false);
             }
 
             return mirahIcon;
@@ -382,7 +378,7 @@ public abstract class CompletionItem extends DefaultCompletionProposal {
         @Override
         public ImageIcon getIcon() {
             if (mirahIcon == null) {
-                    mirahIcon = ImageUtilities.loadImageIcon("ca/weblite/netbeans/mirah/1391571312_application-x-ruby.png", false);
+                    mirahIcon = ImageUtilities.loadImageIcon("ru/programpark/mirah/1391571312_application-x-ruby.png", false);
             }
 
             return mirahIcon;
@@ -498,7 +494,7 @@ public abstract class CompletionItem extends DefaultCompletionProposal {
             }
 
             if (mirahIcon == null) {
-                    mirahIcon = ImageUtilities.loadImageIcon("ca/weblite/netbeans/mirah/1391571312_application-x-ruby.png", false);
+                    mirahIcon = ImageUtilities.loadImageIcon("ru/programpark/mirah/1391571312_application-x-ruby.png", false);
             }
 
             return mirahIcon;
@@ -572,7 +568,7 @@ public abstract class CompletionItem extends DefaultCompletionProposal {
 
             if (isMirah) {
                 if (mirahIcon == null) {
-                    mirahIcon = ImageUtilities.loadImageIcon("ca/weblite/netbeans/mirah/1391571312_application-x-ruby.png", false);
+                    mirahIcon = ImageUtilities.loadImageIcon("ru/programpark/mirah/1391571312_application-x-ruby.png", false);
                 }
                 return mirahIcon;
             } else {

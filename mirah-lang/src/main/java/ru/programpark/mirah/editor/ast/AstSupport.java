@@ -5,8 +5,9 @@
  */
 package ru.programpark.mirah.editor.ast;
 
-import ca.weblite.netbeans.mirah.lexer.MirahParser;
 import java.util.LinkedList;
+
+import ru.programpark.mirah.lexer.MirahParserResult;
 import mirah.lang.ast.Import;
 import mirah.lang.ast.Node;
 import mirah.lang.ast.NodeScanner;
@@ -19,7 +20,7 @@ import mirah.lang.ast.Position;
 public class AstSupport {
 
 //    public static Node findByOffset( Node node, final int offset )
-    public static Node findByOffset( MirahParser.NBMirahParserResult parserResult, final int offset )
+    public static Node findByOffset( MirahParserResult parserResult, final int offset )
     {       
         final Node[] res = new Node[1];
         res[0] = null;

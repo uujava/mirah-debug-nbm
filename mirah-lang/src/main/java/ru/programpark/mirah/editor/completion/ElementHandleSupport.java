@@ -1,6 +1,6 @@
 package ru.programpark.mirah.editor.completion;
 
-import ca.weblite.netbeans.mirah.lexer.MirahTokenId;
+import ru.programpark.mirah.lexer.MirahTokenId;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -12,7 +12,6 @@ import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.openide.filesystems.FileObject;
 import ru.programpark.mirah.editor.ast.ASTUtils;
-import ru.programpark.mirah.index.elements.IndexedElement;
 
 /**
  *

@@ -1,14 +1,13 @@
 package ru.programpark.mirah.editor;
 
-import ca.weblite.netbeans.mirah.LOG;
-import ca.weblite.netbeans.mirah.lexer.MirahLexerUtils;
-import ca.weblite.netbeans.mirah.lexer.MirahTokenId;
+import ru.programpark.mirah.LOG;
+import ru.programpark.mirah.lexer.MirahLexerUtils;
+import ru.programpark.mirah.lexer.MirahTokenId;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import mirah.impl.Tokens;
+
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.spi.editor.bracesmatching.BracesMatcher;
 import org.netbeans.spi.editor.bracesmatching.MatcherContext;

@@ -3,11 +3,7 @@ package ru.programpark.mirah.editor.completion.handler;
 import ru.programpark.mirah.editor.completion.context.CompletionContext;
 import ru.programpark.mirah.editor.completion.context.CaretLocation;
 import ru.programpark.mirah.editor.completion.context.ContextHelper;
-import ca.weblite.netbeans.mirah.LOG;
-import ca.weblite.netbeans.mirah.lexer.DocumentQuery;
-import ca.weblite.netbeans.mirah.lexer.MirahParser;
-import ca.weblite.netbeans.mirah.lexer.MirahParser.DocumentDebugger;
-import ca.weblite.netbeans.mirah.lexer.MirahTokenId;
+
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -18,8 +14,7 @@ import javax.lang.model.element.*;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
+
 import mirah.impl.Tokens;
 import mirah.lang.ast.Block;
 import mirah.lang.ast.BlockArgument;
@@ -41,7 +36,6 @@ import mirah.lang.ast.MacroDefinition;
 import mirah.lang.ast.MethodDefinition;
 import mirah.lang.ast.Node;
 import mirah.lang.ast.NodeScanner;
-import mirah.lang.ast.NodeVisitor;
 import mirah.lang.ast.OptionalArgument;
 import mirah.lang.ast.Package;
 import mirah.lang.ast.Position;
@@ -50,8 +44,6 @@ import mirah.lang.ast.Script;
 import mirah.lang.ast.TypeName;
 import org.mirah.typer.ResolvedType;
 import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.api.editor.completion.Completion;
-import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
@@ -61,27 +53,21 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.CompletionProposal;
-import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.editor.NbEditorUtilities;
-import org.netbeans.modules.parsing.api.Snapshot;
-import org.netbeans.modules.parsing.api.Source;
-import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
-import org.netbeans.spi.editor.completion.CompletionResultSet;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
 import ru.programpark.mirah.editor.completion.CompletionItem.ConstructorItem;
 import ru.programpark.mirah.editor.ast.AstPath;
 import ru.programpark.mirah.editor.completion.CompletionItem;
 import ru.programpark.mirah.editor.completion.MethodSignature;
 import ru.programpark.mirah.editor.completion.provider.CompleteElementHandler;
 import ru.programpark.mirah.editor.utils.ImportUtils;
-import ru.programpark.mirah.editor.utils.LexUtilities;
 import ru.programpark.mirah.editor.utils.MirahUtils;
 import ru.programpark.mirah.index.MirahIndex;
 import ru.programpark.mirah.index.elements.IndexedClass;
 import ru.programpark.mirah.index.elements.IndexedMethod;
 import ru.programpark.mirah.index.elements.MethodElement.MethodParameter;
+import ru.programpark.mirah.lexer.*;
 
 public class MethodCompletion extends BaseCompletion {
 
@@ -490,32 +476,7 @@ public class MethodCompletion extends BaseCompletion {
         return sb.toString();
     }
 
-    /**
-     * Convert given parameter array into the list of <code>ParameterDescription</code>'s
-     *
-     * @param parameters array of parameters
-     * @return list of <code>ParameterDescription</code>'s
-     */
-    /*
-    private List<MethodParameter> getParameterListForMethod(Parameter[] parameters) {
-        if (parameters.length == 0) {
-            return Collections.EMPTY_LIST;
-        }
 
-        List<MethodParameter> paramDescriptors = new ArrayList<>();
-        
-        for (Parameter param : parameters) {
-            String fullTypeName = param.getType().getName();
-            String typeName = param.getType().getNameWithoutPackage();
-            String name = param.getName();
-
-            paramDescriptors.add(new MethodParameter(fullTypeName, typeName, name));
-        }
-        return paramDescriptors;
-    }
-    */
-// --------------------------------------------------------------------------------------
-    
     public void printMethodParameters( MethodDefinition method )
     {
         for( int i = 0 ; i < method.arguments().required().size() ; i++ )
@@ -561,76 +522,6 @@ public class MethodCompletion extends BaseCompletion {
             if ( n instanceof FieldDeclaration );
             if ( n instanceof Block );
             if ( n instanceof MacroDefinition );
-//            if (scope instanceof ClosureExpression) {
-//                VariableScope variableScope = ((ClosureExpression) scope).getVariableScope();
-//                if (variableScope.getDeclaredVariable(variable.getName()) != null) {
-//                    return scope;
-//                } else {
-//                    // variables defined inside closure are not catched in VariableScope
-//                    // let's get the closure's code block and try there
-//                    Statement statement = ((ClosureExpression) scope).getCode();
-//                    if (statement instanceof BlockStatement) {
-//                        variableScope = ((BlockStatement) statement).getVariableScope();
-//                        if (variableScope.getDeclaredVariable(variable.getName()) != null) {
-//                            return scope;
-//                        }
-//                    }
-//                }
-//            } else 
-            /*
-            if (scope instanceof MethodDefinition || scope instanceof ConstructorNode) {
-                VariableScope variableScope = ((MethodDefinition) scope).getVariableScope();
-                if (variableScope.getDeclaredVariable(variable.getName()) != null) {
-                    return scope;
-                } else {
-                    // variables defined inside method are not catched in VariableScope
-                    // let's get the method's code block and try there
-                    Statement statement = ((MethodDefinition) scope).getCode();
-                    if (statement instanceof BlockStatement) {
-                        variableScope = ((BlockStatement) statement).getVariableScope();
-                        if (variableScope.getDeclaredVariable(variable.getName()) != null) {
-                            return scope;
-                        }
-                    }
-                }
-//            } else if (scope instanceof ForStatement) {
-//                VariableScope variableScope = ((ForStatement) scope).getVariableScope();
-//                if (variableScope.getDeclaredVariable(variable.getName()) != null) {
-//                    return scope;
-//                }
-//            } else if (scope instanceof BlockStatement) {
-//                VariableScope variableScope = ((BlockStatement) scope).getVariableScope();
-//                if (variableScope.getDeclaredVariable(variable.getName()) != null) {
-//                    return scope;
-//                }
-            } else 
-//            if (scope instanceof ClosureListExpression) {
-//                VariableScope variableScope = ((ClosureListExpression) scope).getVariableScope();
-//                if (variableScope.getDeclaredVariable(variable.getName()) != null) {
-//                    return scope;
-//                }
-//            } else 
-            if (scope instanceof ClassDefinition) {
-                ClassDefinition classNode = (ClassDefinition) scope;
-                if (classNode.getField(variable.getName()) != null) {
-                    return scope;
-                }
-            } else if (scope instanceof Script) {
-                Script script = (Script) scope;
-                BlockStatement blockStatement = script.getStatementBlock();
-                VariableScope variableScope = blockStatement.getVariableScope();
-                if (variableScope.getDeclaredVariable(variable.getName()) != null) {
-                    return blockStatement;
-                }
-                // probably in script where variable is defined withoud 'def' keyword:
-                // myVar = 1
-                // echo myVar
-                Variable classVariable = variableScope.getReferencedClassVariable(variable.getName());
-                if (classVariable != null) {
-                    return script;
-                }
-            }
-            */
         }
         return null;
     }
@@ -639,9 +530,9 @@ public class MethodCompletion extends BaseCompletion {
     {
         if ( context.getParserResult() == null ) return;
         
-        if ( !(context.getParserResult() instanceof MirahParser.NBMirahParserResult)) return;
+        if ( !(context.getParserResult() instanceof MirahParserResult)) return;
                 
-        MirahParser.NBMirahParserResult parserResult = (MirahParser.NBMirahParserResult)context.getParserResult();
+        MirahParserResult parserResult = (MirahParserResult)context.getParserResult();
 
         if ( parserResult.getResolvedTypes() != null )
         {
@@ -662,14 +553,6 @@ public class MethodCompletion extends BaseCompletion {
         }
         
         int lexOffset = context.lexOffset;  
-        //int anchor = context.getAnchor(); 
-//.getCaretOffset();
-//        int astOffset = ASTUtils.getAstOffset(parserResult, lexOffset);
-//        int anchor = lexOffset - prefix.length();
-
-//        LOG.log(Level.FINEST, "complete(...), prefix      : {0}", prefix); // NOI18N
-//        LOG.log(Level.FINEST, "complete(...), lexOffset   : {0}", lexOffset); // NOI18N
-//        LOG.log(Level.FINEST, "complete(...), astOffset   : {0}", astOffset); // NOI18N
 
         final BaseDocument doc = (BaseDocument)parserResult.getSnapshot().getSource().getDocument(false);
         if (doc == null) {
@@ -679,7 +562,7 @@ public class MethodCompletion extends BaseCompletion {
 
         TokenHierarchy<?> hi = TokenHierarchy.get(doc);
         TokenSequence<MirahTokenId> ts = hi.tokenSequence(MirahTokenId.getLanguage());
-//        TokenSequence<MirahTokenId> ts = LexUtilities.getMirahTokenSequence(doc,0); // lexOffset);
+
         ts.moveStart();
         ts.move(0);
         Token<MirahTokenId> t = ts.token();
@@ -777,66 +660,6 @@ public class MethodCompletion extends BaseCompletion {
         Node foundNode =findNode(parserResult,subjectToken.offset(hi)+subjectToken.length());
         ResolvedType type = parserResult.getResolvedType(foundNode);
 
-//        doc.readUnlock();
-
-        
-/*        
-//        int bol = MirahUtils.getBeginningOfLine(doc, lexOffset);
-//        int eol = MirahUtils.getEndOfLine(doc, lexOffset);
-        int dotPos = dotToken.offset(hi);
-
-        DocumentDebugger dbg = MirahParser.getDocumentDebugger(doc);
-
-
-        Node foundNode = MirahUtils.findNode(dbg, subjectToken.offset(hi)+subjectToken.length());
-
-        ResolvedType type = null;
-        if ( foundNode != null ){
-            type = dbg.getType(foundNode);
-
-            if ( type == null ){
-                DocumentQuery dq = new DocumentQuery(doc);
-                TokenSequence<MirahTokenId> seq = dq.getTokens(foundNode.position().endChar(), true);
-                String typeName = dq.guessType(seq, file);
-                //System.out.println("Type name guessed to be "+typeName);
-            }
-        }
-
-        if ( foundNode == null || type == null ){
-            Source src = Source.create(doc);
-            MirahParser parser = new MirahParser();
-            try {
-                Snapshot snapshot = src.createSnapshot();
-                String text = snapshot.getText().toString();
-                StringBuilder sb = new StringBuilder();
-                sb.append(text.substring(0, dotPos));
-//                for ( int i=dotPos; i<eol; i++){
-//                    sb.append(' ');
-//                }
-//                sb.append(text.substring(eol));
-//                LOG.info(this,"query reparse=" + sb.toString());
-
-                parser.reparse(snapshot, sb.toString());
-
-            } catch (ParseException ex){
-                Exceptions.printStackTrace(ex);
-            }
-
-            //printNodes(dbg.compiler.compiler(), rightEdgeFinal);
-            foundNode = MirahUtils.findNode(dbg, subjectToken.offset(hi)+subjectToken.length());
-            if ( foundNode != null ){
-                type = dbg.getType(foundNode);
-            }
-        }
-//        LOG.info(this,"query foundNode3=" + foundNode);
-
-        Class currentType = null;
-        if ( foundNode != null ){
-
-            type = dbg.getType(foundNode);
-//            LOG.info(this,"query type=" + type);
-
-*/        
             if ( type != null ){
                 FileObject fileObject = NbEditorUtilities.getFileObject(doc);
                 Class cls = MirahUtils.findClass(fileObject, type.name());
@@ -851,19 +674,12 @@ public class MethodCompletion extends BaseCompletion {
 //                            crs.addItem(new MirahConstructorCompletionItem(c, caretOffset-filter.length(), filter.length()));
                         }
                     }
-                    for ( Method m : cls.getMethods()){
-//                        LOG.info(this,"query Method=" + m);
-                        int y = 0;
-//                        if ( m.getName().startsWith(filter) && isStatic == Modifier.isStatic(m.getModifiers())){
-//                            crs.addItem(new MirahMethodCompletionItem(fileObject, m, caretOffset-filter.length(), filter.length(), cls));
-//                        }
-                    }
                 }
             }
 //        } 
     }    
 
-    public static Node findNode(final MirahParser.NBMirahParserResult parserResult, final int rightEdge){
+    public static Node findNode(final MirahParserResult parserResult, final int rightEdge){
 
 	if ( parserResult.getParsedNodes() == null ) return null;
 
@@ -941,14 +757,11 @@ public class MethodCompletion extends BaseCompletion {
         FileObject fileObject = context.getSourceFile();
         if ( caretOffset < initialOffset ) return;
 
-        MirahParser.NBMirahParserResult parserResult = (MirahParser.NBMirahParserResult)context.getParserResult();
+        MirahParserResult parserResult = (MirahParserResult)context.getParserResult();
 
         try
         {
             doc.readLock();
-
-            MirahParser.DocumentDebugger dbg = MirahParser.getDocumentDebugger(doc);
-            if ( dbg == null ) return;
 
             int p = caretOffset-1;
             if ( p < 0 ) return;
@@ -1033,45 +846,13 @@ public class MethodCompletion extends BaseCompletion {
                     //System.out.println("Type name guessed to be "+typeName);
                 }
             }
-/*                
-                if ( foundNode == null || type == null ){
-                    
-                    int bol = MirahUtils.getBeginningOfLine(doc, caretOffset);
-                    int eol = MirahUtils.getEndOfLine(doc, caretOffset);
-                
-                    Source src = Source.create(doc);
-                    MirahParser parser = new MirahParser();
-                    try {
-                        Snapshot snapshot = src.createSnapshot();
-                        text = snapshot.getText().toString();
-                        StringBuilder sb = new StringBuilder();
-                        sb.append(text.substring(0, dotPos));
-                        for ( int i=dotPos; i<eol; i++){
-                            sb.append(' ');
-                        }
-                        sb.append(text.substring(eol));
-//                        LOG.info(this,"query reparse=" + sb.toString());
-                        parser.reparse(snapshot, sb.toString());
-
-                    } catch (ParseException ex){
-                        Exceptions.printStackTrace(ex);
-                    }
-                    dbg = MirahParser.getDocumentDebugger(doc);
-                    //printNodes(dbg.compiler.compiler(), rightEdgeFinal);
-//                    foundNode = MirahUtils.findNode(dbg, subjectToken.offset(hi)+subjectToken.length());
-                    foundNode = findNode(parserResult, subjectToken.offset(hi)+subjectToken.length());
-                    if ( foundNode != null ){
-                        type = dbg.getType(foundNode);
-                    }
-                }
-*/        
             if ( foundNode != null ){
 
 //                    type = dbg.getType(foundNode);
 //                    type = parserResult.getResolvedType(foundNode);
                 if ( type != null ){
 //                        FileObject fileObject = NbEditorUtilities.getFileObject(doc);
-                    Class cls = MirahUtils.findClass(fileObject, dbg.getType(foundNode).name());
+                    Class cls = MirahUtils.findClass(fileObject, parserResult.getResolvedType(foundNode).name());
                     addClassProposals(cls,filter,initialOffset,foundNode instanceof Constant);
                 }
             } 

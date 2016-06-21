@@ -10,30 +10,6 @@
     <artifactId>mirah-debugger-projects</artifactId>    
     <name>mirah-debugger-projects</name>
     <packaging>nbm</packaging>
-    <repositories>
-        <repository>
-            <id>central</id>
-            <url>http://192.168.3.209/artifactory/repo</url>
-        </repository>       
-    </repositories>
-    <pluginRepositories>
-        <pluginRepository>
-            <id>local-artifactory</id>
-            <name>local artifactory</name>
-            <releases>
-                <enabled>true</enabled>
-                <updatePolicy>always</updatePolicy>
-                <checksumPolicy>fail</checksumPolicy>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-                <updatePolicy>always</updatePolicy>
-                <checksumPolicy>fail</checksumPolicy>
-            </snapshots>
-            <url>http://192.168.3.209/artifactory/repo</url>
-            <layout>default</layout>
-        </pluginRepository>
-    </pluginRepositories> 
     <dependencies>
         <dependency>
             <groupId>org.netbeans.api</groupId>

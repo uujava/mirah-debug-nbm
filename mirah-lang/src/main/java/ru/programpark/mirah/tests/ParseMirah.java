@@ -5,18 +5,18 @@
  */
 package ru.programpark.mirah.tests;
 
-import ca.weblite.netbeans.mirah.lexer.MirahParser;
-import ca.weblite.netbeans.mirah.lexer.MirahTokenId;
+import ru.programpark.mirah.lexer.MirahTokenId;
 import java.io.IOException;
 import java.util.Collections;
-import javax.lang.model.type.ErrorType;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+
+import ru.programpark.mirah.lexer.MirahParserResult;
+import ru.programpark.mirah.lexer.ParserError;
 import mirah.lang.ast.ClosureDefinition;
 import mirah.lang.ast.MethodDefinition;
 import mirah.lang.ast.Node;
 import mirah.lang.ast.NodeScanner;
-import org.mirah.jvm.mirrors.DebugError;
 import org.mirah.typer.ResolvedType;
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -29,7 +29,6 @@ import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
-import org.openide.util.Exceptions;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 import ru.programpark.mirah.editor.utils.LexUtilities;
@@ -52,7 +51,7 @@ public class ParseMirah {
         return levels;
     }
     
-    private static void dumpNodes( final MirahParser.NBMirahParserResult pres, final InputOutput io )
+    private static void dumpNodes( final MirahParserResult pres, final InputOutput io )
     {
         Node root = pres.getRoot();
         if ( root == null ) return;
@@ -126,9 +125,9 @@ public class ParseMirah {
         
         return od != null ? od.getPrimaryFile() : null;
     }
-    public static void dumpErrors( MirahParser.NBMirahParserResult pres, final InputOutput io )
+    public static void dumpErrors( MirahParserResult pres, final InputOutput io )
     {
-        if ( pres.getErrors() == null ) return;
+        if ( pres.getDiagnostics().isEmpty() ) return;
         io.getOut().println();
         io.getOut().println();
         io.getOut().println("------------- DUMP ERRORS ---------------------");
@@ -142,14 +141,14 @@ public class ParseMirah {
 //        io.getErr().println("getMirahDiagnostics.getErrors: " + pres.getMirahDiagnostics().getErrors());
 
         
-        for( MirahParser.MirahParseDiagnostics.SyntaxError err : pres.getMirahDiagnostics().getErrors())
+        for( ParserError err : pres.getDiagnostics())
         {
 //            io.getErr().println("SYNTAX: " + err.message);
 //            io.getErr().println("SYNTAX: " + err.kind+" "+err.getClass());
 //            io.getErr().println("SYNTAX: " + err.position);
             try {
-                io.getOut().println(""+err.kind + ": "+err.message, new IndexHyperlink(pres.getSnapshot().getSource().getFileObject(),(int)err.start));
-                io.getOut().println(""+err.kind + ": "+err.message+" class="+err.getClass()+" hash="+err.hashCode());
+                io.getOut().println(""+err.getSeverity() + ": "+err.getDescription(), new IndexHyperlink(pres.getSnapshot().getSource().getFileObject(),(int)err.getStartPosition()));
+                io.getOut().println(""+err.getSeverity() + ": "+err.getDescription()+" class="+err.getClass()+" hash="+err.hashCode());
 //                io.getOut().println(""+err.kind + ": "+err.message, new IndexHyperlink(pres.getSnapshot().getSource().getFileObject(), Integer.valueOf(err.position).intValue()));
             } catch (IOException ex) {}
         }
@@ -188,7 +187,7 @@ public class ParseMirah {
         */
     }
     
-    public static void dumpResolvedTypes( MirahParser.NBMirahParserResult pres, final InputOutput io )
+    public static void dumpResolvedTypes( MirahParserResult pres, final InputOutput io )
     {
         if ( pres.getResolvedTypes() != null )
         {
@@ -255,10 +254,10 @@ public class ParseMirah {
                 @Override
                 public void run(ResultIterator resultIterator) throws Exception {
                     Result res = resultIterator.getParserResult(0); // (offset);
-                    if ( res instanceof MirahParser.NBMirahParserResult )
+                    if ( res instanceof MirahParserResult)
                     {
                         io.getOut().println("==== PARSING TIME: " + (System.currentTimeMillis() - curr) + " msec");
-                        MirahParser.NBMirahParserResult pres = (MirahParser.NBMirahParserResult)res;
+                        MirahParserResult pres = (MirahParserResult)res;
 //                       Node node = pres.getRoot();
                         dumpNodes(pres,io);
                         dumpResolvedTypes(pres,io);

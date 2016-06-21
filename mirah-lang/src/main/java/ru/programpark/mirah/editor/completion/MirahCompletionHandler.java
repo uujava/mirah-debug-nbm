@@ -3,7 +3,7 @@ package ru.programpark.mirah.editor.completion;
 import ru.programpark.mirah.editor.completion.context.CompletionContext;
 import ru.programpark.mirah.editor.completion.context.CaretLocation;
 import ru.programpark.mirah.editor.completion.context.ContextHelper;
-import ca.weblite.netbeans.mirah.lexer.MirahTokenId;
+import ru.programpark.mirah.lexer.MirahTokenId;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -26,12 +26,10 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.csl.api.*;
-import org.netbeans.modules.csl.api.CodeCompletionHandler.QueryType;
 import org.netbeans.modules.csl.spi.DefaultCompletionResult;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
-import org.openide.util.WeakListeners;
 import ru.programpark.mirah.editor.ast.ASTUtils;
 import ru.programpark.mirah.editor.ast.AstPath;
 import ru.programpark.mirah.editor.completion.handler.ProposalsCollector;
@@ -282,7 +280,7 @@ public class MirahCompletionHandler implements CodeCompletionHandler {
         }
 
         // FIXME parsing API
-        BaseDocument doc = (BaseDocument) info.getSnapshot().getSource().getDocument(true);
+        BaseDocument doc = (BaseDocument) info.getSnapshot().getSource().getDocument(false);
 
         return new AstPath(root, caretOffset, doc);
 
@@ -584,7 +582,7 @@ public class MirahCompletionHandler implements CodeCompletionHandler {
         AstPath path = getPathFromInfo(caretOffset, info);
 
         // FIXME parsing API
-        BaseDocument doc = (BaseDocument) info.getSnapshot().getSource().getDocument(true);
+        BaseDocument doc = (BaseDocument) info.getSnapshot().getSource().getDocument(false);
 
         if (path != null) {
 

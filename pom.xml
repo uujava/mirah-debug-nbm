@@ -15,16 +15,9 @@
   <properties>
     <deploy.version>snapshots</deploy.version>
     <brandingToken>mirah</brandingToken>
-    <!-- netbeans.version>RELEASE721</netbeans.version -->
     <netbeans.version>RELEASE802</netbeans.version>
     <bundle.namespace>${project.groupId}.${project.artifactId}</bundle.namespace>	
   </properties>
-    <repositories>
-            <repository>
-                    <id>central</id>
-                    <url>http://192.168.3.209/artifactory/repo</url>
-            </repository>
-    </repositories>
   <build>
     <pluginManagement>
       <plugins>
@@ -36,13 +29,6 @@
           <configuration>
             <brandingToken>${brandingToken}</brandingToken>
             <cluster>${brandingToken}</cluster>
-            <forcedVersion>${netbeans.version}</forcedVersion>
-            <netbeansInstallDirectory>${nb.installation}</netbeansInstallDirectory>
-            <!--<netbeansInstallation>${nb.installation}</netbeansInstallation>-->
-            <additionalArguments>${nbm.run.arguments}</additionalArguments>
-            <keystore>${nbm.sign.keystore}</keystore>
-            <keystorealias>${nbm.sign.keystorealias}</keystorealias>
-            <keystorepassword>${nbm.sign.keystorepassword}</keystorepassword>
           </configuration>
         </plugin>
         <plugin>
@@ -134,13 +120,15 @@
         <activeByDefault>true</activeByDefault>
       </activation>
       <properties>
-        <nbm.run.arguments></nbm.run.arguments>
+        <netbeans.run.params></netbeans.run.params>
+        <netbeans.installation>${env.NETBEANS_HOME}</netbeans.installation>
       </properties>
     </profile>
     <profile>
       <id>debug-ide</id>
       <properties>
-        <nbm.run.arguments>-J-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8888</nbm.run.arguments>		
+        <netbeans.run.params>-J-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5010</netbeans.run.params>
+        <netbeans.installation>${env.NETBEANS_HOME}</netbeans.installation>
       </properties>
     </profile>	
   </profiles>

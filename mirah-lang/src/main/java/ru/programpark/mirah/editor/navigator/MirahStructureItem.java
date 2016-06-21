@@ -1,6 +1,6 @@
 package ru.programpark.mirah.editor.navigator;
 
-import ca.weblite.netbeans.mirah.lexer.Block;
+import ru.programpark.mirah.lexer.Block;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.Iterator;
@@ -33,7 +33,6 @@ import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.StructureItem;
 import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 import org.openide.filesystems.FileObject;
 

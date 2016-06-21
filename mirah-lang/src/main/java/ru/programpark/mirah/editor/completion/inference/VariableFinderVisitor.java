@@ -1,6 +1,6 @@
 package ru.programpark.mirah.editor.completion.inference;
 
-import ca.weblite.netbeans.mirah.lexer.MirahTokenId;
+import ru.programpark.mirah.lexer.MirahTokenId;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;

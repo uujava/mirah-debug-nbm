@@ -1,7 +1,7 @@
 package ru.programpark.mirah.editor.completion.handler;
 
 import ru.programpark.mirah.editor.completion.context.CompletionContext;
-import ca.weblite.netbeans.mirah.lexer.MirahTokenId;
+import ru.programpark.mirah.lexer.MirahTokenId;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Locale;

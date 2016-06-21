@@ -1,57 +1,13 @@
 package ru.programpark.mirah.editor.jumpto;
 
-import ca.weblite.asm.LOG;
-import java.io.IOException;
-import java.lang.annotation.Annotation;
-import java.net.URL;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.ElementVisitor;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Modifier;
-import javax.lang.model.element.Name;
-import javax.lang.model.element.QualifiedNameable;
-import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.ArrayType;
-import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.ErrorType;
-import javax.lang.model.type.TypeKind;        
-import javax.lang.model.type.TypeMirror;
-import javax.lang.model.type.TypeVariable;
-import javax.lang.model.type.WildcardType;
-import javax.lang.model.util.SimpleTypeVisitor6;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ClassIndex;
-import org.netbeans.api.java.source.ClasspathInfo;
-import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
-import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.SourceUtils;
-import org.netbeans.api.java.source.Task;
-import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.java.source.indexing.TransactionContext;
-import org.netbeans.modules.java.source.parsing.FileManagerTransaction;
-import org.netbeans.modules.java.source.parsing.ProcessorGenerated;
-import org.netbeans.modules.java.source.ui.JavaSymbolDescriptor;
-import org.netbeans.modules.java.source.usages.ClassIndexImpl;
 import org.netbeans.modules.java.source.usages.ClassIndexManager;
-import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
-import org.netbeans.modules.java.source.usages.DocumentUtil;
 import org.netbeans.modules.parsing.lucene.support.IndexManager;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.spi.jumpto.support.NameMatcher;
@@ -59,25 +15,28 @@ import org.netbeans.spi.jumpto.support.NameMatcherFactory;
 import org.netbeans.spi.jumpto.symbol.SymbolProvider;
 import org.netbeans.spi.jumpto.type.SearchType;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
-import org.openide.util.NbBundle;
 import org.openide.util.Pair;
 import org.openide.util.lookup.ServiceProvider;
-import ru.programpark.mirah.editor.completion.ElementHandleSupport;
 import ru.programpark.mirah.index.MirahIndex;
 import ru.programpark.mirah.index.elements.IndexedClass;
 import ru.programpark.mirah.index.elements.IndexedMethod;
 
+import javax.lang.model.element.*;
+import javax.lang.model.type.*;
+import javax.lang.model.util.SimpleTypeVisitor6;
+import java.io.IOException;
+import java.util.*;
+import java.util.logging.Logger;
+
 /**
- *
  * @author Tomas Zezula
  */
-@ServiceProvider(service=SymbolProvider.class)
+@ServiceProvider(service = SymbolProvider.class)
 public class MirahSymbolProvider implements SymbolProvider {
 
     private static final Logger LOGGER = Logger.getLogger(MirahSymbolProvider.class.getName());
-    
+
     private static final String CAPTURED_WILDCARD = "<captured wildcard>"; //NOI18N
     private static final String UNKNOWN = "<unknown>"; //NOI18N
     private static final String INIT = "<init>"; //NOI18N
@@ -91,20 +50,20 @@ public class MirahSymbolProvider implements SymbolProvider {
     public String getDisplayName() {
         return "MirahSymbols"; //NbBundle.getMessage(MirahTypeProvider.class, "MSG_JavaSymbols");
     }
-        
+
     //todo - убрать ссылки на замыкания
     public void computeSymbolNames(final Context context, final Result result) {
-        
+
         try {
             final SearchType st = context.getSearchType();
             String textToSearch = context.getText();
             String prefix = null;
             final int dotIndex = textToSearch.lastIndexOf('.'); //NOI18N
-            if (dotIndex > 0 && dotIndex != textToSearch.length()-1) {
+            if (dotIndex > 0 && dotIndex != textToSearch.length() - 1) {
                 prefix = textToSearch.substring(0, dotIndex);
-                textToSearch = textToSearch.substring(dotIndex+1);
+                textToSearch = textToSearch.substring(dotIndex + 1);
             }
-            String[] _ident = new String[] {textToSearch};
+            String[] _ident = new String[]{textToSearch};
             ClassIndex.NameKind _kind;
             boolean _caseSensitive;
             switch (st) {
@@ -115,7 +74,7 @@ public class MirahSymbolProvider implements SymbolProvider {
                 case REGEXP:
                     _kind = ClassIndex.NameKind.REGEXP;
                     _ident[0] = removeNonJavaChars(_ident[0]);
-                    _ident[0] = NameMatcherFactory.wildcardsToRegexp(_ident[0],true);
+                    _ident[0] = NameMatcherFactory.wildcardsToRegexp(_ident[0], true);
                     _caseSensitive = true;
                     break;
                 case CAMEL_CASE:
@@ -137,8 +96,8 @@ public class MirahSymbolProvider implements SymbolProvider {
                     break;
                 case CASE_INSENSITIVE_REGEXP:
                     _kind = ClassIndex.NameKind.CASE_INSENSITIVE_REGEXP;
-                    _ident[0] = removeNonJavaChars(_ident[0]);            
-                    _ident[0] = NameMatcherFactory.wildcardsToRegexp(_ident[0],true);
+                    _ident[0] = removeNonJavaChars(_ident[0]);
+                    _ident[0] = NameMatcherFactory.wildcardsToRegexp(_ident[0], true);
                     _caseSensitive = false;
                     break;
                 default:
@@ -147,9 +106,9 @@ public class MirahSymbolProvider implements SymbolProvider {
             final String[] ident = _ident;
             final ClassIndex.NameKind kind = _kind;
             final boolean caseSensitive = _caseSensitive;
-            final Pair<NameMatcher,Boolean> restriction;
+            final Pair<NameMatcher, Boolean> restriction;
             if (prefix != null) {
-                restriction = compileName(prefix,caseSensitive);
+                restriction = compileName(prefix, caseSensitive);
                 result.setHighlightText(textToSearch);
             } else {
                 restriction = null;
@@ -158,7 +117,7 @@ public class MirahSymbolProvider implements SymbolProvider {
                 final ClassIndexManager manager = ClassIndexManager.getDefault();
 
                 Collection<FileObject> roots = QuerySupport.findRoots(
-                        (Project)null,
+                        (Project) null,
                         Collections.singleton(ClassPath.SOURCE),
                         Collections.<String>emptySet(),
                         Collections.<String>emptySet());
@@ -182,26 +141,25 @@ public class MirahSymbolProvider implements SymbolProvider {
                     LOGGER.log(Level.FINE, "-------------------------"); //NOI18N
                 }
                 */
-                
+
                 final String text = textToSearch;
 
-                
+
                 //Perform all queries in single op
                 IndexManager.priorityAccess(new IndexManager.Action<Void>() {
                     @Override
                     public Void run() throws IOException, InterruptedException {
-                        
+
 //                        Set<IndexedClass> classes = index.getClasses("Base", QuerySupport.Kind.PREFIX);
                         Set<IndexedClass> classes = index.getClasses(text, QuerySupport.Kind.CASE_INSENSITIVE_PREFIX);
 //                        Set<IndexedClass> classes = index.getAllClasses();
-                        for( IndexedClass indexedClass : classes )
-                        {
+                        for (IndexedClass indexedClass : classes) {
                             String className = indexedClass.getName();
-                            if ( className.indexOf("$Closure") != -1 || className.indexOf("$ZBinding") != -1) {
+                            if (className.indexOf("$Closure") != -1 || className.indexOf("$ZBinding") != -1) {
                                 int t = 0;
                                 continue;
                             }
-                            String [] signatures = new String[] {};
+                            String[] signatures = new String[]{};
                             ElementHandle eh = ElementHandle.createTypeElementHandle(ElementKind.CLASS, "");
                             /*
                             result.addResult(new JavaSymbolDescriptor(
@@ -215,7 +173,7 @@ public class MirahSymbolProvider implements SymbolProvider {
                                     null));
                             */
                             String fqn = indexedClass.getFqn();
-                            if ( fqn.length() > className.length() + 1 )
+                            if (fqn.length() > className.length() + 1)
                                 fqn = fqn.substring(0, fqn.length() - className.length() - 1);
                             /*
                             result.addResult(new MirahSymbolDescriptor(
@@ -236,8 +194,7 @@ public class MirahSymbolProvider implements SymbolProvider {
                                     fqn));
                         }
                         Set<IndexedMethod> methods = index.getMethods(text, null, QuerySupport.Kind.CASE_INSENSITIVE_PREFIX);
-                        for( IndexedMethod indexedMethod : methods )
-                        {
+                        for (IndexedMethod indexedMethod : methods) {
                             String[] signatures = new String[]{};
 //                            ElementHandle eh = ElementHandle.createTypeElementHandle(ElementKind.METHOD, "");
 //                            ElementHandle eh = ElementHandleSupport.createHandle(null, indexedMethod.getName(), org.netbeans.modules.csl.api.ElementKind.METHOD, new HashSet<Modifier>());
@@ -254,16 +211,16 @@ public class MirahSymbolProvider implements SymbolProvider {
                                     fqn));
                             */
                             String displayName = fqn;
-                            if ( displayName.indexOf(':') != -1 ) 
-                                displayName = displayName.substring(0,displayName.indexOf(':'));
-                            
+                            if (displayName.indexOf(':') != -1)
+                                displayName = displayName.substring(0, displayName.indexOf(':'));
+
                             result.addResult(new MirahSymbolDescriptor(
                                     displayName,
                                     ElementKind.METHOD,
                                     indexedMethod.getFileObject(),
                                     indexedMethod.getOffset(),
                                     indexedMethod.getIn()));
-                            
+
                         }
                         /*
                         for (URL url : rootUrls) {
@@ -353,8 +310,7 @@ public class MirahSymbolProvider implements SymbolProvider {
                 });
             } catch (IOException ioe) {
                 Exceptions.printStackTrace(ioe);
-            }
-            catch (InterruptedException ie) {
+            } catch (InterruptedException ie) {
                 return;
             }
         } finally {
@@ -364,45 +320,45 @@ public class MirahSymbolProvider implements SymbolProvider {
 
     private boolean matchesRestrictions(
             @NonNull final Element e,
-            @NullAllowed Pair<NameMatcher,Boolean> restriction) {
+            @NullAllowed Pair<NameMatcher, Boolean> restriction) {
         if (restriction == null) {
             return true;
         }
         final Element owner = e.getEnclosingElement();
         if (owner == null) {
             return false;
-        }                
+        }
         final Name n;
         if (restriction.second() && (owner instanceof QualifiedNameable)) {
-            n = ((QualifiedNameable)owner).getQualifiedName();
+            n = ((QualifiedNameable) owner).getQualifiedName();
         } else {
             n = owner.getSimpleName();
         }
         return restriction.first().accept(n.toString());
     }
 
-    private static Pair<NameMatcher,Boolean> compileName(
+    private static Pair<NameMatcher, Boolean> compileName(
             @NonNull final String prefix,
             final boolean caseSensitive) {
         final boolean fqn = prefix.indexOf('.') > 0;    //NOI18N
-        final SearchType searchType = containsWildCard(prefix)?
-            (caseSensitive ? SearchType.REGEXP : SearchType.CASE_INSENSITIVE_REGEXP) :
-            (caseSensitive ? SearchType.PREFIX : SearchType.CASE_INSENSITIVE_PREFIX);
-        return Pair.<NameMatcher,Boolean>of(
-            NameMatcherFactory.createNameMatcher(prefix, searchType),
-            fqn);
+        final SearchType searchType = containsWildCard(prefix) ?
+                (caseSensitive ? SearchType.REGEXP : SearchType.CASE_INSENSITIVE_REGEXP) :
+                (caseSensitive ? SearchType.PREFIX : SearchType.CASE_INSENSITIVE_PREFIX);
+        return Pair.<NameMatcher, Boolean>of(
+                NameMatcherFactory.createNameMatcher(prefix, searchType),
+                fqn);
     }
 
     private static boolean containsWildCard(String text) {
-        for( int i = 0; i < text.length(); i++ ) {
-            if ( text.charAt( i ) == '?' || text.charAt( i ) == '*' ) { // NOI18N
+        for (int i = 0; i < text.length(); i++) {
+            if (text.charAt(i) == '?' || text.charAt(i) == '*') { // NOI18N
                 return true;
             }
         }
         return false;
     }
-    
-    private static String getDisplayName (
+
+    private static String getDisplayName(
             @NonNull final Element e,
             @NonNull final Element enclosingElement) {
         assert e != null;
@@ -416,9 +372,9 @@ public class MirahSymbolProvider implements SymbolProvider {
             sb.append('('); //NOI18N
             ExecutableElement ee = (ExecutableElement) e;
             final List<? extends VariableElement> vl = ee.getParameters();
-            for (Iterator<? extends VariableElement> it = vl.iterator(); it.hasNext();) {
+            for (Iterator<? extends VariableElement> it = vl.iterator(); it.hasNext(); ) {
                 final VariableElement v = it.next();
-                final TypeMirror tm = v.asType();                
+                final TypeMirror tm = v.asType();
                 sb.append(getTypeName(tm, false, true));
                 if (it.hasNext()) {
                     sb.append(", ");    //NOI18N
@@ -429,61 +385,61 @@ public class MirahSymbolProvider implements SymbolProvider {
         }
         return e.getSimpleName().toString();
     }
-    
+
     private static String[] createCamelCase(final String[] text) {
         if (text[0].length() == 0) {
             return text;
         } else {
-            return new String[] {
-                text[0],
-                Character.toLowerCase(text[0].charAt(0)) + text[0].substring(1)
+            return new String[]{
+                    text[0],
+                    Character.toLowerCase(text[0].charAt(0)) + text[0].substring(1)
             };
         }
     }
-    
+
     private static CharSequence getTypeName(TypeMirror type, boolean fqn, boolean varArg) {
-	if (type == null)
+        if (type == null)
             return ""; //NOI18N
         return new TypeNameVisitor(varArg).visit(type, fqn);
     }
-    
-    private static class TypeNameVisitor extends SimpleTypeVisitor6<StringBuilder,Boolean> {
-        
+
+    private static class TypeNameVisitor extends SimpleTypeVisitor6<StringBuilder, Boolean> {
+
         private boolean varArg;
         private boolean insideCapturedWildcard = false;
-        
+
         private TypeNameVisitor(boolean varArg) {
             super(new StringBuilder());
             this.varArg = varArg;
         }
-        
+
         @Override
         public StringBuilder defaultAction(TypeMirror t, Boolean p) {
             return DEFAULT_VALUE.append(t);
         }
-        
+
         @Override
         public StringBuilder visitDeclared(DeclaredType t, Boolean p) {
             Element e = t.asElement();
             if (e instanceof TypeElement) {
-                TypeElement te = (TypeElement)e;
+                TypeElement te = (TypeElement) e;
                 DEFAULT_VALUE.append((p ? te.getQualifiedName() : te.getSimpleName()).toString());
                 Iterator<? extends TypeMirror> it = t.getTypeArguments().iterator();
                 if (it.hasNext()) {
                     DEFAULT_VALUE.append("<"); //NOI18N
-                    while(it.hasNext()) {
+                    while (it.hasNext()) {
                         visit(it.next(), p);
                         if (it.hasNext())
                             DEFAULT_VALUE.append(", "); //NOI18N
                     }
                     DEFAULT_VALUE.append(">"); //NOI18N
                 }
-                return DEFAULT_VALUE;                
+                return DEFAULT_VALUE;
             } else {
                 return DEFAULT_VALUE.append(UNKNOWN); //NOI18N
             }
         }
-                        
+
         @Override
         public StringBuilder visitArray(ArrayType t, Boolean p) {
             boolean isVarArg = varArg;
@@ -512,7 +468,7 @@ public class MirahSymbolProvider implements SymbolProvider {
                     if (bound != null && bound.getKind() != TypeKind.NULL) {
                         DEFAULT_VALUE.append(" extends "); //NOI18N
                         if (bound.getKind() == TypeKind.TYPEVAR)
-                            bound = ((TypeVariable)bound).getLowerBound();
+                            bound = ((TypeVariable) bound).getLowerBound();
                         visit(bound, p);
                     }
                 }
@@ -531,11 +487,11 @@ public class MirahSymbolProvider implements SymbolProvider {
                 if (bound != null) {
                     DEFAULT_VALUE.append(" extends "); //NOI18N
                     if (bound.getKind() == TypeKind.WILDCARD)
-                        bound = ((WildcardType)bound).getSuperBound();
+                        bound = ((WildcardType) bound).getSuperBound();
                     visit(bound, p);
                 } else if (len == 0) {
                     bound = SourceUtils.getBound(t);
-                    if (bound != null && (bound.getKind() != TypeKind.DECLARED || !((TypeElement)((DeclaredType)bound).asElement()).getQualifiedName().contentEquals("java.lang.Object"))) { //NOI18N
+                    if (bound != null && (bound.getKind() != TypeKind.DECLARED || !((TypeElement) ((DeclaredType) bound).asElement()).getQualifiedName().contentEquals("java.lang.Object"))) { //NOI18N
                         DEFAULT_VALUE.append(" extends "); //NOI18N
                         visit(bound, p);
                     }
@@ -551,30 +507,30 @@ public class MirahSymbolProvider implements SymbolProvider {
         public StringBuilder visitError(ErrorType t, Boolean p) {
             Element e = t.asElement();
             if (e instanceof TypeElement) {
-                TypeElement te = (TypeElement)e;
+                TypeElement te = (TypeElement) e;
                 return DEFAULT_VALUE.append((p ? te.getQualifiedName() : te.getSimpleName()).toString());
             }
             return DEFAULT_VALUE;
         }
     }
-    
-    private static String removeNonJavaChars(String text) {
-       StringBuilder sb = new StringBuilder();
 
-       for( int i = 0; i < text.length(); i++) {
-           char c = text.charAt(i);
-           if( Character.isJavaIdentifierPart(c) || c == '*' || c == '?') {
-               sb.append(c);
-           }
-       }
-       return sb.toString();
+    private static String removeNonJavaChars(String text) {
+        StringBuilder sb = new StringBuilder();
+
+        for (int i = 0; i < text.length(); i++) {
+            char c = text.charAt(i);
+            if (Character.isJavaIdentifierPart(c) || c == '*' || c == '?') {
+                sb.append(c);
+            }
+        }
+        return sb.toString();
     }
 
     public void cancel() {
         canceled = true;
     }
 
-    public void cleanup() {        
+    public void cleanup() {
         canceled = false;
     }
 

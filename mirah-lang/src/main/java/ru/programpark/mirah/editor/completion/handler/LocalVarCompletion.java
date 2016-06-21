@@ -1,15 +1,14 @@
 package ru.programpark.mirah.editor.completion.handler;
 
+import ru.programpark.mirah.lexer.MirahParserResult;
 import ru.programpark.mirah.editor.completion.context.CompletionContext;
 import ru.programpark.mirah.editor.completion.context.CaretLocation;
-import ca.weblite.netbeans.mirah.lexer.MirahParser;
-import java.util.ArrayList;
+
 import java.util.List;
 import java.util.logging.Level;
 import mirah.lang.ast.Node;
 import org.netbeans.modules.csl.api.CompletionProposal;
 import ru.programpark.mirah.editor.ast.ASTUtils;
-import ru.programpark.mirah.editor.ast.Variable;
 import ru.programpark.mirah.editor.completion.CompletionItem;
 import ru.programpark.mirah.editor.navigator.VariablesCollector;
 
@@ -43,7 +42,7 @@ public class LocalVarCompletion extends BaseCompletion {
 //        VariablesCollector vc = new VariablesCollector(ASTUtils.findLeaf(parsed, bdoc, caretOffset), bdoc, caretOffset);
         Node leaf = ASTUtils.findLeaf(request.getParserResult(), request.doc, request.lexOffset);
         VariablesCollector vc = new VariablesCollector(
-                (MirahParser.NBMirahParserResult)request.getParserResult(),
+                (MirahParserResult)request.getParserResult(),
                 leaf,
                 request.doc, request.lexOffset);
 //            VariablesCollector vc = new VariablesCollector(path,bdoc,caretOffset);

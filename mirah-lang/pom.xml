@@ -339,12 +339,9 @@
         <dependency>
             <groupId>org.mirah</groupId>
             <artifactId>mirahc</artifactId>
-            <version>0.1.5-53</version>
-        </dependency>
-        <dependency>
-            <groupId>org.mirah</groupId>
-            <artifactId>mirah-ant</artifactId>
-            <version>0.1.5</version>
+            <version>0.1.5-66</version>
+            <!--<scope>system</scope>-->
+            <!--<systemPath>h:/code/mirah-git/dist/mirahc.jar</systemPath>-->
         </dependency>
         <dependency>
             <groupId>com.sun</groupId>
@@ -398,7 +395,6 @@
                 <extensions>true</extensions>
                 <configuration>
                     <author>Caoyuan Deng</author>
-                    <!-- codeNameBase>ca.weblite.netbeans.mirah/1</codeNameBase -->
                     <useOSGiDependencies>true</useOSGiDependencies>
                     <licenseName>CDDL-GPLV2</licenseName>
                     <licenseFile>license.txt</licenseFile>    
@@ -452,10 +448,8 @@
                         </dependency>
                     </moduleDependencies>
                     <publicPackages>
-                        <publicPackage>ca.weblite.netbeans.mirah.lexer</publicPackage>
-                        <publicPackage>mirah.lang.ast</publicPackage>
-                        <!-- publicPackage>ru.programpark.mirah.editor</publicPackage>
-                        <publicPackage>ru.programpark.mirah.index.elements</publicPackage -->
+                        <publicPackage>ru.programpark.mirah.lexer</publicPackage>
+                        <publicPackage>ru.programpark.mirah</publicPackage>
                     </publicPackages>
                 </configuration>
             </plugin>                      

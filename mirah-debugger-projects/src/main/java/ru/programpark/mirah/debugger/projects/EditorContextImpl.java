@@ -40,55 +40,23 @@
  */
 package ru.programpark.mirah.debugger.projects;
 
-//import ca.weblite.netbeans.mirah.lexer.MirahParser;
-import ca.weblite.netbeans.mirah.lexer.MirahParser;
-import ca.weblite.netbeans.mirah.lexer.SourceQuery;
-import java.awt.Color;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.net.URL;
-import java.net.MalformedURLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.Future;
-import javax.swing.SwingUtilities;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Caret;
-import javax.swing.text.StyledDocument;
-import javax.swing.JEditorPane;
-
+import ru.programpark.mirah.lexer.MirahParserResult;
+import ru.programpark.mirah.lexer.SourceQuery;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePathScanner;
-
-import java.util.Collections;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.VariableElement;
-import mirah.lang.ast.MethodDefinition;
-import mirah.lang.ast.Named;
-import mirah.lang.ast.Node;
-import mirah.lang.ast.NodeFilter;
-import mirah.lang.ast.RequiredArgument;
-import mirah.lang.ast.Script;
-import org.netbeans.api.debugger.Breakpoint;
-import org.netbeans.api.debugger.DebuggerEngine;
-import org.netbeans.api.debugger.DebuggerManager;
-import org.netbeans.api.debugger.DebuggerManagerListener;
-import org.netbeans.api.debugger.Session;
-import org.netbeans.api.debugger.Watch;
-
 import org.netbeans.api.debugger.jpda.LineBreakpoint;
-
 import org.netbeans.api.java.source.CompilationController;
-
+import org.netbeans.editor.JumpList;
+import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.spi.debugger.jpda.EditorContext;
+import org.netbeans.spi.debugger.jpda.SourcePathProvider;
+import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
 import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
@@ -100,34 +68,37 @@ import org.openide.text.NbDocument;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 
-import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
-
-import org.netbeans.editor.JumpList;
-import org.netbeans.modules.csl.api.ElementKind;
-import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.parsing.api.ParserManager;
-import org.netbeans.modules.parsing.api.Source;
-import org.netbeans.modules.parsing.api.UserTask;
-import org.netbeans.modules.parsing.spi.ParseException;
-import org.netbeans.modules.parsing.spi.Parser.Result;
-import org.netbeans.spi.debugger.jpda.EditorContext;
-import org.netbeans.spi.debugger.jpda.SourcePathProvider;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.VariableElement;
+import javax.swing.*;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Caret;
+import javax.swing.text.StyledDocument;
+import java.awt.*;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.*;
+import java.util.List;
+import java.util.concurrent.Future;
 
 /**
- *
  * @author Jan Jancura
  * @author Caoyuan Deng
- *
  * @todo This EditorContextImpl and the EditorContextImpl in debugger.jpda.projects
  * should be instanced and get lookuped in org.netbeans.modules.debugger.jpda.EditorContextImpl#getContext,
  * but, it seems org.netbeans.api.debugger.Lookup won't init the unloaded modules' META-INFO/debugger/
  * services. We have to apply following ugly hacking:
- *     1. Add debugger.jpda.projects module as run-dependency of this modules, so,
- *        when this module is loaded first, debugger.jpda.projects module will also
- *        be loaded.
- *     2. Set this module as eager, so, even debugger.jpda.projects is loaded first,
- *        this module will also be loaded
- *
+ * 1. Add debugger.jpda.projects module as run-dependency of this modules, so,
+ * when this module is loaded first, debugger.jpda.projects module will also
+ * be loaded.
+ * 2. Set this module as eager, so, even debugger.jpda.projects is loaded first,
+ * this module will also be loaded
  */
 public class EditorContextImpl extends EditorContext {
 
@@ -185,12 +156,13 @@ public class EditorContextImpl extends EditorContext {
 //        }
     }
 */
+
     /**
      * Shows source with given url on given line number.
      *
-     * @param url a url of source to be shown
+     * @param url        a url of source to be shown
      * @param lineNumber a number of line to be shown
-     * @param timeStamp a time stamp to be used
+     * @param timeStamp  a time stamp to be used
      */
     @Override
     public boolean showSource(String url, int lineNumber, Object timeStamp) {
@@ -220,14 +192,14 @@ public class EditorContextImpl extends EditorContext {
     /**
      * Shows source with given url on given line number.
      *
-     * @param url a url of source to be shown
+     * @param url        a url of source to be shown
      * @param lineNumber a number of line to be shown
-     * @param timeStamp a time stamp to be used
+     * @param timeStamp  a time stamp to be used
      */
     public boolean showSource(String url, int lineNumber, int column, int length, Object timeStamp) {
-        
+
         //LOG.info("showSource url="+url+" lineNumber="+lineNumber);
-        
+
         Line l = LineTranslations.getTranslations().getLine(url, lineNumber, timeStamp); // false = use original ln
         if (l == null) {
             ErrorManager.getDefault().log(ErrorManager.WARNING,
@@ -243,7 +215,9 @@ public class EditorContextImpl extends EditorContext {
         return true;
     }
 
-    /** Add the line offset into the jump history */
+    /**
+     * Add the line offset into the jump history
+     */
     private void addPositionToJumpList(String url, Line l, int column) {
         DataObject dataObject = getDataObject(url);
         if (dataObject != null) {
@@ -282,8 +256,8 @@ public class EditorContextImpl extends EditorContext {
         LineTranslations.getTranslations().disposeTimeStamp(timeStamp);
     }
 
-    /**@Node:
-     * the chained annotate method from EditorContextImpl under debug.jpda.projects
+    /**
+     * @Node: the chained annotate method from EditorContextImpl under debug.jpda.projects
      * will also be called, so we do not need add a reduantant annotation
      */
     @Override
@@ -387,12 +361,12 @@ public class EditorContextImpl extends EditorContext {
 //        annotation.detach ();
 //        annotationToURL.remove (annotation);
 //    }
+
     /**
      * Returns line number given annotation is associated with.
      *
      * @param annotation an annotation, or an array of "url" and new Integer(line number)
-     * @param timeStamp a time stamp to be used
-     *
+     * @param timeStamp  a time stamp to be used
      * @return line number given annotation is associated with
      */
     @Override
@@ -429,7 +403,7 @@ public class EditorContextImpl extends EditorContext {
      * Updates timeStamp for gived url.
      *
      * @param timeStamp time stamp to be updated
-     * @param url an url
+     * @param url       an url
      */
     @Override
     public void updateTimeStamp(Object timeStamp, String url) {
@@ -623,20 +597,20 @@ public class EditorContextImpl extends EditorContext {
         try {
             javax.swing.text.Element lineElem =
                     org.openide.text.NbDocument.findLineRootElement(doc).
-                    getElement(line);
+                            getElement(line);
 
             if (lineElem == null) {
                 return "";
             }
             int lineStartOffset = lineElem.getStartOffset();
             int lineLen = lineElem.getEndOffset() - lineStartOffset;
-        // t contains current line in editor
+            // t contains current line in editor
             t = doc.getText(lineStartOffset, lineLen);
 
             int identStart = col;
             while (identStart > 0 &&
                     Character.isJavaIdentifierPart(
-                    t.charAt(identStart - 1))) {
+                            t.charAt(identStart - 1))) {
                 identStart--;
             }
 
@@ -674,14 +648,14 @@ public class EditorContextImpl extends EditorContext {
 //            return null;
 //        }
 //    }
+
     /**
      * Returns line number of given field in given class.
      *
-     * @param url the url of file the class is deined in
+     * @param url       the url of file the class is deined in
      * @param className the name of class (or innerclass) the field is
      *                  defined in
      * @param fieldName the name of field
-     *
      * @return line number or -1
      */
     @Override
@@ -775,13 +749,12 @@ public class EditorContextImpl extends EditorContext {
     /**
      * Returns line number of given method in given class.
      *
-     * @param url the url of file the class is deined in
-     * @param className the name of class (or innerclass) the method is
-     *                  defined in
-     * @param methodName the name of method
+     * @param url             the url of file the class is deined in
+     * @param className       the name of class (or innerclass) the method is
+     *                        defined in
+     * @param methodName      the name of method
      * @param methodSignature the JNI-style signature of the method.
-     *        If <code>null</code>, then the first method found is returned.
-     *
+     *                        If <code>null</code>, then the first method found is returned.
      * @return line number or -1
      */
     @Override
@@ -876,7 +849,8 @@ public class EditorContextImpl extends EditorContext {
         return s1.equals(s2);
     }
 
-    /** @return { "method name", "method signature", "enclosing class name" }
+    /**
+     * @return { "method name", "method signature", "enclosing class name" }
      */
     @Override
     public String[] getCurrentMethodDeclaration() {
@@ -888,7 +862,7 @@ public class EditorContextImpl extends EditorContext {
         }
         JEditorPane ep = contextDispatcher.getCurrentEditor();
         Source source = Source.create(fo);
-        LOG.info(this,"getCurrentMethodDeclaration source="+source);
+        LOG.info(this, "getCurrentMethodDeclaration source=" + source);
         if (source == null) {
             return null;
         }
@@ -1037,6 +1011,7 @@ public class EditorContextImpl extends EditorContext {
             return "L" + javaType.replace('.', '/') + ";";
         }
     }
+
     public StyledDocument getStyledDocument(String url) {
         DataObject dataObject = getDataObject(url);
         if (dataObject == null) {
@@ -1089,18 +1064,17 @@ public class EditorContextImpl extends EditorContext {
         }
         return source;
     }
-    
+
     /**
      * Returns binary class name for given url and line number or null.
      *
-     * @param url a url
+     * @param url        a url
      * @param lineNumber a line number
-     *
      * @return binary class name for given url and line number or null
      */
     @Override
     public String getClassName(String url, final int lineNumber) {
-        LOG.info(this,"getClassName url =" + url + " lineNumber=" + lineNumber);
+        LOG.info(this, "getClassName url =" + url + " lineNumber=" + lineNumber);
         try {
             final StyledDocument doc = getStyledDocument(url);
             Source source = getSource(url);
@@ -1112,7 +1086,7 @@ public class EditorContextImpl extends EditorContext {
             ParserManager.parse(Collections.singleton(source), new UserTask() {
                 @Override
                 public void run(ResultIterator ri) throws Exception {
-                    SourceQuery queryDocument = new SourceQuery(doc);
+                    SourceQuery queryDocument = new SourceQuery((MirahParserResult) ri.getParserResult());
                     String clzFqn = queryDocument.findClassName(offset);
                     result[0] = clzFqn;
                 }
@@ -1129,7 +1103,7 @@ public class EditorContextImpl extends EditorContext {
 
     @Override
     public Operation[] getOperations(String url, final int lineNumber,
-            final BytecodeProvider bytecodeProvider) {
+                                     final BytecodeProvider bytecodeProvider) {
         DataObject dataObject = getDataObject(url);
 //        LOG.info("getOperations url=" + url + " lineNumber=" + lineNumber);
         if (dataObject == null) {
@@ -1218,12 +1192,12 @@ public class EditorContextImpl extends EditorContext {
     }
 
     private void assignNextOperations(Tree methodTree,
-            CompilationUnitTree cu,
-            CompilationController ci,
-            BytecodeProvider bytecodeProvider,
-            List<Tree> treeNodes,
-            ExpressionScanner.ExpressionsInfo info,
-            Map<Tree, Operation> nodeOperations) {
+                                      CompilationUnitTree cu,
+                                      CompilationController ci,
+                                      BytecodeProvider bytecodeProvider,
+                                      List<Tree> treeNodes,
+                                      ExpressionScanner.ExpressionsInfo info,
+                                      Map<Tree, Operation> nodeOperations) {
         int length = treeNodes.size();
         for (int treeIndex = 0; treeIndex < length; treeIndex++) {
             Tree node = treeNodes.get(treeIndex);
@@ -1282,8 +1256,9 @@ public class EditorContextImpl extends EditorContext {
 
     }
 
-    /** return the offset of the first non-whitespace character on the line,
-    or -1 when the line does not exist
+    /**
+     * return the offset of the first non-whitespace character on the line,
+     * or -1 when the line does not exist
      */
     private static int findLineOffset(StyledDocument doc, int lineNumber) {
         int offset;
@@ -1406,7 +1381,6 @@ public class EditorContextImpl extends EditorContext {
      * Returns list of imports for given source url.
      *
      * @param url the url of source file
-     *
      * @return list of imports for given source url
      */
     public String[] getImports(
@@ -1471,14 +1445,15 @@ public class EditorContextImpl extends EditorContext {
 //        ClassPath sourcePath = ClassPathSupport.createClassPath(sourcePathFiles.toArray(new FileObject[]{}));
 //        return JavaSource.create(ClasspathInfo.create(bootPath, classPath, sourcePath), new FileObject[]{});
 //    }
+
     /**
      * Parse the expression into AST tree and traverse is via the provided visitor.
      *
      * @return the visitor value or <code>null</code>.
      */
     public <R, D> R parseExpression(final String expression, String url, final int line,
-            final TreePathScanner<R, D> visitor, final D context,
-            final SourcePathProvider sp) {
+                                    final TreePathScanner<R, D> visitor, final D context,
+                                    final SourcePathProvider sp) {
         DataObject dataObject = getDataObject(url);
         if (dataObject == null) {
             return null;
@@ -1628,7 +1603,7 @@ public class EditorContextImpl extends EditorContext {
      * Adds a property change listener.
      *
      * @param propertyName the name of property
-     * @param l the listener to add
+     * @param l            the listener to add
      */
     public void addPropertyChangeListener(
             String propertyName,
@@ -1640,7 +1615,7 @@ public class EditorContextImpl extends EditorContext {
      * Removes a property change listener.
      *
      * @param propertyName the name of property
-     * @param l the listener to remove
+     * @param l            the listener to remove
      */
     public void removePropertyChangeListener(
             String propertyName,
@@ -1648,7 +1623,7 @@ public class EditorContextImpl extends EditorContext {
         pcs.removePropertyChangeListener(propertyName, l);
     }
 
-//  private helper methods ..................................................
+    //  private helper methods ..................................................
 //    public void fileChanged (FileEvent fe) {
 //	pcs.firePropertyChange (PROP_LINE_NUMBER, null, null);
 //    }
@@ -1662,7 +1637,9 @@ public class EditorContextImpl extends EditorContext {
         return getCurrentElement(kind, null);
     }
 
-    /** throws IllegalComponentStateException when can not return the data in AWT. */
+    /**
+     * throws IllegalComponentStateException when can not return the data in AWT.
+     */
     private String getCurrentElement(final ElementKind kind, final Element[] elementPtr)
             throws java.awt.IllegalComponentStateException {
         FileObject fo = contextDispatcher.getCurrentFile();

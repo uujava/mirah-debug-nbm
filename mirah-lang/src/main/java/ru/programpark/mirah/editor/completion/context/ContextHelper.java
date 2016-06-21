@@ -1,6 +1,6 @@
 package ru.programpark.mirah.editor.completion.context;
 
-import ca.weblite.netbeans.mirah.lexer.MirahTokenId;
+import ru.programpark.mirah.lexer.MirahTokenId;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -15,11 +15,9 @@ import mirah.lang.ast.MethodDefinition;
 import mirah.lang.ast.Node;
 import mirah.lang.ast.NodeScanner;
 import mirah.lang.ast.Script;
-import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.openide.filesystems.FileObject;
 import ru.programpark.mirah.editor.ast.ASTUtils;
 import ru.programpark.mirah.editor.ast.AstPath;
