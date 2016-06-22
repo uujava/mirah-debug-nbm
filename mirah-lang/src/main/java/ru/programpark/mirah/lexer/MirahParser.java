@@ -1,6 +1,6 @@
 package ru.programpark.mirah.lexer;
 
-import ru.programpark.mirah.LOG;
+
 import ru.programpark.mirah.support.spi.MirahExtenderImplementation;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.ClassPath.Entry;
@@ -16,10 +16,12 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 
 import javax.swing.event.ChangeListener;
-import javax.swing.text.Document;
 import java.io.*;
 import java.lang.*;
+import java.lang.ref.SoftReference;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 
 /**
@@ -27,13 +29,13 @@ import java.util.prefs.Preferences;
  */
 public class MirahParser extends Parser {
 
-    private static WeakHashMap<FileObject, String> lastContent = new WeakHashMap<>();
-    private Snapshot snapshot;
+    private static final Logger logger = Logger.getLogger(MirahParser.class.getName());
+    private SoftReference<CharSequence> prev = new SoftReference<>(null);
     private ParseErrorListener diag;
     private MirahParserResult result;
 
     public MirahParser() {
-        System.out.println("parser = " + this + " " + System.identityHashCode(this));
+        logger.info("parser = " + this + " " + System.identityHashCode(this));
     }
 
     @Override
@@ -41,23 +43,16 @@ public class MirahParser extends Parser {
             throws ParseException {
 
         long start = System.currentTimeMillis();
-
-        String oldContent = lastContent.get(snapshot.getSource().getFileObject());
-
-        String newContent = snapshot.getText().toString();
-//        LOG.info(null, "----- Parsing Start: " + snapshot.getSource().getFileObject().getNameExt() + " -----");
-//        LOG.putStack("***");
+        CharSequence oldContent =  prev.get();
+        CharSequence newContent = snapshot.getText();
         boolean changed = oldContent == null || !oldContent.equals(newContent);
         if (sme.sourceChanged() && changed) {
-            lastContent.put(
-                    snapshot.getSource().getFileObject(),
-                    newContent
-            );
+            prev = new SoftReference<>(newContent);
             reparse(snapshot);
         } else if (result == null) {
             reparse(snapshot);
         }
-        LOG.info(null, "Source changed: parsing " + snapshot.getSource().getFileObject().getNameExt() + " Elapsed: " + (System.currentTimeMillis() - start) + " msec");
+        if (logger.isLoggable(Level.FINE)) logger.log(Level.FINE,  "Source changed: parsing " + snapshot.getSource().getFileObject().getNameExt() + " Elapsed: " + (System.currentTimeMillis() - start) + " msec");
     }
 
     public void reparse(Snapshot snapshot) throws ParseException {
@@ -65,8 +60,7 @@ public class MirahParser extends Parser {
             if (snapshot == null || snapshot.getText() == null) return;
             reparse(snapshot, snapshot.getText().toString());
         } catch (Exception ex) {
-            LOG.info(this, "####### PARSE EXCEPTION File: " + snapshot.getSource().getFileObject().getName() + " ex: " + ex + " #######");
-            LOG.exception(this, ex);
+            if (logger.isLoggable(Level.WARNING)) logger.log(Level.WARNING,  "####### PARSE EXCEPTION File: " + snapshot.getSource().getFileObject().getName() + " ex: " + ex + " #######", ex);
         }
     }
 
@@ -80,13 +74,11 @@ public class MirahParser extends Parser {
             }
     }
 
-    public void reparse(Snapshot snapshot, String content) throws ParseException {
+    private void reparse(Snapshot snapshot, String content) throws ParseException {
 
-        this.snapshot = snapshot;
         diag = new ParseErrorListener(snapshot.getSource().getFileObject());
         result = new MirahParserResult(snapshot, diag);
 
-//        LOG.info(this,"REPARSE:\n"+content+"\n");
         Compiler compiler = new Compiler();
 
         FileObject src = snapshot.getSource().getFileObject();
@@ -94,13 +86,11 @@ public class MirahParser extends Parser {
         compiler.setDebugger(debugger);
         Project project = FileOwnerQuery.getOwner(src);
 
-//        LOG.info(this,"reparse project = " + project);
         if (project != null) {
             FileObject projectDirectory = project.getProjectDirectory();
             FileObject buildDir = projectDirectory.getFileObject("build");
             Preferences projPrefs = ProjectUtils.getPreferences(project, MirahExtenderImplementation.class, true);
             String projectType = projPrefs.get("project_type", "unknown");
-//        LOG.info(this,"reparse project type is "+projectType);
             if ("maven".equals(projectType)) {
                 try {
                     // It's a maven project so we want to build our sources to a different location
@@ -160,7 +150,6 @@ public class MirahParser extends Parser {
         String srcText = content;
         FileObject fakeFileRoot = getRoot(src);
         if (fakeFileRoot == null) {
-//            LOG.info(this,"fakeFileRoot == NULL for src = " + src);
             return;
         }
         String relPath = FileUtil.getRelativePath(fakeFileRoot, src);
@@ -170,8 +159,7 @@ public class MirahParser extends Parser {
         try {
             compiler.compile();
         } catch (Exception ex) {
-            LOG.info(this,"REPARSE ex = "+ex);
-//            ex.printStackTrace();
+            if (logger.isLoggable(Level.FINE)) logger.log(Level.FINE, "REPARSE ex = "+ex);
         }
         if (debugger != null && result != null) {
             // сохраняю карту распознанныч типов

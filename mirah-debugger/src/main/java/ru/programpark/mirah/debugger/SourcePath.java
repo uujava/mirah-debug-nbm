@@ -52,6 +52,9 @@ import java.util.Iterator;
 import java.util.WeakHashMap;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import org.netbeans.api.debugger.Properties;
 import org.netbeans.spi.debugger.ContextProvider;
 
@@ -77,7 +80,7 @@ import org.openide.ErrorManager;
  * @author Jan Jancura
  */
 public class SourcePath {
-
+    private static final Logger logger = Logger.getLogger(SourcePath.class.getName());
     private ContextProvider         contextProvider;
     private SourcePathProvider      sourcePathProvider;
     private JPDADebugger            debugger;
@@ -110,7 +113,7 @@ public class SourcePath {
 
     static SourcePathProvider getDefaultContext() {
         
-        LOG.info(SourcePath.class,"getDefaultContext");
+        if (logger.isLoggable(Level.FINE)) logger.log(Level.FINE, "getDefaultContext");
         List providers = DebuggerManager.getDebuggerManager().
                 lookup("netbeans-JPDASession", SourcePathProvider.class);
         for (Iterator it = providers.iterator(); it.hasNext(); ) {
@@ -141,7 +144,7 @@ public class SourcePath {
         char directorySeparator,
         boolean includeExtension
     ) {
-        //LOG.info("getRelativePath url="+url+" rel = "+getContext().getRelativePath(url, directorySeparator, includeExtension));
+        //if (logger.isLoggable(Level.FINE)) logger.log(Level.FINE,  directorySeparator, includeExtension));
         return getContext ().getRelativePath
             (url, directorySeparator, includeExtension);
     }
@@ -291,7 +294,7 @@ public class SourcePath {
         JPDAThread t,
         String stratumn
     ) {
-        LOG.info(this,"showSource t=" + t + " stratumn=" + stratumn);
+        if (logger.isLoggable(Level.FINE)) logger.log(Level.FINE, "showSource t=" + t + " stratumn=" + stratumn);
         int lineNumber = t.getLineNumber (stratumn);
         if (lineNumber < 1) lineNumber = 1;
         try {

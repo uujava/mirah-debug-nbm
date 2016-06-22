@@ -149,13 +149,13 @@ public class MirahLanguage extends DefaultLanguageConfig {
 
     @Override
     public Parser getParser() {
-//        LOG.info(this,"--- getParser ---");
+//        if (logger.isLoggable(Level.FINE)) logger.log(Level.FINE, "--- getParser ---");
         return new MirahParser();
     }
 
     @Override
     public SemanticAnalyzer getSemanticAnalyzer() {
-//        LOG.info(this,"--- getSemanticAnalyzer ---");
+//        if (logger.isLoggable(Level.FINE)) logger.log(Level.FINE, "--- getSemanticAnalyzer ---");
         return null; //new MirahSemanticAnalyzer();
     }
 

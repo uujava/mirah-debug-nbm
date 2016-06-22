@@ -350,7 +350,7 @@ public class DocumentQuery {
 
     public boolean requiresImport(String fqn) {
 
-//        LOG.info(this,"requiresImport = "+fqn);
+//        if (logger.isLoggable(Level.FINE)) logger.log(Level.FINE, "requiresImport = "+fqn);
         if (fqn == null) {
             return false;
         }

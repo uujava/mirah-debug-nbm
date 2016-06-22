@@ -594,8 +594,8 @@ public class MethodCompletion extends BaseCompletion {
         Token<MirahTokenId> subjectToken = null;
         Token<MirahTokenId> thisTok = ts.token();
 
-//        LOG.info(this,"query subjectToken=" + subjectToken);
-//        LOG.info(this,"query thisTok=" + thisTok);
+//        if (logger.isLoggable(Level.FINE)) logger.log(Level.FINE, "query subjectToken=" + subjectToken);
+//        if (logger.isLoggable(Level.FINE)) logger.log(Level.FINE, "query thisTok=" + thisTok);
 
         if ( thisTok == null ) 
         {
@@ -629,7 +629,7 @@ public class MethodCompletion extends BaseCompletion {
             }
 
         }
-//      LOG.info(this,"query dotToken=" + dotToken);
+//      if (logger.isLoggable(Level.FINE)) logger.log(Level.FINE, "query dotToken=" + dotToken);
 
         if ( dotToken == null ){
 //            doc.readUnlock();
@@ -664,13 +664,13 @@ public class MethodCompletion extends BaseCompletion {
                 FileObject fileObject = NbEditorUtilities.getFileObject(doc);
                 Class cls = MirahUtils.findClass(fileObject, type.name());
 //                currentType = cls;
-//                LOG.info(this,"query cls=" + cls);
+//                if (logger.isLoggable(Level.FINE)) logger.log(Level.FINE, "query cls=" + cls);
 
                 boolean isStatic = foundNode instanceof Constant;
                 if ( cls != null ){
                     if ( isStatic && filter == null || "new".startsWith(filter)){
                         for ( Constructor c : cls.getConstructors()){
-//                            LOG.info(this,"query Constructor=" + c);
+//                            if (logger.isLoggable(Level.FINE)) logger.log(Level.FINE, "query Constructor=" + c);
 //                            crs.addItem(new MirahConstructorCompletionItem(c, caretOffset-filter.length(), filter.length()));
                         }
                     }

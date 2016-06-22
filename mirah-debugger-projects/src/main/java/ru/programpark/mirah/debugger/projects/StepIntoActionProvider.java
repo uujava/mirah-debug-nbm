@@ -45,6 +45,8 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Collections;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.debugger.ActionsManager;
 
@@ -72,9 +74,9 @@ import org.openide.util.WeakListeners;
 @ActionsProvider.Registration(actions = "stepInto")
 public class StepIntoActionProvider extends ActionsProviderSupport {
     private final static String MIME_TYPE = "text/x-mirah";
+    private static final Logger logger = Logger.getLogger(StepIntoActionProvider.class.getName());
 
-
-//    private MethodBreakpoint breakpoint;
+    //    private MethodBreakpoint breakpoint;
     Listener listener;
 
     {
@@ -96,7 +98,7 @@ public class StepIntoActionProvider extends ActionsProviderSupport {
 
     public void doAction (final Object action) {
 
-        LOG.info(this,"doAction = "+action);
+        if (logger.isLoggable(Level.FINE)) logger.log(Level.FINE, "doAction = "+action);
 
         // start debugging of project
         if (!SwingUtilities.isEventDispatchThread()) {
@@ -117,7 +119,7 @@ public class StepIntoActionProvider extends ActionsProviderSupport {
     }
 
     public void postAction(Object action, Runnable actionPerformedNotifier) {
-        LOG.info(this,"postAction = "+action);
+        if (logger.isLoggable(Level.FINE)) logger.log(Level.FINE, "postAction = "+action);
         // start debugging of project
         invokeAction();
         actionPerformedNotifier.run();

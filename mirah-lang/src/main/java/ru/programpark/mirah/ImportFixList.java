@@ -14,6 +14,8 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.text.Document;
 import javax.swing.text.SimpleAttributeSet;
 
@@ -34,7 +36,8 @@ import org.openide.filesystems.FileObject;
  * @author shannah
  */
 public class ImportFixList  implements LazyFixList, Runnable {
-    
+    private static final Logger logger = Logger.getLogger(ImportFixList.class.getName());
+
     private Source source;
     private String className;
     private PropertyChangeSupport pcs;
@@ -46,7 +49,7 @@ public class ImportFixList  implements LazyFixList, Runnable {
         this.source = source;
         this.className = className;
         
-        LOG.info(this,"ImportFixList source="+source+" className="+className);
+        if (logger.isLoggable(Level.FINE)) logger.log(Level.FINE, "ImportFixList source="+source+" className="+className);
     }
     
     
@@ -87,7 +90,7 @@ public class ImportFixList  implements LazyFixList, Runnable {
         ClassIndex idx = new ClassIndex();
         ClassIndex.CompoundQuery q = new ClassIndex.CompoundQuery(0);
 
-//        LOG.info(this,"In ImportFixList.run() fo="+fo);
+//        if (logger.isLoggable(Level.FINE)) logger.log(Level.FINE, "In ImportFixList.run() fo="+fo);
         
         ClassPath[] classPaths = new ClassPath[]{
             ClassPath.getClassPath(fo, ClassPath.SOURCE),
@@ -96,17 +99,17 @@ public class ImportFixList  implements LazyFixList, Runnable {
             ClassPath.getClassPath(fo, ClassPath.BOOT)
         };
         
-//        LOG.info(this,"ClassPath.SOURCE ="+ClassPath.getClassPath(fo, ClassPath.SOURCE));
-//        LOG.info(this,"ClassPath.EXECUTE =" + ClassPath.getClassPath(fo, ClassPath.EXECUTE));
-//        LOG.info(this,"ClassPath.COMPILE =" + ClassPath.getClassPath(fo, ClassPath.COMPILE));
-//        LOG.info(this,"ClassPath.BOOT =" + ClassPath.getClassPath(fo, ClassPath.BOOT));
+//        if (logger.isLoggable(Level.FINE)) logger.log(Level.FINE, "ClassPath.SOURCE ="+ClassPath.getClassPath(fo, ClassPath.SOURCE));
+//        if (logger.isLoggable(Level.FINE)) logger.log(Level.FINE, "ClassPath.EXECUTE =" + ClassPath.getClassPath(fo, ClassPath.EXECUTE));
+//        if (logger.isLoggable(Level.FINE)) logger.log(Level.FINE, "ClassPath.COMPILE =" + ClassPath.getClassPath(fo, ClassPath.COMPILE));
+//        if (logger.isLoggable(Level.FINE)) logger.log(Level.FINE, "ClassPath.BOOT =" + ClassPath.getClassPath(fo, ClassPath.BOOT));
         
         int priority = 10;
         for ( ClassPath cp : classPaths){
             
             q.addQuery(new ClassIndex.ClassPathQuery(priority--, className, "", cp));
         }
-        LOG.info(this,"q ==> "+q);
+        if (logger.isLoggable(Level.FINE)) logger.log(Level.FINE, "q ==> "+q);
 
         ClassIndex.Future results = new ClassIndex.Future(){
 
@@ -119,7 +122,7 @@ public class ImportFixList  implements LazyFixList, Runnable {
                 Set<String> matches = new HashSet<String>();
                 matches.addAll(this.getMatches());
                 for ( String match : matches ){
-//                    LOG.info(ClassIndex.class,"match ==> " + match);
+//                    if (logger.isLoggable(Level.FINE)) logger.log(Level.FINE, "match ==> " + match);
                     Fix fix = new ImportFix(match);
                     synchronized(fixes){
                         fixes.add(fix);

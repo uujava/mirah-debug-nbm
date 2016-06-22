@@ -116,12 +116,12 @@ public class ClassIndex {
         }
         public void addMatch(String match){
             if ( matchSet.contains(match)){
-//                LOG.info(this,"Matchset already contains "+match);
+//                if (logger.isLoggable(Level.FINE)) logger.log(Level.FINE, "Matchset already contains "+match);
                 return;
             }
-//            LOG.info(this,"Adding match "+match);
+//            if (logger.isLoggable(Level.FINE)) logger.log(Level.FINE, "Adding match "+match);
             matchSet.add(match);
-//            LOG.info(this,":::: "+matchSet);
+//            if (logger.isLoggable(Level.FINE)) logger.log(Level.FINE, ":::: "+matchSet);
             while ( match.indexOf(".")==0 ){
                 match = match.substring(1);
             }
@@ -136,7 +136,7 @@ public class ClassIndex {
     
     public void findClass(CompoundQuery query, Future results){
         for ( Query q : query.queries ){
-//            LOG.info(this,"findClass q-"+q);
+//            if (logger.isLoggable(Level.FINE)) logger.log(Level.FINE, "findClass q-"+q);
             findClass(q, results);
         }
     }
@@ -146,7 +146,7 @@ public class ClassIndex {
             int numBefore = results.getMatches().size();
             findClass(root, results.getMatches(), query.simpleName, query.prefix);
             int numAfter = results.getMatches().size();
-//            LOG.info(this,"findClass query=" + query.simpleName + " numAfter=" + numAfter + " numBefore=" + numBefore);
+//            if (logger.isLoggable(Level.FINE)) logger.log(Level.FINE, "findClass query=" + query.simpleName + " numAfter=" + numAfter + " numBefore=" + numBefore);
             if ( numBefore != numAfter ){
                 results.resultsAdded();
             }
@@ -161,7 +161,7 @@ public class ClassIndex {
         FileObject start = root;
         String[] prefixSegments = prefix.split("/");
         
-//        LOG.info(ClassIndex.class,"findClass root="+root+" simpleName="+simpleName+" prefix="+prefix);
+//        if (logger.isLoggable(Level.FINE)) logger.log(Level.FINE, "findClass root="+root+" simpleName="+simpleName+" prefix="+prefix);
         
         for ( String seg : prefixSegments ){
             if ( start.getFileObject(seg) != null ){
@@ -175,12 +175,12 @@ public class ClassIndex {
                 if ( obj instanceof FileObject ){
                     FileObject fo = (FileObject)obj;
                     String name = fo.getName();
-//                    LOG.info(ClassIndex.class,"equals name="+name+"."+fo.getExt()+" simpleName="+simpleName );
+//                    if (logger.isLoggable(Level.FINE)) logger.log(Level.FINE, "equals name="+name+"."+fo.getExt()+" simpleName="+simpleName );
                     //if ( name.contains("JMenu")){
                     //    System.err.println("Name "+name+" simple name "+simpleName+" fo "+fo+" ext "+fo.getExt());
                     //}
 //                    if ( "class".equals(fo.getExt()) && (simpleName.equals(name) || name.endsWith("$" + simpleName)) )
-//                    LOG.info(ClassIndex.class,"EQUALS!!!!!!!! "+simpleName);
+//                    if (logger.isLoggable(Level.FINE)) logger.log(Level.FINE, "EQUALS!!!!!!!! "+simpleName);
                     return ("class".equals(fo.getExt()) && (simpleName.equals(name) || name.endsWith("$"+simpleName)));
                 }
                 return false;
@@ -191,7 +191,7 @@ public class ClassIndex {
         find(start, foMatches, cmp);
         for ( FileObject fo : foMatches ){
             String fqn = getFQN(root, fo);
-//            LOG.info(ClassIndex.class,"fqn = "+fqn);
+//            if (logger.isLoggable(Level.FINE)) logger.log(Level.FINE, "fqn = "+fqn);
             matches.add(fqn);
             
         }

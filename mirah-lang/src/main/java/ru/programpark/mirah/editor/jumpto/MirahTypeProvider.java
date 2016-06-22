@@ -1,6 +1,6 @@
 package ru.programpark.mirah.editor.jumpto;
 
-import ru.programpark.mirah.LOG;
+
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -59,8 +59,7 @@ import ru.programpark.mirah.index.elements.IndexedClass;
 //@ServiceProvider(service=org.netbeans.spi.jumpto.type.TypeProvider.class)
 @ServiceProvider(service=TypeProvider.class)
 public class MirahTypeProvider implements TypeProvider {
-    private static final Logger LOGGER = Logger.getLogger(MirahTypeProvider.class.getName());
-    private static final Level LEVEL = Level.FINE;
+    private static final Logger logger = Logger.getLogger(MirahTypeProvider.class.getName());
     private static final Collection<? extends MirahTypeDescription> ACTIVE = Collections.unmodifiableSet(new HashSet<MirahTypeDescription>());  //Don't replace with C.emptySet() has to be identity unique.
 
     //@NotThreadSafe //Confinement within a thread
@@ -115,21 +114,8 @@ public class MirahTypeProvider implements TypeProvider {
                     Collections.singleton(ClassPath.SOURCE),
                     Collections.<String>emptySet(),
                     Collections.<String>emptySet());
-            /*
-            Project projects[] = OpenProjects.getDefault().getOpenProjects();
-            Collection<FileObject> roots = new ArrayList<FileObject>();
-            for( Project p : projects )
-            {
-                FileObject dir = p.getProjectDirectory();
-                Collection<FileObject> coll = QuerySupport.findRoots(dir, Collections.singleton(ClassPath.SOURCE), null, null);
-    //            roots.add(p.getProjectDirectory());
-//                for( FileObject ff : coll )
-//                    LOG.info(this,"coll = "+ff);
-                roots.addAll(coll);
-            }
-            */
             index = MirahIndex.get(roots);
-            LOG.info(this, "roots = " + roots.size());
+            if (logger.isLoggable(Level.FINE)) logger.log(Level.FINE,  "roots = " + roots.size());
             
         }
         return index;
@@ -468,16 +454,10 @@ public class MirahTypeProvider implements TypeProvider {
 
     @CheckForNull
     private Map<URI, CacheItem> getRootCache() {
-        if (LOGGER.isLoggable(LEVEL) && rootCache == null) {
-            LOGGER.log(LEVEL, "Returning null cache entries.", new Exception());
-        }
         return rootCache == null ? null : Collections.<URI, CacheItem>unmodifiableMap(rootCache);
     }
 
     private void setRootCache(@NullAllowed final Map<URI,CacheItem> cache) {
-        if (LOGGER.isLoggable(LEVEL)) {
-            LOGGER.log(LEVEL, "Setting cache entries from " + this.rootCache + " to " + cache + ".", new Exception());
-        }
         if (this.rootCache != null) {
             for (CacheItem ci : rootCache.values()) {
                 ci.dispose();
@@ -512,7 +492,6 @@ public class MirahTypeProvider implements TypeProvider {
             }
         }
         sb.append(".*(\\..*)?");  //NOI18N
-        LOGGER.log(Level.FINE, "Package pattern: {0}", sb); //NOI18N
         return Pattern.compile(sb.toString());
     }
 
@@ -777,10 +756,7 @@ public class MirahTypeProvider implements TypeProvider {
                     null :
                     uri.toURL();
             } catch (MalformedURLException ex) {
-                LOGGER.log(
-                    Level.FINE,
-                    "Cannot convert URI to URL",    //NOI18N
-                    ex);
+                logger.severe("Cannot convert URI to URL " +ex);
                 return null;
             }
         }

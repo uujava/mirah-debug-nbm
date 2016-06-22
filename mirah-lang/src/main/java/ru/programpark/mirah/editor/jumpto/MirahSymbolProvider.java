@@ -123,24 +123,6 @@ public class MirahSymbolProvider implements SymbolProvider {
                         Collections.<String>emptySet());
 
                 final MirahIndex index = MirahIndex.get(roots);
-                /*
-                final Set<URL> rootUrls = new HashSet<URL>();
-                for(FileObject root : roots) {
-                    if (canceled) {
-                        return;
-                    }          
-                    LOG.info(this,"ROOT: "+root.toURL());
-                    rootUrls.add(root.toURL());
-                }
-
-                if (LOGGER.isLoggable(Level.FINE)) {
-                    LOGGER.log(Level.FINE, "Querying following roots:"); //NOI18N
-                    for (URL url : rootUrls) {
-                        LOGGER.log(Level.FINE, "  {0}", url); //NOI18N
-                    }
-                    LOGGER.log(Level.FINE, "-------------------------"); //NOI18N
-                }
-                */
 
                 final String text = textToSearch;
 

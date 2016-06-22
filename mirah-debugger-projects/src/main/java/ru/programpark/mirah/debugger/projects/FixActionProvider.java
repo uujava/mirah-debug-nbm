@@ -46,6 +46,8 @@ import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.debugger.ActionsManager;
 
@@ -76,7 +78,7 @@ import org.openide.windows.TopComponent;
 */
 //@ActionsProvider.Registration(path = "netbeans-JPDASession", actions = "fix")
 public class FixActionProvider extends ActionsProviderSupport {
-
+    private static final Logger logger = Logger.getLogger(FixActionProvider.class.getName());
     private JPDADebugger debugger;
     private Listener listener;
 
@@ -107,7 +109,7 @@ public class FixActionProvider extends ActionsProviderSupport {
 
     public void doAction (Object action) {
         
-        LOG.info(this,"doAction action="+action);
+        if (logger.isLoggable(Level.FINE)) logger.log(Level.FINE, this.toString());;
         if (!SwingUtilities.isEventDispatchThread()) {
             try {
                 SwingUtilities.invokeAndWait(new Runnable() {

@@ -47,7 +47,6 @@ public final class MirahIndex {
                     roots.toArray(new FileObject[roots.size()])));
         } catch (IOException ioe) {
 //            LOG.log(Level.WARNING, null, ioe);
-//            LOG.exception(MirahIndex.class, ioe);
             return EMPTY;
         }
     }

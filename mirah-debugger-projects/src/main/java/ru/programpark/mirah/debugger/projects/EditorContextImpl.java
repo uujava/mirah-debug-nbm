@@ -86,6 +86,8 @@ import java.net.URL;
 import java.util.*;
 import java.util.List;
 import java.util.concurrent.Future;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * @author Jan Jancura
@@ -101,7 +103,7 @@ import java.util.concurrent.Future;
  * this module will also be loaded
  */
 public class EditorContextImpl extends EditorContext {
-
+    private static final Logger logger = Logger.getLogger(EditorContextImpl.class.getName());
     private static String fronting =
             System.getProperty("netbeans.debugger.fronting");
     private PropertyChangeSupport pcs;
@@ -862,7 +864,7 @@ public class EditorContextImpl extends EditorContext {
         }
         JEditorPane ep = contextDispatcher.getCurrentEditor();
         Source source = Source.create(fo);
-        LOG.info(this, "getCurrentMethodDeclaration source=" + source);
+        if (logger.isLoggable(Level.FINE)) logger.log(Level.FINE, this.toString());
         if (source == null) {
             return null;
         }
@@ -1074,7 +1076,7 @@ public class EditorContextImpl extends EditorContext {
      */
     @Override
     public String getClassName(String url, final int lineNumber) {
-        LOG.info(this, "getClassName url =" + url + " lineNumber=" + lineNumber);
+        if (logger.isLoggable(Level.FINE)) logger.log(Level.FINE, this.toString());
         try {
             final StyledDocument doc = getStyledDocument(url);
             Source source = getSource(url);

@@ -42,12 +42,14 @@
 
 package ru.programpark.mirah.maven;
 
-import ru.programpark.mirah.LOG;
+
 
 import ru.programpark.mirah.RecompileQueue;
 import org.netbeans.api.project.Project;
 import ru.programpark.mirah.support.spi.MirahExtenderImplementation;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.spi.project.ProjectServiceProvider;
@@ -67,7 +69,7 @@ import org.openide.filesystems.FileEvent;
     }
 )
 public class MavenMirahProjectOpenedHook extends ProjectOpenedHook {
-
+    private static final Logger logger = Logger.getLogger(MavenMirahProjectOpenedHook.class.getName());
     private final Project project;
 
     public MavenMirahProjectOpenedHook(Project project) {
@@ -77,13 +79,13 @@ public class MavenMirahProjectOpenedHook extends ProjectOpenedHook {
 
     @Override
     protected void projectOpened() {
-        LOG.info(this, "projectOpened project=" + project);
+        if (logger.isLoggable(Level.FINE)) logger.log(Level.FINE,  "projectOpened project=" + project);
         project.getProjectDirectory().addRecursiveListener(new FileChangeAdapter(){
 
             @Override
             public void fileChanged(FileEvent fe) {
                 if ( fe.getFile().getPath().endsWith(".java")){
-                    LOG.info(MavenMirahProjectOpenedHook.this, "file " + fe.getFile().getNameExt() + " changed in project " + project.getProjectDirectory().getNameExt());
+                    if (logger.isLoggable(Level.FINE)) logger.log(Level.FINE,  "file " + fe.getFile().getNameExt() + " changed in project " + project.getProjectDirectory().getNameExt());
                     //System.out.println("Adding to compile queue "+fe.getFile());
                     RecompileQueue.getProjectQueue(project).addChanged(fe.getFile());
                 }
@@ -100,7 +102,7 @@ public class MavenMirahProjectOpenedHook extends ProjectOpenedHook {
         //}
         Preferences prefs = ProjectUtils.getPreferences(project, MirahExtenderImplementation.class, true);
         prefs.put("project_type", "maven");
-        LOG.info(this,"Setting project type in prefs to maven");
+        if (logger.isLoggable(Level.FINE)) logger.log(Level.FINE, "Setting project type in prefs to maven");
 
         //svd - force maven project indexing
 //        IndexingManager.getDefault().refreshIndex(project.getProjectDirectory().toURL(),null,false);

@@ -419,17 +419,13 @@ public class BlockCollector implements BlockNode {
         }
         final Document doc = parsed.getSnapshot().getSource().getDocument(false);
         if (doc == null) {
-//            LOG.info(this,"doc = null file="+res.getSnapshot().getSource().getFileObject().getPath());
             return;
         }
         final DocumentQuery dq = new DocumentQuery(doc);
         if (dq == null) {
-//            LOG.info(this,"dq = null file="+res.getSnapshot().getSource().getFileObject().getPath());
             return;
         }
         final TokenSequence<MirahTokenId> seq = dq.getTokens(0, false);
-//        final MirahTokenId tComment = MirahTokenId.get(Tokens.tComment);
-//        final MirahTokenId tNL = MirahTokenId.get(Tokens.tNL);
         do {
             final MirahTokenId tokenId = seq.token().id();
             if (!tokenId.is(Tokens.tComment) && !tokenId.is(Tokens.tJavaDoc)) {

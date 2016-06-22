@@ -42,7 +42,7 @@ class SyntaxErrorsHighlightingTask extends ParserResultTask {
         if ( result == null || result.getDiagnostics().isEmpty() ){
             return;
         }
-//        LOG.info(this,"run diagnostics="+result.getMirahDiagnostics()+" errors="+result.getMirahDiagnostics().getErrors());
+//        if (logger.isLoggable(Level.FINE)) logger.log(Level.FINE, "run diagnostics="+result.getMirahDiagnostics()+" errors="+result.getMirahDiagnostics().getErrors());
         
         List<ParserError> syntaxErrors = result.getDiagnostics();
         Snapshot snapshot = result.getSnapshot();

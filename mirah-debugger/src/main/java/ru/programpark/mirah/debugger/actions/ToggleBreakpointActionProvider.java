@@ -66,7 +66,6 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.NbDocument;
 import org.openide.util.NbBundle;
 import ru.programpark.mirah.debugger.EditorContextBridge;
-import ru.programpark.mirah.debugger.LOG;
 
 import javax.swing.*;
 import javax.swing.text.StyledDocument;
@@ -77,6 +76,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collections;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 //import org.netbeans.modules.maven.NbMavenProjectImpl;
 //import org.netbeans.modules.maven.api.NbMavenProject;
@@ -94,6 +95,7 @@ public class ToggleBreakpointActionProvider extends ActionsProviderSupport
         implements PropertyChangeListener {
 
     private JPDADebugger debugger;
+    private static final Logger logger = Logger.getLogger(ToggleBreakpointActionProvider.class.getName());
 
     public ToggleBreakpointActionProvider() {
         EditorContextBridge.getContext().addPropertyChangeListener(this);
@@ -260,7 +262,7 @@ public class ToggleBreakpointActionProvider extends ActionsProviderSupport
         if ("".equals(url.trim())) {
             return;
         }
-        LOG.info(this, "toggle breakpoint in URL = " + url + " lineNumber = " + lineNumber);
+        if (logger.isLoggable(Level.FINE)) logger.log(Level.FINE,  "toggle breakpoint in URL = " + url + " lineNumber = " + lineNumber);
 
         if (lineNumber < 0) return;
 
@@ -290,18 +292,18 @@ public class ToggleBreakpointActionProvider extends ActionsProviderSupport
         int lastIndex = url.lastIndexOf('/');
         String sourcePath = lastIndex == -1 ? url : url.substring(lastIndex + 1);
         lb.setSourceName(sourcePath);
-        LOG.info(this, "sourceName = " + sourcePath);
+        if (logger.isLoggable(Level.FINE)) logger.log(Level.FINE,  "sourceName = " + sourcePath);
         if (packageName != null) {
             sourcePath = packageName.replace('.', '/') + "/" + sourcePath;
         }
-        LOG.info(this, "sourcePath = " + sourcePath);
+        if (logger.isLoggable(Level.FINE)) logger.log(Level.FINE,  "sourcePath = " + sourcePath);
         lb.setSourcePath(sourcePath);
 //      lb.setURL(url);
 //      lb.setStratum("MIRAH");
         lb.setPreferredClassName(preferredClassName);
         lb.setPrintText(NbBundle.getBundle(ToggleBreakpointActionProvider.class).getString("CTL_Line_Breakpoint_Print_Text"));
         d.addBreakpoint(lb);
-        LOG.info(this, "add breakpoint in url=" + url + " line=" + lineNumber + " preferredClassName=" + preferredClassName);
+        if (logger.isLoggable(Level.FINE)) logger.log(Level.FINE,  "add breakpoint in url=" + url + " line=" + lineNumber + " preferredClassName=" + preferredClassName);
     }
 
     @Override

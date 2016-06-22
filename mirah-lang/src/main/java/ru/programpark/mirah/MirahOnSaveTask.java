@@ -15,13 +15,16 @@ import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.spi.editor.document.OnSaveTask;
 import org.openide.filesystems.FileObject;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 /**
  *
  * @author shannah
  */
 public class MirahOnSaveTask implements OnSaveTask {
 
-    
+    private static final Logger logger = Logger.getLogger(MirahOnSaveTask.class.getName());
     Context context;
     
     private MirahOnSaveTask(Context context){
@@ -34,19 +37,19 @@ public class MirahOnSaveTask implements OnSaveTask {
 //        RepositoryUpdater.getDefault().enforcedFileListUpdate(null, null);
         
         FileObject fo = NbEditorUtilities.getFileObject(context.getDocument());
-//        LOG.info(this,"performTask fo="+fo.getNameExt());
+//        if (logger.isLoggable(Level.FINE)) logger.log(Level.FINE, "performTask fo="+fo.getNameExt());
         Project project = FileOwnerQuery.getOwner(fo);
-//        LOG.info(this,"fo = "+fo+" project = "+project);
+//        if (logger.isLoggable(Level.FINE)) logger.log(Level.FINE, "fo = "+fo+" project = "+project);
         if (!MirahExtender.isActive(project)) {
-//            LOG.info(this,"MirahExtender.activate!!");
+//            if (logger.isLoggable(Level.FINE)) logger.log(Level.FINE, "MirahExtender.activate!!");
             MirahExtender.activate(project);
         }
-//        LOG.info(this,"About to check if mirah is current");
+//        if (logger.isLoggable(Level.FINE)) logger.log(Level.FINE, "About to check if mirah is current");
         //LOG.info("About to check if mirah is current");
         if (!MirahExtender.isCurrent(project)){
 //  TODO fix gradle/maven project updater
         }
-        LOG.info(this, "------------------ end of save task --------------------");
+        if (logger.isLoggable(Level.FINE)) logger.log(Level.FINE,  "------------------ end of save task --------------------");
     }
 
     @Override

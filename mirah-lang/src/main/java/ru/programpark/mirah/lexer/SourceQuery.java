@@ -84,7 +84,7 @@ public class SourceQuery implements List<Node>{
     public SourceQuery findClasses(int offset){
 
         if (parser_result.getParsedNodes() == null ) {
-            //LOG.info(this,"findClasses DEBUGGER is NULL!!!");
+            //if (logger.isLoggable(Level.FINE)) logger.log(Level.FINE, "findClasses DEBUGGER is NULL!!!");
             return null;
         }
         ClassScanner scanner = new ClassScanner();
@@ -92,14 +92,14 @@ public class SourceQuery implements List<Node>{
         for( Object node : parser_result.getParsedNodes() ){
             ((Node)node).accept(scanner, null);
         }
-        //LOG.info(this,"findClasses scanner.found: "+scanner.found);
+        //if (logger.isLoggable(Level.FINE)) logger.log(Level.FINE, "findClasses scanner.found: "+scanner.found);
         if ( scanner.found == null ) return null;
         return new SourceQuery(parser_result, scanner.found);
     }
     
     public SourceQuery findMethods(int offset){
         if (parser_result == null || parser_result.getParsedNodes() == null ) {
-            //LOG.info(this,"findMethods DEBUGGER is NULL!!!");
+            //if (logger.isLoggable(Level.FINE)) logger.log(Level.FINE, "findMethods DEBUGGER is NULL!!!");
             return null;
         }
         MethodOffsetScanner scanner = new MethodOffsetScanner();
@@ -107,7 +107,7 @@ public class SourceQuery implements List<Node>{
         for( Object node : parser_result.getParsedNodes() ){
             ((Node)node).accept(scanner, null);
         }
-        //LOG.info(this,"findMethods scanner.found: " + scanner.found);
+        //if (logger.isLoggable(Level.FINE)) logger.log(Level.FINE, "findMethods scanner.found: " + scanner.found);
         if (scanner.found == null) return null;
         return new SourceQuery(parser_result, scanner.found);
     }
