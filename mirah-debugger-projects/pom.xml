@@ -6,6 +6,7 @@
         <groupId>ru.programpark.mirah</groupId>
         <artifactId>root</artifactId>
         <version>1.0-SNAPSHOT</version>
+	<relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>mirah-debugger-projects</artifactId>    
     <name>mirah-debugger-projects</name>
