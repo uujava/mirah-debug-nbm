@@ -86,7 +86,7 @@ import ru.programpark.mirah.editor.completion.MirahCompletionHandler;
 @MIMEResolver.ExtensionRegistration(
     mimeType = "text/x-vruby",
     displayName = "#LBL_MirahEditorTab",
-    extension = "mirah",
+    extension = "vrb",
     position = 281
 )
 @LanguageRegistration(
@@ -128,12 +128,12 @@ public class MirahLanguage extends DefaultLanguageConfig {
 
     @Override
     public String getDisplayName() {
-        return "Mirah"; // NOI18N
+        return "VRuby"; // NOI18N
     }
 
     @Override
     public String getPreferredExtension() {
-        return "mirah"; // NOI18N
+        return "vrb"; // NOI18N
     }
 
     /**

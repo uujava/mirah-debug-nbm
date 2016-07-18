@@ -7,6 +7,6 @@
 package ${package}
 
 </#if>
-def name='${user}'
+name='${user}'
 
-println "Hello $name!"
+puts "Hello ${"#"}{name}!"
