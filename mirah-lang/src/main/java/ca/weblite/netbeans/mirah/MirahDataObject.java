@@ -30,63 +30,63 @@ import org.openide.windows.TopComponent;
 )
 @MIMEResolver.ExtensionRegistration(
         displayName = "#LBL_Mirah_LOADER",
-        mimeType = "text/x-mirah",
-        extension = {"mirah"}
+        mimeType = "text/x-vruby",
+        extension = {"vrb"}
 )
 @DataObject.Registration(
-        mimeType = "text/x-mirah",
+        mimeType = "text/x-vruby",
         iconBase = "ca/weblite/netbeans/mirah/1391571312_application-x-ruby.png",
         displayName = "#LBL_Mirah_LOADER",
         position = 300
 )
 @ActionReferences({
     @ActionReference(
-            path = "Loaders/text/x-mirah/Actions",
+            path = "Loaders/text/x-vruby/Actions",
             id = @ActionID(category = "System", id = "org.openide.actions.OpenAction"),
             position = 100,
             separatorAfter = 200
     ),
     @ActionReference(
-            path = "Loaders/text/x-mirah/Actions",
+            path = "Loaders/text/x-vruby/Actions",
             id = @ActionID(category = "Edit", id = "org.openide.actions.CutAction"),
             position = 300
     ),
     @ActionReference(
-            path = "Loaders/text/x-mirah/Actions",
+            path = "Loaders/text/x-vruby/Actions",
             id = @ActionID(category = "Edit", id = "org.openide.actions.CopyAction"),
             position = 400,
             separatorAfter = 500
     ),
     @ActionReference(
-            path = "Loaders/text/x-mirah/Actions",
+            path = "Loaders/text/x-vruby/Actions",
             id = @ActionID(category = "Edit", id = "org.openide.actions.DeleteAction"),
             position = 600
     ),
     @ActionReference(
-            path = "Loaders/text/x-mirah/Actions",
+            path = "Loaders/text/x-vruby/Actions",
             id = @ActionID(category = "System", id = "org.openide.actions.RenameAction"),
             position = 700,
             separatorAfter = 800
     ),
     @ActionReference(
-            path = "Loaders/text/x-mirah/Actions",
+            path = "Loaders/text/x-vruby/Actions",
             id = @ActionID(category = "System", id = "org.openide.actions.SaveAsTemplateAction"),
             position = 900,
             separatorAfter = 1000
     ),
     @ActionReference(
-            path = "Loaders/text/x-mirah/Actions",
+            path = "Loaders/text/x-vruby/Actions",
             id = @ActionID(category = "System", id = "org.openide.actions.FileSystemAction"),
             position = 1100,
             separatorAfter = 1200
     ),
     @ActionReference(
-            path = "Loaders/text/x-mirah/Actions",
+            path = "Loaders/text/x-vruby/Actions",
             id = @ActionID(category = "System", id = "org.openide.actions.ToolsAction"),
             position = 1300
     ),
     @ActionReference(
-            path = "Loaders/text/x-mirah/Actions",
+            path = "Loaders/text/x-vruby/Actions",
             id = @ActionID(category = "System", id = "org.openide.actions.PropertiesAction"),
             position = 1400
     )
@@ -95,7 +95,7 @@ public class MirahDataObject extends MultiDataObject {
 
     public MirahDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException, IOException {
         super(pf, loader);
-        registerEditor("text/x-mirah", true);
+        registerEditor("text/x-vruby", true);
         
     }
 
@@ -107,9 +107,9 @@ public class MirahDataObject extends MultiDataObject {
     @MultiViewElement.Registration(
             displayName = "#LBL_Mirah_EDITOR",
             iconBase = "ca/weblite/netbeans/mirah/1391571312_application-x-ruby.png",
-            mimeType = "text/x-mirah",
+            mimeType = "text/x-vruby",
             persistenceType = TopComponent.PERSISTENCE_ONLY_OPENED,
-            preferredID = "Mirah",
+            preferredID = "VRuby",
             position = 1000
     )
     @Messages("LBL_Mirah_EDITOR=Source")

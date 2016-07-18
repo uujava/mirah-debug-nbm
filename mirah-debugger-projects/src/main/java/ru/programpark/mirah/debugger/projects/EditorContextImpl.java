@@ -144,7 +144,7 @@ public class EditorContextImpl extends EditorContext {
         pcs = new PropertyChangeSupport(this);
         dispatchListener = new EditorContextDispatchListener();
         contextDispatcher = EditorContextDispatcher.getDefault();
-        contextDispatcher.addPropertyChangeListener("text/x-mirah",
+        contextDispatcher.addPropertyChangeListener("text/x-vruby",
                 WeakListeners.propertyChange(dispatchListener, contextDispatcher));
     }
 /*
@@ -1050,7 +1050,7 @@ public class EditorContextImpl extends EditorContext {
         if (source == null) {
             return null;
         }
-        if (!"text/x-mirah".equals(fo.getMIMEType())) {
+        if (!"text/x-vruby".equals(fo.getMIMEType())) {
             /**
              * Should return null instead of "" here,
              *
@@ -1139,7 +1139,7 @@ public class EditorContextImpl extends EditorContext {
         if (fileObject == null) {
             return null;
         }
-        if (!"text/x-mirah".equals(fileObject.getMIMEType())) {
+        if (!"text/x-vruby".equals(fileObject.getMIMEType())) {
             return null;
         }
 
@@ -1487,7 +1487,7 @@ public class EditorContextImpl extends EditorContext {
         if (fo == null) {
             return null;
         }
-        if (!"text/x-mirah".equals(fo.getMIMEType())) {
+        if (!"text/x-vruby".equals(fo.getMIMEType())) {
             return null;
         }
         /** @todo*/

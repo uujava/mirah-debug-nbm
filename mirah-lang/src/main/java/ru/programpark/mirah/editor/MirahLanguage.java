@@ -84,17 +84,17 @@ import ru.programpark.mirah.editor.completion.MirahCompletionHandler;
  * @author Caoyuan Deng
  */
 @MIMEResolver.ExtensionRegistration(
-    mimeType = "text/x-mirah",
+    mimeType = "text/x-vruby",
     displayName = "#LBL_MirahEditorTab",
     extension = "mirah",
     position = 281
 )
 @LanguageRegistration(
-    mimeType = "text/x-mirah",
+    mimeType = "text/x-vruby",
     useMultiview = true
 )
 @PathRecognizerRegistration(
-        mimeTypes = "text/x-mirah",
+        mimeTypes = "text/x-vruby",
         sourcePathIds = ClassPath.SOURCE,
 //        libraryPathIds = ClassPath.BOOT,
         libraryPathIds = {},
@@ -106,7 +106,7 @@ public class MirahLanguage extends DefaultLanguageConfig {
 //    iconBase = "ca/weblite/netbeans/mirah/1391571312_application-x-ruby.png",
 //    persistenceType = TopComponent.PERSISTENCE_ONLY_OPENED,
 //    preferredID = "mirah.source",
-//    mimeType = "text/x-mirah",
+//    mimeType = "text/x-vruby",
 //    position = 1)
 
     public static MultiViewEditorElement createMultiViewEditorElement(Lookup context) {

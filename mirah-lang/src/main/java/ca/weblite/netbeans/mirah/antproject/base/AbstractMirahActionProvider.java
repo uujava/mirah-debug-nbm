@@ -306,7 +306,7 @@ public abstract class AbstractMirahActionProvider implements ActionProvider {
 //        LOG.info("findSources context="+context);
         Sources sources = ProjectUtils.getSources(project);
         for (SourceGroup sourceGroup : sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
-            FileObject[] files = ActionUtils.findSelectedFiles(context, sourceGroup.getRootFolder(), ".mirah", true); // NOI18N
+            FileObject[] files = ActionUtils.findSelectedFiles(context, sourceGroup.getRootFolder(), ".vrb", true); // NOI18N
             if (files != null) {
                 return files;
             }
@@ -319,7 +319,7 @@ public abstract class AbstractMirahActionProvider implements ActionProvider {
      */
     private FileObject[] findTestSources(Lookup context) {
         for (FileObject testSourceRoot : getTestSourceRoots(project)) {
-            FileObject[] files = ActionUtils.findSelectedFiles(context, testSourceRoot, ".mirah", true); // NOI18N
+            FileObject[] files = ActionUtils.findSelectedFiles(context, testSourceRoot, ".vrb", true); // NOI18N
             if (files != null) {
                 return files;
             }

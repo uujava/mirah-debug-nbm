@@ -288,7 +288,7 @@ public class MirahTypedBreakInterceptor implements TypedBreakInterceptor{
     public void cancelled(Context cntxt) {        
     }        
   
-    @MimeRegistration(mimeType = "text/x-mirah", service = TypedBreakInterceptor.Factory.class)
+    @MimeRegistration(mimeType = "text/x-vruby", service = TypedBreakInterceptor.Factory.class)
     public static class MirahFactory implements TypedBreakInterceptor.Factory {
 
         @Override

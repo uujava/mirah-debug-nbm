@@ -22,7 +22,7 @@ import org.netbeans.api.lexer.TokenId;
  */
 public class MirahTokenId implements TokenId {
 
-    public static final String MIME_TYPE = "text/x-mirah";
+    public static final String MIME_TYPE = "text/x-vruby";
     
     public static final MirahTokenId RPAREN = get(Tokens.tRParen.ordinal());
     public static final MirahTokenId LPAREN = get(Tokens.tLParen.ordinal());

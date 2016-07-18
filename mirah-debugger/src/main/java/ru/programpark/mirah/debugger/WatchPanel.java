@@ -98,7 +98,7 @@ public class WatchPanel {
     }
     
     public static void setupContext(JEditorPane editorPane) {
-        EditorKit kit = CloneableEditorSupport.getEditorKit("text/x-mirah");
+        EditorKit kit = CloneableEditorSupport.getEditorKit("text/x-vruby");
         editorPane.setEditorKit(kit);
         DebuggerEngine en = DebuggerManager.getDebuggerManager ().getCurrentEngine();
         JPDADebugger d = en.lookupFirst(null, JPDADebugger.class);

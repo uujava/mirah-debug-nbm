@@ -74,7 +74,7 @@ public class MirahOnSaveTask implements OnSaveTask {
     }
     
     
-    @MimeRegistration(mimeType="text/x-mirah", service=OnSaveTask.Factory.class, position=1500)
+    @MimeRegistration(mimeType="text/x-vruby", service=OnSaveTask.Factory.class, position=1500)
     public static class Factory implements OnSaveTask.Factory {
 
         @Override

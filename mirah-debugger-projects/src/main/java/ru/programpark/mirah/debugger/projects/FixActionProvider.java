@@ -87,7 +87,7 @@ public class FixActionProvider extends ActionsProviderSupport {
         listener = new Listener ();
         MainProjectManager.getDefault ().addPropertyChangeListener (listener);
         debugger.addPropertyChangeListener (JPDADebugger.PROP_STATE, listener);
-        EditorContextDispatcher.getDefault().addPropertyChangeListener("text/x-mirah", listener);
+        EditorContextDispatcher.getDefault().addPropertyChangeListener("text/x-vruby", listener);
 
         setEnabled (
             ActionsManager.ACTION_FIX,

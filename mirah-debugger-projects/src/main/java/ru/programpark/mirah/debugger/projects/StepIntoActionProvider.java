@@ -71,7 +71,7 @@ import org.openide.util.WeakListeners;
 */
 @ActionsProvider.Registration(actions = "stepInto")
 public class StepIntoActionProvider extends ActionsProviderSupport {
-    private final static String MIME_TYPE = "text/x-mirah";
+    private final static String MIME_TYPE = "text/x-vruby";
 
 
 //    private MethodBreakpoint breakpoint;

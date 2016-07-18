@@ -72,7 +72,7 @@ import org.openide.util.WeakListeners;
 *
 * @author   Jan Jancura
 */
-@Registration(actions={"runToCursor"}, activateForMIMETypes={"text/x-mirah"})
+@Registration(actions={"runToCursor"}, activateForMIMETypes={"text/x-vruby"})
 public class RunToCursorActionProvider extends ActionsProviderSupport {
 
     private EditorContextDispatcher editorContext;
@@ -83,7 +83,7 @@ public class RunToCursorActionProvider extends ActionsProviderSupport {
         editorContext = EditorContextDispatcher.getDefault();
         Listener listener = new Listener ();
         MainProjectManager.getDefault ().addPropertyChangeListener (listener);
-        editorContext.addPropertyChangeListener("text/x-mirah",
+        editorContext.addPropertyChangeListener("text/x-vruby",
                 WeakListeners.propertyChange(listener, editorContext));
         DebuggerManager.getDebuggerManager ().addDebuggerListener (
             DebuggerManager.PROP_DEBUGGER_ENGINES,

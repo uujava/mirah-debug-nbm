@@ -50,7 +50,7 @@ public class MirahDeletedTextInterceptor implements DeletedTextInterceptor{
         }
 
         @MimeRegistrations({
-            @MimeRegistration(mimeType = "text/x-mirah", service = DeletedTextInterceptor.Factory.class)
+            @MimeRegistration(mimeType = "text/x-vruby", service = DeletedTextInterceptor.Factory.class)
             
         })
         public static class Factory implements DeletedTextInterceptor.Factory {
