@@ -92,7 +92,7 @@ public class PrintIndex {
             if ( doc == null ) return;
 
             FileObject fo = getFileObject(doc);
-            if ( ! fo.getExt().equals("mirah") ) return;
+            if ( ! fo.getExt().equals("vrb") ) return;
             
             Project project = FileOwnerQuery.getOwner(fo);
             

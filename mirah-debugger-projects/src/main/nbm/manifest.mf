@@ -1,7 +1,7 @@
 Manifest-Version: 1.0
 AutoUpdate-Show-In-Client: true
 OpenIDE-Module: ru.programpark.mirah.debugger.projects/1
-OpenIDE-Module-Name: Mirah Debugger Projects Integration
-OpenIDE-Module-Display-Category: Mirah
+OpenIDE-Module-Name: VRuby Debugger Projects Integration
+OpenIDE-Module-Display-Category: VRuby
 OpenIDE-Module-Localizing-Bundle: ru/programpark/mirah/debugger/projects/resources/Bundle.properties
 OpenIDE-Module-Layer: ru/programpark/mirah/debugger/projects/resources/layer.xml

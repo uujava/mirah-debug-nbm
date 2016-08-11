@@ -76,7 +76,7 @@ OpenIDE-Module-Long-Description: <undefined>
 Build-Jdk: 1.7.0_25
 OpenIDE-Module-Layer: ca/weblite/netbeans/mirah/layer.xml
 OpenIDE-Module-Implementation-Version: 2.1
-OpenIDE-Module-Display-Category: Mirah
+OpenIDE-Module-Display-Category: VRuby
 OpenIDE-Module-Specification-Version: 2.1
 OpenIDE-Module-Public-Packages: ca.weblite.netbeans.mirah.lexer.*
 OpenIDE-Module-Name: mirah-lang

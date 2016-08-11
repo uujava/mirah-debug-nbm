@@ -168,7 +168,7 @@ public class MirahIndexer extends EmbeddingIndexer {
 
     public static final class Factory extends EmbeddingIndexerFactory {
 
-        public static final String NAME = "mirah"; // NOI18N
+        public static final String NAME = "vrb"; // NOI18N
         public static final int VERSION = 8;
 
         @Override
@@ -198,7 +198,7 @@ public class MirahIndexer extends EmbeddingIndexer {
             String extension = snapshot.getSource().getFileObject().getExt();
 
 //            LOG.info(MirahIndexer.class,"isIndexable extension="+extension);
-            if (extension.equals("mirah")) { // NOI18N
+            if (extension.equals("vrb")) { // NOI18N
                 return true;
             }
             return false;

@@ -1,8 +1,8 @@
 Manifest-Version: 1.0
 AutoUpdate-Show-In-Client: true
 OpenIDE-Module: ru.programpark.mirah.debugger/1
-OpenIDE-Module-Name: Mirah JPDA Debugger
+OpenIDE-Module-Name: VRuby JPDA Debugger
 OpenIDE-Module-Localizing-Bundle: ru/programpark/mirah/debugger/Bundle.properties
-OpenIDE-Module-Display-Category: Mirah
+OpenIDE-Module-Display-Category: VRuby
 OpenIDE-Module-Layer: ru/programpark/mirah/debugger/resources/layer.xml
 

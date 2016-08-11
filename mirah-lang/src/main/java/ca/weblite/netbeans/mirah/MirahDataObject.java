@@ -22,7 +22,7 @@ import org.openide.util.NbBundle.Messages;
 import org.openide.windows.TopComponent;
 
 @Messages({
-    "LBL_Mirah_LOADER=Files of Mirah"
+    "LBL_Mirah_LOADER=Files of VRuby"
 })
 @MIMEResolver.Registration(displayName="#LBL_Mirah_LOADER",
        resource="MirahMimeResolver.xml",

@@ -59,7 +59,7 @@ import org.openide.util.NbBundle;
  * @author Martin Adamek
  */
 @NbBundle.Messages(
-    "OptionsCategory_Mirah=Mirah"
+    "OptionsCategory_Mirah=VRuby"
 )
 @OptionsPanelController.SubRegistration(
     id = "ca-weblite-netbeans-mirah-support-api-MirahSettings",
