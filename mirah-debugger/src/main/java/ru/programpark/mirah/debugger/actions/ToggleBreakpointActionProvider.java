@@ -40,56 +40,21 @@
  */
 package ru.programpark.mirah.debugger.actions;
 
-import ca.weblite.netbeans.mirah.lexer.MirahParser;
 import ca.weblite.netbeans.mirah.lexer.SourceQuery;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.io.File;
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URL;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-import javax.swing.SwingUtilities;
-import javax.swing.text.StyledDocument;
-import mirah.lang.ast.MethodDefinition;
-import mirah.lang.ast.Named;
-import mirah.lang.ast.Node;
-import mirah.lang.ast.NodeFilter;
-import mirah.lang.ast.RequiredArgument;
-import mirah.lang.ast.Script;
 import org.netbeans.api.debugger.ActionsManager;
 import org.netbeans.api.debugger.Breakpoint;
-import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.LineBreakpoint;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectManager;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.Sources;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
-//import org.netbeans.modules.maven.NbMavenProjectImpl;
-//import org.netbeans.modules.maven.api.NbMavenProject;
-//import org.netbeans.modules.maven.spi.PackagingProvider;
-import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
-import org.netbeans.modules.parsing.spi.Parser;
-import ru.programpark.mirah.debugger.EditorContextBridge;
 import org.netbeans.spi.debugger.ActionsProvider;
 import org.netbeans.spi.debugger.ActionsProviderSupport;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.jpda.EditorContext;
-import org.netbeans.spi.debugger.jpda.SourcePathProvider;
-import org.netbeans.spi.java.classpath.ClassPathProvider;
-import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
@@ -97,22 +62,31 @@ import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.NbDocument;
-import org.openide.util.Exceptions;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import ru.programpark.mirah.debugger.EditorContextBridge;
 import ru.programpark.mirah.debugger.LOG;
-import ru.programpark.mirah.debugger.SourcePath;
+
+import javax.swing.*;
+import javax.swing.text.StyledDocument;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.Collections;
+import java.util.Set;
+
+//import org.netbeans.modules.maven.NbMavenProjectImpl;
+//import org.netbeans.modules.maven.api.NbMavenProject;
+//import org.netbeans.modules.maven.spi.PackagingProvider;
 
 /**
- *
  * @author Jan Jancura
- *
- * @see
- * debugger.jpda.ui/src/org/netbeans/modules/debugger/jpda/ui/actions/ToggleBreakpointActionProvider.java
+ * @see debugger.jpda.ui/src/org/netbeans/modules/debugger/jpda/ui/actions/ToggleBreakpointActionProvider.java
  */
 @ActionsProvider.Registrations({
-    @ActionsProvider.Registration(path="",                     actions={ "toggleBreakpoint" }, activateForMIMETypes={ "text/x-vruby" }),
-    @ActionsProvider.Registration(path="netbeans-JPDASession", actions={ "toggleBreakpoint" }, activateForMIMETypes={ "text/x-vruby" })
+        @ActionsProvider.Registration(path = "", actions = {"toggleBreakpoint"}, activateForMIMETypes = {"text/x-vruby"}),
+        @ActionsProvider.Registration(path = "netbeans-JPDASession", actions = {"toggleBreakpoint"}, activateForMIMETypes = {"text/x-vruby"})
 })
 public class ToggleBreakpointActionProvider extends ActionsProviderSupport
         implements PropertyChangeListener {
@@ -129,37 +103,6 @@ public class ToggleBreakpointActionProvider extends ActionsProviderSupport
         EditorContextBridge.getContext().addPropertyChangeListener(this);
     }
 
-    private void destroy() {
-        debugger.removePropertyChangeListener(JPDADebugger.PROP_STATE, this);
-        EditorContextBridge.getContext().removePropertyChangeListener(this);
-    }
-
-    @Override
-    public void propertyChange(PropertyChangeEvent evt) {
-        String url = EditorContextBridge.getContext().getCurrentURL();
-        FileObject fo;
-        try {
-            fo = URLMapper.findFileObject(new URL(url));
-        } catch (MalformedURLException muex) {
-            fo = null;
-        }
-        setEnabled(
-                ActionsManager.ACTION_TOGGLE_BREAKPOINT,
-                (EditorContextBridge.getContext().getCurrentLineNumber() >= 0)
-                && // "text/x-vruby" MIMEType will be resolved by scala.editing module, thus this module should run-dependency on scala.editing
-                (fo != null && "text/x-vruby".equals(fo.getMIMEType())) // NOI18N
-                //(fo != null && (url.endsWith (".scala")))  // NOI18N
-                );
-        if (debugger != null
-                && debugger.getState() == JPDADebugger.STATE_DISCONNECTED) {
-            destroy();
-        }
-    }
-
-    @Override
-    public Set getActions() {
-        return Collections.singleton(ActionsManager.ACTION_TOGGLE_BREAKPOINT);
-    }
     /*
     public static void putStack(String text) {
 
@@ -188,8 +131,56 @@ public class ToggleBreakpointActionProvider extends ActionsProviderSupport
         }
     }
 
-    public StyledDocument getStyledDocument(String url)
-    {
+    static LineBreakpoint findBreakpoint(String url, int lineNumber) {
+        Breakpoint[] breakpoints = DebuggerManager.getDebuggerManager().getBreakpoints();
+        for (int i = 0; i < breakpoints.length; i++) {
+            if (!(breakpoints[i] instanceof LineBreakpoint)) {
+                continue;
+            }
+            LineBreakpoint lb = (LineBreakpoint) breakpoints[i];
+            if (!lb.getURL().equals(url)) {
+                continue;
+            }
+            if (lb.getLineNumber() == lineNumber) {
+                return lb;
+            }
+        }
+        return null;
+    }
+
+    private void destroy() {
+        debugger.removePropertyChangeListener(JPDADebugger.PROP_STATE, this);
+        EditorContextBridge.getContext().removePropertyChangeListener(this);
+    }
+
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        String url = EditorContextBridge.getContext().getCurrentURL();
+        FileObject fo;
+        try {
+            fo = URLMapper.findFileObject(new URL(url));
+        } catch (MalformedURLException muex) {
+            fo = null;
+        }
+        setEnabled(
+                ActionsManager.ACTION_TOGGLE_BREAKPOINT,
+                (EditorContextBridge.getContext().getCurrentLineNumber() >= 0)
+                        && // "text/x-vruby" MIMEType will be resolved by scala.editing module, thus this module should run-dependency on scala.editing
+                        (fo != null && "text/x-vruby".equals(fo.getMIMEType())) // NOI18N
+                //(fo != null && (url.endsWith (".scala")))  // NOI18N
+        );
+        if (debugger != null
+                && debugger.getState() == JPDADebugger.STATE_DISCONNECTED) {
+            destroy();
+        }
+    }
+
+    @Override
+    public Set getActions() {
+        return Collections.singleton(ActionsManager.ACTION_TOGGLE_BREAKPOINT);
+    }
+
+    public StyledDocument getStyledDocument(String url) {
         DataObject dataObject = getDataObject(url);
         if (dataObject == null) {
             return null;
@@ -225,9 +216,8 @@ public class ToggleBreakpointActionProvider extends ActionsProviderSupport
         }
         return doc;
     }
-    
-    public Source getSource( String url )    
-    {
+
+    public Source getSource(String url) {
         DataObject dataObject = getDataObject(url);
         if (dataObject == null) {
             return null;
@@ -238,6 +228,7 @@ public class ToggleBreakpointActionProvider extends ActionsProviderSupport
         }
         return Source.create(fo);
     }
+
     //todo сделать через AstPath
     public String[] getClassInfo(String url, final int lineNumber) {
         try {
@@ -248,16 +239,15 @@ public class ToggleBreakpointActionProvider extends ActionsProviderSupport
             if (doc == null) {
                 return null;
             }
-            final String[] result = new String[]{"","",""};
+            final String[] result = new String[]{"", "", ""};
             final int offset = NbDocument.findLineOffset(doc, lineNumber - 1);
             ParserManager.parse(Collections.singleton(source), new UserTask() {
                 @Override
                 public void run(ResultIterator ri) throws Exception {
                     SourceQuery queryDocument = new SourceQuery(doc);
-                    if ( queryDocument == null )
-                    {
-                        LOG.info(this,"queryDocument == null for doc = "+doc);
-                        return; 
+                    if (queryDocument == null) {
+                        LOG.info(this, "queryDocument == null for doc = " + doc);
+                        return;
                     }
                     result[0] = queryDocument.findPackage();
                     result[1] = queryDocument.findClassName(offset);
@@ -273,25 +263,25 @@ public class ToggleBreakpointActionProvider extends ActionsProviderSupport
             return null;
         }
     }
-    
+
     @Override
     public void doAction(Object action) {
 
         DebuggerManager d = DebuggerManager.getDebuggerManager();
-        
+
         EditorContext context = EditorContextBridge.getContext();
-        
+
         // 1) get source name & line number
         int lineNumber = context.getCurrentLineNumber();
         String url = context.getCurrentURL();
-        
+
         if ("".equals(url.trim())) {
             return;
         }
-        LOG.info(this,"toggle breakpoint in URL = " + url + " lineNumber = " + lineNumber);
+        LOG.info(this, "toggle breakpoint in URL = " + url + " lineNumber = " + lineNumber);
 
-        if ( lineNumber < 0 ) return;
-        
+        if (lineNumber < 0) return;
+
         // 2) find and remove existing line breakpoint
         LineBreakpoint lb = findBreakpoint(url, lineNumber);
         if (lb != null) {
@@ -300,15 +290,15 @@ public class ToggleBreakpointActionProvider extends ActionsProviderSupport
         }
 
         String[] classInfo = getClassInfo(url, lineNumber);
-        if ( classInfo == null ) return;
+        if (classInfo == null) return;
 
         String packageName = classInfo[0];
 //        LOG.info("packageName = " + packageName + " context=" + context);
         String className = classInfo[1];
 //        LOG.info("className = " + className + " context=" + context);
-        
-        if ( className == null ) return;
-    
+
+        if (className == null) return;
+
         lb = LineBreakpoint.create(url, lineNumber);
 
         String preferredClassName = packageName + className;
@@ -319,17 +309,17 @@ public class ToggleBreakpointActionProvider extends ActionsProviderSupport
         String sourcePath = lastIndex == -1 ? url : url.substring(lastIndex + 1);
         lb.setSourceName(sourcePath);
         LOG.info(this, "sourceName = " + sourcePath);
-        if ( packageName != null) {
-            sourcePath = packageName.replace('.','/') + "/" + sourcePath;
+        if (packageName != null) {
+            sourcePath = packageName.replace('.', '/') + "/" + sourcePath;
         }
-        LOG.info(this,"sourcePath = " + sourcePath);
+        LOG.info(this, "sourcePath = " + sourcePath);
         lb.setSourcePath(sourcePath);
 //      lb.setURL(url);
 //      lb.setStratum("MIRAH");
         lb.setPreferredClassName(preferredClassName);
         lb.setPrintText(NbBundle.getBundle(ToggleBreakpointActionProvider.class).getString("CTL_Line_Breakpoint_Print_Text"));
         d.addBreakpoint(lb);
-        LOG.info(this,"add breakpoint in url="+url+" line=" + lineNumber + " preferredClassName="+preferredClassName);
+        LOG.info(this, "add breakpoint in url=" + url + " line=" + lineNumber + " preferredClassName=" + preferredClassName);
     }
 
     @Override
@@ -341,22 +331,5 @@ public class ToggleBreakpointActionProvider extends ActionsProviderSupport
                 actionPerformedNotifier.run();
             }
         });
-    }
-
-    static LineBreakpoint findBreakpoint(String url, int lineNumber) {
-        Breakpoint[] breakpoints = DebuggerManager.getDebuggerManager().getBreakpoints();
-        for (int i = 0; i < breakpoints.length; i++) {
-            if (!(breakpoints[i] instanceof LineBreakpoint)) {
-                continue;
-            }
-            LineBreakpoint lb = (LineBreakpoint) breakpoints[i];
-            if (!lb.getURL().equals(url)) {
-                continue;
-            }
-            if (lb.getLineNumber() == lineNumber) {
-                return lb;
-            }
-        }
-        return null;
     }
 }
