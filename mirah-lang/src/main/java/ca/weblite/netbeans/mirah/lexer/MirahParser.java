@@ -25,9 +25,12 @@ import java.util.zip.ZipEntry;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.Document;
 import javax.tools.Diagnostic;
-import mirah.lang.ast.Node;
-import mirah.lang.ast.NodeFilter;
-import mirah.lang.ast.StringCodeSource;
+import javax.tools.DiagnosticListener;
+
+import mirah.lang.ast.*;
+import mirah.lang.ast.Boolean;
+import mirah.lang.ast.Float;
+import mirah.lang.ast.Package;
 import org.codehaus.plexus.util.FileUtils;
 import org.mirah.jvm.mirrors.debug.DebuggerInterface;
 import org.mirah.tool.Mirahc;
@@ -198,11 +201,19 @@ public class MirahParser extends Parser {
             }
         }
     }
-      private static void walkTree(Node node,String indent,NodeFilter filter){
+      private static void walkTree(Node node,String indent, final NodeFilter filter){
           
         if ( node == null ) return;
-        
-        List children = node.findChildren(filter);
+
+          List<Node> children = (List<Node>) node.accept(new NodeScanner() {
+            @Override
+            public boolean enterDefault(Node node, Object arg) {
+                if(filter.matchesNode(node)){
+                    ((List<Node>)arg).add(node);
+                }
+                return true;
+            }
+        }, new ArrayList<Node>());
         if ( children == null ) return;
         for ( Object c : children ){
             if ( c instanceof Node ){
@@ -1074,7 +1085,7 @@ public class MirahParser extends Parser {
        
     }
 
-    public static class MirahParseDiagnostics extends SimpleDiagnostics {
+    public static class MirahParseDiagnostics implements DiagnosticListener {
 
         public static class SyntaxError {
 
@@ -1102,21 +1113,8 @@ public class MirahParser extends Parser {
         private List<SyntaxError> errors = new ArrayList<>();
         private int errorCount = 0;
 
-        public MirahParseDiagnostics() {
-            super(false);
-        }
-
-        @Override
         public int errorCount() {
             return errorCount;
-        }
-        
-        @Override
-        public void log(Diagnostic.Kind kind, String position, String message) {
-            super.log(kind, position, message);
-            if (!"ERROR_TO_PREVENT_COMPILING".equals(message)) {
-                errors.add(new SyntaxError(kind, position, message));
-            }
         }
 
         public List<SyntaxError> getErrors() {

@@ -338,13 +338,13 @@
         
         <dependency>
             <groupId>org.mirah</groupId>
-            <artifactId>mirahc</artifactId>
-            <version>0.1.5-59</version>
+            <artifactId>mirahc-nbm</artifactId>
+            <version>0.1.5-124</version>
         </dependency>
         <dependency>
             <groupId>org.mirah</groupId>
             <artifactId>mirah-ant</artifactId>
-            <version>0.1.5</version>
+            <version>0.1.5-30</version>
         </dependency>
         <dependency>
             <groupId>com.sun</groupId>
