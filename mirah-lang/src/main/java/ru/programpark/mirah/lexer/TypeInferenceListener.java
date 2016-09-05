@@ -38,8 +38,6 @@ public class TypeInferenceListener implements DebuggerInterface {
     final private TreeSet<PositionType> rightEdges;
     final private HashMap<Node, ResolvedType> resolvedTypes = new HashMap<>();
 
-    public Compiler compiler;
-
     public TypeInferenceListener() {
         leftEdges = new TreeSet<>(new Comparator<PositionType>() {
 

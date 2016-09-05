@@ -9,12 +9,14 @@ import org.openide.filesystems.FileObject;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Created by kozyr on 20.06.2016.
  */
 public class MirahParserResult extends ParserResult {
-
+    private static final Logger logger = Logger.getLogger(MirahParserResult.class.getName());
     private final ParseErrorListener diagnostics;
     List<ParserError> errorList = null;
     List parsedNodes;
@@ -43,7 +45,8 @@ public class MirahParserResult extends ParserResult {
 
     @Override
     protected void invalidate() {
-        // clear caches
+        if (logger.isLoggable(Level.FINE))
+            logger.log(Level.FINE, "invalidate: " + this);
     }
 
     public synchronized BlockCollector getBlockCollection() {
@@ -89,5 +92,17 @@ public class MirahParserResult extends ParserResult {
 
     public FileObject getFileObject() {
         return fileObject;
+    }
+
+    @Override
+    public String toString() {
+        return "MirahParserResult{" +
+                "diagnostics=" + diagnostics +
+                ", errorList=" + errorList +
+                ", parsedNodes=" + parsedNodes +
+                ", resolvedTypes=" + resolvedTypes +
+                ", blockCollector=" + blockCollector +
+                ", fileObject=" + fileObject +
+                '}';
     }
 }

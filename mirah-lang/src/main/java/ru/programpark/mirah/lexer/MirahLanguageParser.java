@@ -1,7 +1,6 @@
 package ru.programpark.mirah.lexer;
 
 
-import ru.programpark.mirah.support.spi.MirahExtenderImplementation;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.ClassPath.Entry;
 import org.netbeans.api.java.project.JavaProjectConstants;
@@ -14,12 +13,14 @@ import org.netbeans.modules.parsing.spi.SourceModificationEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import ru.programpark.mirah.compiler.IncrementalCompiler;
+import ru.programpark.mirah.support.spi.MirahExtenderImplementation;
 
 import javax.swing.event.ChangeListener;
-import java.io.*;
-import java.lang.*;
+import java.io.File;
+import java.io.IOException;
 import java.lang.ref.SoftReference;
-import java.util.*;
+import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
@@ -27,15 +28,28 @@ import java.util.prefs.Preferences;
 /**
  * @author shannah
  */
-public class MirahParser extends Parser {
+public class MirahLanguageParser extends Parser {
 
-    private static final Logger logger = Logger.getLogger(MirahParser.class.getName());
+    private static final Logger logger = Logger.getLogger(MirahLanguageParser.class.getName());
     private SoftReference<CharSequence> prev = new SoftReference<>(null);
     private ParseErrorListener diag;
     private MirahParserResult result;
 
-    public MirahParser() {
+    public MirahLanguageParser() {
         logger.info("parser = " + this + " " + System.identityHashCode(this));
+    }
+
+    private static FileObject getRoot(FileObject file) {
+        Project project = FileOwnerQuery.getOwner(file);
+        Sources sources = ProjectUtils.getSources(project);
+        for (SourceGroup sourceGroup : sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
+            FileObject root = sourceGroup.getRootFolder();
+            if (FileUtil.isParentOf(root, file) || root.equals(file)) {
+                return root;
+            }
+        }
+        ClassPath path = ClassPath.getClassPath(file, ClassPath.SOURCE);
+        return path != null ? path.findOwnerRoot(file) : null;
     }
 
     @Override
@@ -43,7 +57,7 @@ public class MirahParser extends Parser {
             throws ParseException {
 
         long start = System.currentTimeMillis();
-        CharSequence oldContent =  prev.get();
+        CharSequence oldContent = prev.get();
         CharSequence newContent = snapshot.getText();
         boolean changed = oldContent == null || !oldContent.equals(newContent);
         if (sme.sourceChanged() && changed) {
@@ -52,7 +66,8 @@ public class MirahParser extends Parser {
         } else if (result == null) {
             reparse(snapshot);
         }
-        if (logger.isLoggable(Level.FINE)) logger.log(Level.FINE,  "Source changed: parsing " + snapshot.getSource().getFileObject().getNameExt() + " Elapsed: " + (System.currentTimeMillis() - start) + " msec");
+        if (logger.isLoggable(Level.FINE))
+            logger.log(Level.FINE, "Source changed: parsing " + snapshot.getSource().getFileObject().getNameExt() + " Elapsed: " + (System.currentTimeMillis() - start) + " msec");
     }
 
     public void reparse(Snapshot snapshot) throws ParseException {
@@ -60,7 +75,8 @@ public class MirahParser extends Parser {
             if (snapshot == null || snapshot.getText() == null) return;
             reparse(snapshot, snapshot.getText().toString());
         } catch (Exception ex) {
-            if (logger.isLoggable(Level.WARNING)) logger.log(Level.WARNING,  "####### PARSE EXCEPTION File: " + snapshot.getSource().getFileObject().getName() + " ex: " + ex + " #######", ex);
+            if (logger.isLoggable(Level.WARNING))
+                logger.log(Level.WARNING, "####### PARSE EXCEPTION File: " + snapshot.getSource().getFileObject().getName() + " ex: " + ex + " #######", ex);
         }
     }
 
@@ -79,11 +95,10 @@ public class MirahParser extends Parser {
         diag = new ParseErrorListener(snapshot.getSource().getFileObject());
         result = new MirahParserResult(snapshot, diag);
 
-        Compiler compiler = new Compiler();
+        IncrementalCompiler compiler = new IncrementalCompiler();
 
         FileObject src = snapshot.getSource().getFileObject();
-        TypeInferenceListener debugger = new TypeInferenceListener();
-        compiler.setDebugger(debugger);
+
         Project project = FileOwnerQuery.getOwner(src);
 
         if (project != null) {
@@ -137,7 +152,6 @@ public class MirahParser extends Parser {
 
 
             //todo убрать повторы в classpath
-            // не надо приклеивать macroPath - это делается в WLMirahCompiler
             HashMap<Entry, Entry> map = new HashMap<Entry, Entry>();
             StringBuffer sb = new StringBuffer();
             appendClassPath(compileClassPath, sb, map);
@@ -159,33 +173,16 @@ public class MirahParser extends Parser {
         try {
             compiler.compile();
         } catch (Exception ex) {
-            if (logger.isLoggable(Level.FINE)) logger.log(Level.FINE, "REPARSE ex = "+ex);
-        }
-        if (debugger != null && result != null) {
-            // сохраняю карту распознанныч типов
-            result.setResolvedTypes(debugger.getResolvedTypes());
+            if (logger.isLoggable(Level.FINE)) logger.log(Level.FINE, "REPARSE ex = " + ex);
         }
 
-        if (debugger.getResolvedTypes().size() > 0) {
-            debugger.compiler = compiler;
-            // Сохраняю дерево разбора - это список List<Node>
-            if (debugger.compiler.getParsedNodes() != null)
-                result.setParsedNodes(debugger.compiler.getParsedNodes());
-        }
+        // сохраняю карту распознанныч типов
+        result.setResolvedTypes(compiler.getResolvedTypes());
 
-    }
+        // Сохраняю дерево разбора - это список List<Node>
+        if (compiler.getParsedNodes() != null)
+            result.setParsedNodes(compiler.getParsedNodes());
 
-    private static FileObject getRoot(FileObject file) {
-        Project project = FileOwnerQuery.getOwner(file);
-        Sources sources = ProjectUtils.getSources(project);
-        for (SourceGroup sourceGroup : sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
-            FileObject root = sourceGroup.getRootFolder();
-            if (FileUtil.isParentOf(root, file) || root.equals(file)) {
-                return root;
-            }
-        }
-        ClassPath path = ClassPath.getClassPath(file, ClassPath.SOURCE);
-        return path != null ? path.findOwnerRoot(file) : null;
     }
 
     @Override

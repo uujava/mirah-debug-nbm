@@ -39,7 +39,7 @@
 package ru.programpark.mirah.editor;
 
 import ru.programpark.mirah.editor.navigator.MirahStructureAnalyzer;
-import ru.programpark.mirah.lexer.MirahParser;
+import ru.programpark.mirah.lexer.MirahLanguageParser;
 import ru.programpark.mirah.lexer.MirahTokenId;
 import java.util.Set;
 import org.netbeans.api.annotations.common.CheckForNull;
@@ -150,7 +150,7 @@ public class MirahLanguage extends DefaultLanguageConfig {
     @Override
     public Parser getParser() {
 //        if (logger.isLoggable(Level.FINE)) logger.log(Level.FINE, "--- getParser ---");
-        return new MirahParser();
+        return new MirahLanguageParser();
     }
 
     @Override

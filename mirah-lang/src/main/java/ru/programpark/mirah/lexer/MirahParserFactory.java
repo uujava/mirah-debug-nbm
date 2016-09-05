@@ -23,7 +23,7 @@ public class MirahParserFactory extends ParserFactory{
     
     @Override
     public Parser createParser(Collection<Snapshot> clctn) {
-        return new MirahParser();
+        return new MirahLanguageParser();
     }
     
 }
