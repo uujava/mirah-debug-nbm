@@ -19,7 +19,7 @@ import org.openide.windows.TopComponent;
 
 @MultiViewElement.Registration(
         displayName = "#LBL_Mirah_VISUAL",
-        iconBase = "ca/weblite/netbeans/mirah/1391571312_application-x-ruby.png",
+        iconBase = "ru/programpark/mirah/1391571312_application-x-ruby.png",
         mimeType = "text/x-vruby",
         persistenceType = TopComponent.PERSISTENCE_NEVER,
         preferredID = "MirahVisual",

@@ -105,15 +105,15 @@ public final class MirahSettings extends AdvancedOption {
     }
 
     @Override
-    @NbBundle.Messages("AdvancedOption_DisplayName_Support=Mirah")
+    @NbBundle.Messages("AdvancedOption_DisplayName_Support=VRuby")
     public String getDisplayName() {
         return "Mirah Support";//AdvancedOption_DisplayName_Support();
     }
 
     @Override
-    @NbBundle.Messages("AdvancedOption_Tooltip_Support=Mirah configuration")
+    @NbBundle.Messages("AdvancedOption_Tooltip_Support=VRuby configuration")
     public String getTooltip() {
-        return "Mirah support";//AdvancedOption_Tooltip_Support();
+        return "VRuby support";//AdvancedOption_Tooltip_Support();
     }
 
     @Override

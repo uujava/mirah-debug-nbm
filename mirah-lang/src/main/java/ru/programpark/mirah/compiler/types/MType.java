@@ -5,17 +5,17 @@ import mirah.objectweb.asm.Type;
 import org.mirah.typer.ResolvedType;
 
 /**
+ * TODO implement java.lang.model??
+ * Pair for MethodType
  * Strip off Future specific from mirah types
  * Minimal memory footprint - most info stored in  backing AsmType
  */
 public class MType implements ResolvedType {
     final Type asmType;
-    private final boolean block;
 
 
-    public MType(Type asmType, boolean block) {
+    public MType(Type asmType) {
         this.asmType = asmType;
-        this.block = block;
     }
 
     @Override
@@ -40,7 +40,7 @@ public class MType implements ResolvedType {
 
     @Override
     public boolean isBlock() {
-        return block;
+        return false;
     }
 
     @Override
@@ -70,7 +70,6 @@ public class MType implements ResolvedType {
 
         MType jType = (MType) o;
 
-        if (block != jType.block) return false;
         return asmType.equals(jType.asmType);
 
     }

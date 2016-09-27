@@ -40,9 +40,6 @@
  */
 package ru.programpark.mirah.debugger.projects;
 
-//import ca.weblite.netbeans.mirah.lexer.MirahParser;
-import ca.weblite.netbeans.mirah.lexer.MirahParser;
-import ca.weblite.netbeans.mirah.lexer.SourceQuery;
 import java.awt.Color;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -51,12 +48,13 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.net.MalformedURLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.Future;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.VariableElement;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
@@ -88,8 +86,8 @@ import org.openide.text.Line;
 import org.openide.text.NbDocument;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
-
-import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
+import ru.programpark.mirah.lexer.MirahParserResult;
+import ru.programpark.mirah.lexer.SourceQuery;
 
 /**
  * @author Jan Jancura
@@ -121,60 +119,6 @@ public class EditorContextImpl extends EditorContext {
         contextDispatcher = EditorContextDispatcher.getDefault();
         contextDispatcher.addPropertyChangeListener("text/x-vruby",
                 WeakListeners.propertyChange(dispatchListener, contextDispatcher));
-    }
-/*
-    public static void putStack(String text) {
-
-        if ( true ) return;
-        if ( LOG == null ) return;
-
-        for (StackTraceElement ste : Thread.currentThread().getStackTrace()) {
-            if (LOG != null) LOG.info("STACK: "+text+"-> " + ste);
-        }
-        if ( true ) return;
-        DebuggerManager d = DebuggerManager.getDebuggerManager();
-        LOG.info("INFO: "+text+" DebuggerManager=" + d );
-        LOG.info("INFO: "+text+" d.getCurrentSession()="+d.getCurrentSession());
-        LOG.info("INFO: "+text+" d.getCurrentEngine()="+d.getCurrentEngine());
-        LOG.info("INFO: "+text+" d.getActionsManager()="+d.getActionsManager());
-//        LOG.info(""+text+" d.getCurrentSession()="+d.getCurrentSession());
-        if ( d.getCurrentSession() != null )
-        {
-            LOG.info("INFO: " + text + " EngineForLanguage[Java] =" + d.getCurrentSession().getEngineForLanguage("Java"));
-            LOG.info("INFO: " + text + " EngineForLanguage[MIRAX] =" + d.getCurrentSession().getEngineForLanguage("MIRAH"));
-
-            LOG.info("INFO: "+text+" d.getCurrentLanguage()="+d.getCurrentSession().getCurrentLanguage());
-            for( int j = 0 ; j < d.getCurrentSession().getSupportedLanguages().length ; j++ )
-            {
-                LOG.info("INFO: "+text+" SUPPORT LANG="+d.getCurrentSession().getSupportedLanguages()[j]);
-                LOG.info("INFO: " + text + " SUPPORT LANG class=" + d.getCurrentSession().getSupportedLanguages()[j].getClass());
-            }
-        }
-        LOG.info("INFO: "+text+" d.getCurrentLanguage()="+d.getCurrentSession().getCurrentLanguage());
-//        LOG.info("INFO: " + text + " d.getCurrentLanguage().class=" + d.getCurrentSession().getCurrentLanguage().getClass());
-
-//        Breakpoint []bl = d.getBreakpoints();
-//        for( int i = 0 ; i < bl.length ; i++ )
-//        {
-//            LOG.info("INFO: b["+i+"] = "+bl[i]+" isEnabled = "+bl[i].isEnabled());
-//        }
-    }
-*/
-
-    /**
-     * Shows source with given url on given line number.
-     *
-     * @param url        a url of source to be shown
-     * @param lineNumber a number of line to be shown
-     * @param timeStamp  a time stamp to be used
-     */
-    @Override
-    public boolean showSource(String url, int lineNumber, Object timeStamp) {
-        Line l = showSourceLine(url, lineNumber, timeStamp);
-        if (l != null) {
-            addPositionToJumpList(url, l, 0);
-        }
-        return l != null;
     }
 
     static Line showSourceLine(String url, int lineNumber, Object timeStamp) {
@@ -232,26 +176,6 @@ public class EditorContextImpl extends EditorContext {
 
                 @Override
                 public void run(ResultIterator resultIterator) throws Exception {
-//                    Elements elms = ci.getElements();
-//                    TypeElement classElement = getTypeElement(ci, className, null);
-//                    if (classElement == null) {
-//                        return;
-//                    }
-//                    List classMemberElements = elms.getAllMembers(classElement);
-//                    for (Iterator it = classMemberElements.iterator(); it.hasNext();) {
-//                        Element elm = (Element) it.next();
-//                        if (elm.getKind() == ElementKind.FIELD) {
-//                            String name = ((VariableElement) elm).getSimpleName().toString();
-//                            if (name.equals(fieldName)) {
-//                                SourcePositions positions = ci.getTrees().getSourcePositions();
-//                                Tree tree = ci.getTrees().getTree(elm);
-//                                int pos = (int) positions.getStartPosition(ci.getCompilationUnit(), tree);
-//                                EditorCookie editor = (EditorCookie) dataObject.getCookie(EditorCookie.class);
-//                                result[0] = NbDocument.findLineNumber(editor.openDocument(), pos) + 1;
-//                            //return elms.getSourcePosition(elm).getLine();
-//                            }
-//                        }
-//                    }
                 }
             });
         } catch (ParseException ex) {
@@ -259,32 +183,6 @@ public class EditorContextImpl extends EditorContext {
             return -1;
         }
         return result[0];
-        /*
-        CompilationUnitTree cutree = ci.getTree();
-        if (cutree == null) return -1;
-        List typeDecls = cutree.getTypeDecls();
-        ClassTree ctree = findClassTree(typeDecls, className);
-         */
-        /*
-        Elements elms = ci.getElements();
-        SourceCookie.Editor sc = (SourceCookie.Editor) dataObject.getCookie
-        (SourceCookie.Editor.class);
-        if (sc == null) return -1;
-        sc.open ();
-        StyledDocument sd = sc.getDocument ();
-        if (sd == null) return -1;
-        ClassElement[] classes = sc.getSource ().getAllClasses ();
-        FieldElement fe = null;
-        int i, k = classes.length;
-        for (i = 0; i < k; i++)
-        if (classes [i].getName ().getFullName ().equals (className)) {
-        fe = classes [i].getField (Identifier.create (fieldName));
-        break;
-        }
-        if (fe == null) return -1;
-        int position = sc.sourceToText (fe).getStartOffset ();
-        return NbDocument.findLineNumber (sd, position) + 1;
-         */
     }
 
     static int[] getMethodLineNumbers(
@@ -311,31 +209,6 @@ public class EditorContextImpl extends EditorContext {
 
                 @Override
                 public void run(ResultIterator resultIterator) throws Exception {
-//                    TypeElement classElement = getTypeElement(ci, className, classExcludeNames);
-//                    if (classElement == null) {
-//                        return;
-//                    }
-//                    List classMemberElements = ci.getElements().getAllMembers(classElement);
-//                    for (Iterator it = classMemberElements.iterator(); it.hasNext();) {
-//                        Element elm = (Element) it.next();
-//                        if (elm.getKind() == ElementKind.METHOD || elm.getKind() == ElementKind.CONSTRUCTOR) {
-//                            String name;
-//                            if (elm.getKind() == ElementKind.CONSTRUCTOR && !methodName.equals("<init>")) {
-//                                name = elm.getEnclosingElement().getSimpleName().toString();
-//                            } else {
-//                                name = elm.getSimpleName().toString();
-//                            }
-//                            if (name.equals(methodName)) {
-//                                if (methodSignature == null || egualMethodSignatures(methodSignature, createSignature((ExecutableElement) elm))) {
-//                                    SourcePositions positions = ci.getTrees().getSourcePositions();
-//                                    Tree tree = ci.getTrees().getTree(elm);
-//                                    int pos = (int) positions.getStartPosition(ci.getCompilationUnit(), tree);
-//                                    EditorCookie editor = (EditorCookie) dataObject.getCookie(EditorCookie.class);
-//                                    result.add(new Integer(NbDocument.findLineNumber(editor.openDocument(), pos) + 1));
-//                                }
-//                            }
-//                        }
-//                    }
                 }
             });
         } catch (ParseException ex) {
@@ -361,117 +234,6 @@ public class EditorContextImpl extends EditorContext {
         return s1.equals(s2);
     }
 
-    private static String createSignature(ExecutableElement elm) {
-        StringBuilder signature = new StringBuilder("(");
-        for (VariableElement param : elm.getParameters()) {
-            String paramType = param.asType().toString();
-            signature.append(getSignature(paramType));
-        }
-        signature.append(')');
-        String returnType = elm.getReturnType().toString();
-        signature.append(getSignature(returnType));
-        return signature.toString();
-    }
-
-    private static String getSignature(String javaType) {
-        if (javaType.equals("boolean")) {
-            return "Z";
-        } else if (javaType.equals("byte")) {
-            return "B";
-        } else if (javaType.equals("char")) {
-            return "C";
-        } else if (javaType.equals("short")) {
-            return "S";
-        } else if (javaType.equals("int")) {
-            return "I";
-        } else if (javaType.equals("long")) {
-            return "J";
-        } else if (javaType.equals("float")) {
-            return "F";
-        } else if (javaType.equals("double")) {
-            return "D";
-        } else if (javaType.endsWith("[]")) {
-            return "[" + getSignature(javaType.substring(0, javaType.length() - 2));
-        } else {
-            return "L" + javaType.replace('.', '/') + ";";
-        }
-    }
-//    public Object annotate (
-//        String url,
-//        int lineNumber,
-//        String annotationType,
-//        Object timeStamp,
-//        JPDAThread thread
-//    ) {
-//        Line l =  LineTranslations.getTranslations().getLine (
-//            url,
-//            lineNumber,
-//            (timeStamp instanceof JPDABreakpoint) ? null : timeStamp
-//        );
-//        if (l == null) return null;
-//        Annotation annotation;
-//        if (timeStamp instanceof JPDABreakpoint) {
-//            annotation = new DebuggerBreakpointAnnotation(annotationType, l, (JPDABreakpoint) timeStamp);
-//        } else {
-//            annotation = new DebuggerAnnotation (annotationType, l, thread);
-//        }
-//        annotationToURL.put (annotation, url);
-//
-//        return annotation;
-//    }
-//
-//    public Object annotate (
-//        String url,
-//        int startPosition,
-//        int endPosition,
-//        String annotationType,
-//        Object timeStamp
-//    ) {
-//        AttributeSet attrs;
-//        if (EditorContext.CURRENT_LAST_OPERATION_ANNOTATION_TYPE.equals(annotationType)) {
-//            attrs = AttributesUtilities.createImmutable(EditorStyleConstants.WaveUnderlineColor, getColor(annotationType));
-//        } else {
-//            attrs = AttributesUtilities.createImmutable(StyleConstants.Background, getColor(annotationType));
-//        }
-//        DebuggerAnnotation annotation;
-//        try {
-//            annotation = new DebuggerAnnotation(annotationType, attrs, startPosition, endPosition,
-//                    URLMapper.findFileObject(new URL(url)));
-//        } catch (MalformedURLException ex) {
-//            RuntimeException rex = new RuntimeException("Bad URL: "+url);
-//            rex.initCause(ex);
-//            throw rex;
-//        }
-//        annotationToURL.put (annotation, url);
-//
-//        return annotation;
-//    }
-
-    /**
-     * return the offset of the first non-whitespace character on the line,
-     * or -1 when the line does not exist
-     */
-    private static int findLineOffset(StyledDocument doc, int lineNumber) {
-        int offset;
-        try {
-            offset = NbDocument.findLineOffset(doc, lineNumber - 1);
-            int offset2 = NbDocument.findLineOffset(doc, lineNumber);
-            try {
-                String lineStr = doc.getText(offset, offset2 - offset);
-                for (int i = 0; i < lineStr.length(); i++) {
-                    if (!Character.isWhitespace(lineStr.charAt(i))) {
-                        offset += i;
-                        break;
-                    }
-                }
-            } catch (BadLocationException ex) {
-                // ignore
-            }
-        } catch (IndexOutOfBoundsException ioobex) {
-            return -1;
-        }
-        return offset;
-    }
 
     private static DataObject getDataObject(String url) {
         FileObject file;
@@ -490,11 +252,6 @@ public class EditorContextImpl extends EditorContext {
             return null;
         }
     }
-
-//    private void removeAnnotation(Annotation annotation) {
-//        annotation.detach ();
-//        annotationToURL.remove (annotation);
-//    }
 
     /**
      * Shows source with given url on given line number.
@@ -602,14 +359,6 @@ public class EditorContextImpl extends EditorContext {
     public void removeAnnotation(
             Object a) {
         return;
-//        if (a instanceof Collection) {
-//            Collection annotations = ((Collection) a);
-//            for (Iterator it = annotations.iterator(); it.hasNext(); ) {
-//                removeAnnotation((Annotation) it.next());
-//            }
-//        } else {
-//            removeAnnotation((Annotation) a);
-//        }
     }
     
     /**
@@ -667,10 +416,6 @@ public class EditorContextImpl extends EditorContext {
      */
     @Override
     public int getCurrentLineNumber() {
-//        LOG.info("getCurrentLineNumber contextDispatcher="+contextDispatcher);
-//        LOG.info("getCurrentLineNumber getCurrentEditor="+contextDispatcher.getCurrentEditor());
-//        LOG.info("getCurrentLineNumber getCurrentFile="+contextDispatcher.getCurrentFile());
-//        LOG.info("getCurrentLineNumber getMostRecentEditor="+contextDispatcher.getMostRecentEditor());
         return contextDispatcher.getCurrentLineNumber();
     }
 
@@ -705,19 +450,6 @@ public class EditorContextImpl extends EditorContext {
             return currentClass;
         }
     }
-
-//    private static TypeElement getTypeElement(CompilationController ci,
-//                                              String binaryName,
-//                                              String[] classExcludeNames) {
-//        ClassScanner cs = new ClassScanner(ci.getTrees(), ci.getElements(),
-//                                           binaryName, classExcludeNames);
-//        TypeElement te = cs.scan(ci.getCompilationUnit(), null);
-//        if (te != null) {
-//            return te;
-//        } else {
-//            return null;
-//        }
-//    }
 
     /**
      * Returns URL of source currently selected in editor or empty string.
@@ -949,85 +681,6 @@ public class EditorContextImpl extends EditorContext {
         }
     }
 
-    /**
-     * @return { "method name", "method signature", "enclosing class name" }
-    static int[] getMethodLineNumbers(
-            FileObject fo,
-            final String className,
-            final String[] classExcludeNames,
-            final String methodName,
-            final String methodSignature) {
-        Source source = Source.create(fo);
-
-        if (source == null) {
-            return new int[]{};
-        }
-        final List<Integer> result = new ArrayList<Integer>();
-
-        final DataObject dataObject;
-        try {
-            dataObject = DataObject.find(fo);
-        } catch (DataObjectNotFoundException ex) {
-            return new int[]{};
-        }
-        try {
-            ParserManager.parse(Collections.singleton(source), new UserTask() {
-
-                @Override
-                public void run(ResultIterator resultIterator) throws Exception {
-//                    TypeElement classElement = getTypeElement(ci, className, classExcludeNames);
-//                    if (classElement == null) {
-//                        return;
-//                    }
-//                    List classMemberElements = ci.getElements().getAllMembers(classElement);
-//                    for (Iterator it = classMemberElements.iterator(); it.hasNext();) {
-//                        Element elm = (Element) it.next();
-//                        if (elm.getKind() == ElementKind.METHOD || elm.getKind() == ElementKind.CONSTRUCTOR) {
-//                            String name;
-//                            if (elm.getKind() == ElementKind.CONSTRUCTOR && !methodName.equals("<init>")) {
-//                                name = elm.getEnclosingElement().getSimpleName().toString();
-//                            } else {
-//                                name = elm.getSimpleName().toString();
-//                            }
-//                            if (name.equals(methodName)) {
-//                                if (methodSignature == null || egualMethodSignatures(methodSignature, createSignature((ExecutableElement) elm))) {
-//                                    SourcePositions positions = ci.getTrees().getSourcePositions();
-//                                    Tree tree = ci.getTrees().getTree(elm);
-//                                    int pos = (int) positions.getStartPosition(ci.getCompilationUnit(), tree);
-//                                    EditorCookie editor = (EditorCookie) dataObject.getCookie(EditorCookie.class);
-//                                    result.add(new Integer(NbDocument.findLineNumber(editor.openDocument(), pos) + 1));
-//                                }
-//                            }
-//                        }
-//                    }
-                }
-            });
-        } catch (ParseException ex) {
-            ErrorManager.getDefault().notify(ex);
-            return new int[]{};
-        }
-        int[] resultArray = new int[result.size()];
-        for (int i = 0; i < resultArray.length; i++) {
-            resultArray[i] = result.get(i).intValue();
-        }
-        return resultArray;
-    }
-
-    private static boolean egualMethodSignatures(String s1, String s2) {
-        int i = s1.lastIndexOf(")");
-        if (i > 0) {
-            s1 = s1.substring(0, i);
-        }
-        i = s2.lastIndexOf(")");
-        if (i > 0) {
-            s2 = s2.substring(0, i);
-        }
-        return s1.equals(s2);
-    }
-
-    /**
-     * @return { "method name", "method signature", "enclosing class name" }
-     */
     @Override
     public String[] getCurrentMethodDeclaration() {
 
@@ -1045,110 +698,6 @@ public class EditorContextImpl extends EditorContext {
         final int currentOffset = (ep == null) ? 0 : ep.getCaretPosition();
         final String[] currentMethodPtr = new String[]{null, null, null};
         final Future<Void> scanFinished;
-//        try {
-//            scanFinished = js.runWhenScanFinished(new CancellableTask<CompilationController>() {
-//
-//                public void cancel() {
-//                }
-//
-//                public void run(CompilationController ci) throws Exception {
-//                    if (ci.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {//TODO: ELEMENTS_RESOLVED may be sufficient
-//                        ErrorManager.getDefault().log(ErrorManager.WARNING,
-//                                "Unable to resolve " + ci.getFileObject() + " to phase " + Phase.RESOLVED + ", current phase = " + ci.getPhase() +
-//                                "\nFree memory = " + Runtime.getRuntime().freeMemory());
-//                        return;
-//                    }
-//                    int offset = currentOffset;
-//                    //AstScope scope = ci.getTreeUtilities().scopeFor(offset);
-//                    String text = ci.getText();
-//                    int l = text.length();
-//                    char c = 0;
-//                    while (offset < l && (c = text.charAt(offset)) != '(' && c != ')' && c != '\n' && c != '\r') {
-//                        offset++;
-//                    }
-//                    if (offset >= l) {
-//                        return;
-//                    }
-//                    if (c == '(') {
-//                        offset--;
-//                    }
-//
-//                    Tree tree = ci.getTreeUtilities().pathFor(offset).getLeaf();
-//                    if (tree.getKind() == Tree.Kind.METHOD) {
-//                        Element el = ci.getTrees().getElement(ci.getTrees().getPath(ci.getCompilationUnit(), tree));
-//
-//                        //Element el = ci.getTrees().getElement(ci.getTreeUtilities().pathFor(offset));
-//                        if (el != null && (el.getKind() == ElementKind.METHOD || el.getKind() == ElementKind.CONSTRUCTOR)) {
-//                            currentMethodPtr[0] = el.getSimpleName().toString();
-//                            if (currentMethodPtr[0].equals("<init>")) {
-//                                // The constructor name is the class name:
-//                                currentMethodPtr[0] = el.getEnclosingElement().getSimpleName().toString();
-//                            }
-//                            currentMethodPtr[1] = createSignature((ExecutableElement) el);
-//                            Element enclosingClassElement = el;
-//                            TypeElement te = null; // SourceUtils.getEnclosingTypeElement(el);
-//                            while (enclosingClassElement != null) {
-//                                ElementKind kind = enclosingClassElement.getKind();
-//                                if (kind == ElementKind.CLASS || kind == ElementKind.INTERFACE) {
-//                                    te = (TypeElement) enclosingClassElement;
-//                                    break;
-//                                } else {
-//                                    enclosingClassElement = enclosingClassElement.getEnclosingElement();
-//                                }
-//                            }
-//                            if (te != null) {
-//                                currentMethodPtr[2] = ElementUtilities.getBinaryName(te);
-//                            }
-//                        }
-//                    }
-//                }
-//            }, true);
-//            if (!scanFinished.isDone()) {
-//                if (java.awt.EventQueue.isDispatchThread()) {
-//                    // Hack: We should not wait for the scan in AWT!
-//                    //       Thus we throw IllegalComponentStateException,
-//                    //       which returns the data upon call to getMessage()
-//                    throw new java.awt.IllegalComponentStateException() {
-//
-//                        private void waitScanFinished() {
-//                            try {
-//                                scanFinished.get();
-//                            } catch (InterruptedException iex) {
-//                            } catch (java.util.concurrent.ExecutionException eex) {
-//                                ErrorManager.getDefault().notify(eex);
-//                            }
-//                        }
-//
-//                        public String getMessage() {
-//                            waitScanFinished();
-//                            return currentMethodPtr[0];
-//                        }
-//
-//                        public String getLocalizedMessage() {
-//                            waitScanFinished();
-//                            return currentMethodPtr[1];
-//                        }
-//                    };
-//                } else {
-//                    try {
-//                        scanFinished.get();
-//                    } catch (InterruptedException iex) {
-//                        return null;
-//                    } catch (java.util.concurrent.ExecutionException eex) {
-//                        ErrorManager.getDefault().notify(eex);
-//                        return null;
-//                    }
-//                }
-//            }
-//        } catch (IOException ioex) {
-//            ErrorManager.getDefault().notify(ioex);
-//            return null;
-//        }
-//        if (currentMethodPtr[0] != null) {
-//            return currentMethodPtr;
-//        } else {
-//            return null;
-//        }
         return null;
     }
 

@@ -101,7 +101,6 @@ class CodeHintsTask extends ParserResultTask {
         
         if ( !errors.isEmpty()){
             errorsOut.addAll(errors);
-            //HintsController.setErrors(doc, "mirah", errors);
         }
         
     }
@@ -166,7 +165,6 @@ class CodeHintsTask extends ParserResultTask {
         
         if ( !errors.isEmpty()){
             errorsOut.addAll(errors);
-            //HintsController.setErrors(doc, "mirah", errors);
         }
         
     }

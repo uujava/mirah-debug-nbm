@@ -1,7 +1,5 @@
 package ru.programpark.mirah.compiler.stat;
 
-import ru.programpark.mirah.compiler.stat.StatTimer;
-
 /**
  * Reset stat
  */

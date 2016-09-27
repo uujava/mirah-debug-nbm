@@ -229,8 +229,6 @@ public class PrintAst {
                     }
                 }
             });
-      //      putClasspathInfo("C:\\java-dao\\samples\\src\\main\\mirah\\ru\\programpark\\vector\\samples\\jfx\\controller\\RootController.mirah",io);
-      //      putClasspathInfo("C:\\java-dao\\mirah-jfxui\\src\\main\\java\\ru\\programpark\\vector\\jfx\\FXContextMenu.java",io);
 
         } catch (Exception e) {
             e.printStackTrace();

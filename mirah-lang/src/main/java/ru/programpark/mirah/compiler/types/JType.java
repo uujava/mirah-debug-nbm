@@ -2,14 +2,15 @@ package ru.programpark.mirah.compiler.types;
 
 import mirah.objectweb.asm.Opcodes;
 import mirah.objectweb.asm.Type;
-import org.mirah.jvm.types.JVMType;
 import org.mirah.typer.ResolvedType;
 
 /**
+ * TODO implement java.lang.model??
+ * Pair for JVMType
  * Strip off Future specific from mirah types
  * Minimal memory footprint - most info stored in  backing AsmType
  */
-public class JType implements ResolvedType, JVMType {
+public class JType implements ResolvedType {
     final Type asmType;
     private final boolean block;
 
@@ -62,5 +63,22 @@ public class JType implements ResolvedType, JVMType {
     @Override
     public boolean isFullyResolved() {
         return true;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof JType)) return false;
+
+        JType jType = (JType) o;
+
+        if (block != jType.block) return false;
+        return asmType.equals(jType.asmType);
+
+    }
+
+    @Override
+    public int hashCode() {
+        return asmType.hashCode();
     }
 }

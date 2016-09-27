@@ -6,22 +6,25 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 
+import static ru.programpark.mirah.compiler.CompilerUtil.CLASS_EXT;
+import static ru.programpark.mirah.compiler.CompilerUtil.changeExt;
+
 /**
  * Created by kozyr on 22.09.2016.
  */
-class TestSourcePathReader implements SourcePathReader {
+public class TestSourcePathReader implements SourcePathReader {
     // class name => source code map
     Map<Path, String> code = new HashMap<>();
 
     public TestSourcePathReader(String[]... code) {
         for (String[] strings : code) {
-            this.code.put(Paths.get(strings[0].replace(".", "/") + ".class"), strings[1]);
+            this.code.put(Paths.get(strings[0]), strings[1]);
         }
     }
 
     @Override
     public Path resolve(String relativePath) {
-        Path key = Paths.get(relativePath);
+        Path key = Paths.get(changeExt(relativePath, CLASS_EXT, ".mirah"));
         if (code.get(key) != null) {
             return key;
         } else {

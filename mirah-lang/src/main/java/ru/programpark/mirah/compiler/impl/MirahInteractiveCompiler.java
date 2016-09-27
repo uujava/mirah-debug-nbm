@@ -18,7 +18,10 @@ import org.mirah.util.AstChecker;
 import org.mirah.util.Context;
 import org.mirah.util.ErrorCounter;
 import org.mirah.util.MirahDiagnostic;
-import ru.programpark.mirah.compiler.*;
+import ru.programpark.mirah.compiler.CacheConsumer;
+import ru.programpark.mirah.compiler.CompilerUtil;
+import ru.programpark.mirah.compiler.InteractiveCompiler;
+import ru.programpark.mirah.compiler.PathMapper;
 import ru.programpark.mirah.compiler.loaders.*;
 import ru.programpark.mirah.compiler.stat.StatTimer;
 
@@ -39,12 +42,11 @@ import static ru.programpark.mirah.compiler.CompilerUtil.errorType;
 public class MirahInteractiveCompiler implements JvmBackend, InteractiveCompiler {
 
     private static final Logger logger = Logger.getLogger(MirahInteractiveCompiler.class.getName());
+    public static final String MIRAH_CLASS_PATTERN = "^/?(mirah[\\./]|org[\\./]mirah[\\./])";
     private final Map<String, Node> asts = new LinkedHashMap<>();
     private final Queue<CodeSource> source_queue = new LinkedList<>();
     private final Queue<Node> node_queue = new LinkedList<>();
-    private final HashSet<SourceResourceLoader> sourceLoaders = new LinkedHashSet<>();
-    private final HashSet<ResourceLoader> resourceLoaders = new LinkedHashSet<>();
-    private final ChainedSourceLoader root = new ChainedSourceLoader();
+    private final HashSet<IndexedResourceLoader> resourceLoaders = new LinkedHashSet<>();
     private final CompiledPathMapper path_mapper;
     private SafeTyper typer;
     private Backend backend;
@@ -87,12 +89,6 @@ public class MirahInteractiveCompiler implements JvmBackend, InteractiveCompiler
     }
 
     @Override
-    public void registerReader(SourcePathReader reader) {
-        SourceResourceLoader loader = new SourceResourceLoader(this, reader);
-        sourceLoaders.add(loader);
-    }
-
-    @Override
     public List<Node> getParsedNodes() {
         return new LinkedList<>(asts.values());
     }
@@ -109,12 +105,12 @@ public class MirahInteractiveCompiler implements JvmBackend, InteractiveCompiler
     }
 
     @Override
-    public boolean run(CacheConsumer bytecodeConsumer) {
-        if (bytecodeConsumer == null) bytecodeConsumer = new NullConsumer();
-        bytecodeConsumer.setMapper(getTypePathMapper());
+    public boolean run(CacheConsumer cache) {
+        if (cache == null) cache = new NullConsumer();
+        cache.setMapper(getTypePathMapper());
         init();
         typeMap = null;
-        macro_consumer = new MacroConsumer((ClassLoader) context.get(ClassLoader.class), bytecodeConsumer);
+        macro_consumer = new MacroConsumer((ClassLoader) context.get(ClassLoader.class), cache);
         parse();
         infer();
         if (errorCount() > 0) return false;
@@ -124,7 +120,7 @@ public class MirahInteractiveCompiler implements JvmBackend, InteractiveCompiler
         if (errorCount() > 0) return false;
         compile();
         if (errorCount() > 0) return false;
-        backend.generate(bytecodeConsumer);
+        backend.generate(cache);
         return errorCount() == 0;
     }
 
@@ -219,7 +215,6 @@ public class MirahInteractiveCompiler implements JvmBackend, InteractiveCompiler
         }
     }
 
-    @Override
     public PathMapper getTypePathMapper() {
         return path_mapper;
     }
@@ -309,30 +304,24 @@ public class MirahInteractiveCompiler implements JvmBackend, InteractiveCompiler
                 baseloader,
                 Pattern.compile("^/?(mirah/|org/mirah)"), bootloader
         );
-        return chain(filteredResources, new ArrayList(resourceLoaders));
+        return chainToResources(filteredResources);
     }
 
-    private ResourceLoader createMainLoader() {
-        SourceResourceLoader first = null;
-        for (Iterator<SourceResourceLoader> iterator = sourceLoaders.iterator(); iterator.hasNext(); ) {
-            SourceResourceLoader next = iterator.next();
-            if (first == null) {
-                first = next;
-                root.setNext(first);
-            } else {
-                first.setNext(next);
-                first = next;
-            }
-        }
+    private ResourceLoader chainToResources(ResourceLoader parent) {
+        ChainedResourceLoader chain = chain(parent, resourceLoaders.toArray(new IndexedResourceLoader[resourceLoaders.size()]));
+        return chain;
+    }
 
+
+
+    private ResourceLoader createMainLoader() {
         ResourceLoader boot = new NegativeFilteredResources(new ClassResourceLoader(System.class), Pattern.compile("^/?(mirah/|org/mirah|org/jruby)"));
         ResourceLoader bootloader = new FilteredResources(
                 new ClassResourceLoader(Mirahc.class),
                 Pattern.compile("^/?org/mirah/jvm/(types/(Flags|Member|Modifiers))|compiler/Cleaned"),
                 boot
         );
-        FilteredResources all_loader = new FilteredResources(root, Pattern.compile(".*"), bootloader);
-        return chain(all_loader, new ArrayList(resourceLoaders));
+        return chainToResources(bootloader);
     }
 
 
@@ -354,21 +343,9 @@ public class MirahInteractiveCompiler implements JvmBackend, InteractiveCompiler
     }
 
     private ClassLoader createMacroClassLoader() {
-        ChainedClassLoader firstLoader = new ChainedURLClassLoader(MirahCompiler.class.getClassLoader());
-        ChainedClassLoader prev = firstLoader;
-        for (ResourceLoader next : resourceLoaders) {
-            ChainedClassLoader nextLoader;
-            if (next instanceof URLResourceLoader) {
-                URL url = ((URLResourceLoader) next).getUrl();
-                nextLoader = new ChainedURLClassLoader(url);
-            } else {
-                nextLoader = new ChainedResourceClassLoader(next);
-            }
-            prev.setNext((ClassLoader) nextLoader);
-            prev = nextLoader;
-
-        }
-        return (ClassLoader) firstLoader;
+        return new ResourceClassLoader(MirahCompiler.class.getClassLoader(),
+                MIRAH_CLASS_PATTERN,
+                resourceLoaders.toArray(new IndexedResourceLoader[resourceLoaders.size()]));
     }
 
     private void processInferenceErrors(Node node, Context context) {
@@ -390,13 +367,17 @@ public class MirahInteractiveCompiler implements JvmBackend, InteractiveCompiler
     }
 
     @Override
-    public void registerLoader(ResourceLoader loader) {
+    public void registerLoader(IndexedResourceLoader loader) {
         resourceLoaders.add(loader);
     }
 
     ResolvedType type(Node node) {
+        if(node == null) return errorType(null);
         TypeFuture future = this.typer.getInferredType(node);
-        if (future == null) return type(node.parent());
+        if (future == null) {
+            logger.severe("null future for node: " + node + " " + node.position());
+            return type(node.parent());
+        }
         if (future.isResolved()) {
             return future.peekInferredType();
         } else {

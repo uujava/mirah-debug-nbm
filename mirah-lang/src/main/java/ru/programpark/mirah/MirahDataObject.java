@@ -35,7 +35,7 @@ import org.openide.windows.TopComponent;
 )
 @DataObject.Registration(
         mimeType = "text/x-vruby",
-        iconBase = "ca/weblite/netbeans/mirah/1391571312_application-x-ruby.png",
+        iconBase = "ru/programpark/mirah/1391571312_application-x-ruby.png",
         displayName = "#LBL_Mirah_LOADER",
         position = 300
 )
@@ -106,7 +106,7 @@ public class MirahDataObject extends MultiDataObject {
 
     @MultiViewElement.Registration(
             displayName = "#LBL_Mirah_EDITOR",
-            iconBase = "ca/weblite/netbeans/mirah/1391571312_application-x-ruby.png",
+            iconBase = "ru/programpark/mirah/1391571312_application-x-ruby.png",
             mimeType = "text/x-vruby",
             persistenceType = TopComponent.PERSISTENCE_ONLY_OPENED,
             preferredID = "VRuby",

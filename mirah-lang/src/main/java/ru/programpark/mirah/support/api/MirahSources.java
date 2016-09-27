@@ -78,7 +78,7 @@ public class MirahSources {
      * Mirah package root sources type.
      * @see org.netbeans.api.project.Sources
      */
-    public static final String SOURCES_TYPE_MIRAH = "mirah"; // NOI18N
+    public static final String SOURCES_TYPE_MIRAH = "vrb"; // NOI18N
 
     private static final Map<Project, SourceGroup> SOURCE_GROUP_MIRAH = new HashMap<>();
     private static final Map<Project, SourceGroup> TEST_GROUP_MIRAH = new HashMap<>();
@@ -100,7 +100,7 @@ public class MirahSources {
     private static SourceGroup getSrcMainMirahGroup(Project project) {
         SourceGroup group = SOURCE_GROUP_MIRAH.get(project);
         if (group == null) {
-            group = createSourceGroup(project, "/src/main/mirah", "Исходные файлы Mirah");
+            group = createSourceGroup(project, "/src/main/vrb", "Исходные файлы VRuby");
             SOURCE_GROUP_MIRAH.put(project, group);
         }
         return group; 
@@ -109,7 +109,7 @@ public class MirahSources {
     private static SourceGroup getSrcTestMirahGroup(Project project) {
         SourceGroup group = TEST_GROUP_MIRAH.get(project);
         if (group == null) {
-            group = createSourceGroup(project, "/src/test/mirah", "Тестовые файлы Mirah");
+            group = createSourceGroup(project, "/src/test/vrb", "Тестовые файлы VRuby");
             TEST_GROUP_MIRAH.put(project, group);
         }
         return group; 

@@ -3,16 +3,18 @@ package ru.programpark.mirah.compiler.loaders;
 import org.mirah.jvm.mirrors.ResourceLoader;
 
 import java.io.InputStream;
+import java.util.logging.Logger;
 
 /**
- * Created by kozyr on 19.09.2016.
+ * Wrap and chain resource loaders
  */
-class ChainedResourceLoader extends ResourceLoader {
-    private final ResourceLoader p;
+public class ChainedResourceLoader extends ResourceLoader {
+    private static final Logger logger = Logger.getLogger(ChainedResourceLoader.class.getName());
+    private final IndexedResourceLoader self;
     private ResourceLoader next;
 
-    public ChainedResourceLoader(ResourceLoader parent) {
-        this.p = parent;
+    public ChainedResourceLoader(IndexedResourceLoader parent) {
+        this.self = parent;
     }
 
     @Override
@@ -24,11 +26,14 @@ class ChainedResourceLoader extends ResourceLoader {
 
         if (resourceAsStream != null) return resourceAsStream;
 
-        if (p != null) {
-            return p.getResourceAsStream(name);
-        } else {
-            return null;
+        if (self != null) {
+            try {
+                return self.open(name);
+            } catch (Exception ex) {
+                logger.severe("Unable to open resource :" + name + " " + ex);
+            }
         }
+        return null;
     }
 
     public void setNext(ResourceLoader next) {

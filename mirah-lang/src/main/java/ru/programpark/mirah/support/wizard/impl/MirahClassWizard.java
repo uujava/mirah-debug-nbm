@@ -55,34 +55,34 @@ import org.openide.util.NbBundle;
  * @author Martin Janicek
  */
 @NbBundle.Messages(value = {
-    "LBL_DisplayName_MirahClass=Mirah Class",
-    "LBL_DisplayName_MirahScript=Mirah Script"
+    "LBL_DisplayName_MirahClass=VRuby Class",
+    "LBL_DisplayName_MirahScript=VRuby Script"
 })
 @TemplateRegistrations(value = {
     @TemplateRegistration(
-        folder = "Mirah",
+        folder = "VRuby",
         position = 100,
-        content = "/ru/programpark/mirah/support/resources/MirahClass.mirah",
+        content = "/ru/programpark/mirah/support/resources/MyClass.vrb",
         scriptEngine = "freemarker",
         displayName = "#LBL_DisplayName_MirahClass",
         iconBase = "ru/programpark/mirah/support/resources/MirahFile16x16.png",
-        description = "/ru/programpark/mirah/support/resources/MirahClass.html",
+        description = "/ru/programpark/mirah/support/resources/MyClass.html",
         category = {
-            "mirah",
+            "vruby",
             "java-main-class"
         }
     ),
 
     @TemplateRegistration(
-        folder = "Mirah",
+        folder = "VRuby",
         position = 110,
-        content = "/ru/programpark/mirah/support/resources/MirahScript.mirah",
+        content = "/ru/programpark/mirah/support/resources/MyScript.vrb",
         scriptEngine = "freemarker",
         displayName = "#LBL_DisplayName_MirahScript",
         iconBase = "ru/programpark/mirah/support/resources/MirahFile16x16.png",
-        description = "/ru/programpark/mirah/support/resources/MirahScript.html",
+        description = "/ru/programpark/mirah/support/resources/MyScript.html",
         category = {
-            "mirah",
+            "vruby",
             "java-main-class"
         }
     )

@@ -1,7 +1,14 @@
 package ru.programpark.mirah.compiler;
 
+import java.nio.file.Path;
+
 /**
- * Created by user on 9/18/2016.
+ * Map class name to source file path
  */
-public class PathMapper {
+public interface PathMapper {
+    /**
+     * @param type - FQN class name
+     * @return path to a file if type is known for mapper or null
+     */
+    Path path(String type);
 }

@@ -60,11 +60,11 @@ import org.openide.util.NbBundle;
  * @author Martin Adamek
  */
 @NbBundle.Messages(
-    "OptionsCategory_Mirah=VRuby"
+    "OptionsCategory_VRuby=VRuby"
 )
 @OptionsPanelController.SubRegistration(
     id = "ca-weblite-netbeans-mirah-support-api-MirahSettings",
-    displayName="#OptionsCategory_Mirah"
+    displayName="#OptionsCategory_VRuby"
 )
 public final class SupportOptionsPanelController extends OptionsPanelController {
 

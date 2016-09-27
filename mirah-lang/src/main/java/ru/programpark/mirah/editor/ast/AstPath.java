@@ -41,21 +41,6 @@ public class AstPath implements Iterable<Node> {
             if (length > 0 && offset >= length) {
                 offset = length - 1;
             }
-            /*
-            Scanner scanner = new Scanner(document.getText(0, offset));
-            int line = 0;
-            String lineText = "";
-            while (scanner.hasNextLine()) {
-                lineText = scanner.nextLine();
-                line++;
-            }
-            int column = lineText.length();
-
-            this.lineNumber = line;
-            this.columnNumber = column;
-
-            findPathTo(root, line, column);
-             */
             findPathTo(root, caretOffset);
         } 
 //        catch (BadLocationException ble) {
@@ -64,17 +49,6 @@ public class AstPath implements Iterable<Node> {
         }
     }
 
-    /**
-     * Initialize a node path to the given caretOffset
-     */
-    /*
-    public AstPath(Node root, int line, int column) {
-        this.lineNumber = line;
-        this.columnNumber = column;
-
-        findPathTo(root, line, column);
-    }
-    */
     /**
      * Find the path to the given node in the AST
      */
@@ -88,15 +62,6 @@ public class AstPath implements Iterable<Node> {
             Collections.reverse(path);
         }
     }
-    /*
-    public int getLineNumber() {
-        return lineNumber;
-    }
-
-    public int getColumnNumber() {
-        return columnNumber;
-    }
-    */
     public void descend(Node node) {
         path.add(node);
     }
@@ -124,7 +89,7 @@ public class AstPath implements Iterable<Node> {
         if (path.isEmpty() || !(path.get(0) instanceof ClassDefinition)) {
             Script script = (Script) node;
             String name = null; //script.getContext().getName();
-            int index = name == null ? -1 : name.lastIndexOf(".mirah"); // NOI18N
+            int index = name == null ? -1 : name.lastIndexOf(".vrb"); // NOI18N
             if (index != -1) {
                 name = name.substring(0, index);
             }
@@ -168,154 +133,6 @@ public class AstPath implements Iterable<Node> {
         return leaf;
     }
     
-    /*
-    @SuppressWarnings("unchecked")
-    private Node findPathTo(Node node, int line, int column) {
-        
-        assert node != null : "Node should not be null";
-        assert node instanceof Script : "Node must be a ModuleNode";
-//        assert line >=0 : "line number was negative: " + line + " on the ModuleNode node with main class name: " + ((Script)node).getMainClassName();
-        assert column >=0 : "column number was negative: " + column;
-        
-        path.addAll(find(node, line, column));
-
-        // in scripts ClassDefinition is not in path, let's add it
-        // find class that has same name as the file
-        if (path.isEmpty() || !(path.get(0) instanceof ClassDefinition)) {
-            Script script = (Script) node;
-            String name = null; //script.getContext().getName();
-            int index = name == null ? -1 : name.lastIndexOf(".mirah"); // NOI18N
-            if (index != -1) {
-                name = name.substring(0, index);
-            }
-            index = name == null ? -1 : name.lastIndexOf('.');
-            if (index != -1) {
-                name = name.substring(index + 1);
-            }
-/*            
-            for (Object object : script.getClasses()) {
-                ClassDefinition classNode = (ClassDefinition) object;
-                if (name.equals(classNode.getNameWithoutPackage())) {
-                    path.add(0, classNode);
-                    break;
-                }
-            }
-*
-        }
-
-        // let's fix script class - run method
-        // FIXME this should be more accurate - package
-        // and imports are not in the method ;)
-        if (!path.isEmpty() && (path.get(0) instanceof ClassDefinition)) {
-            ClassDefinition clazz = (ClassDefinition) path.get(0);
-/*            
-            if (clazz.isScript() ) {
-                    
-                    //&& (path.size() == 1 || path.get(1) instanceof Expression || path.get(1) instanceof Statement)) {
-
-                MethodDefinition method = clazz.getMethod("run", new Parameter[]{}); // NOI18N
-                if (method != null) {
-//                    if (method.getCode() != null && (path.size() <= 1 || method.getCode() != path.get(1))) {
-//                        path.add(1, method.getCode());
-//                    }
-                    path.add(1, method);
-                }
-            }
-*
-        }
-
-        path.add(0, node);
-
-        Node result = path.get(path.size() - 1);
-
-        return result;
-    }
-    */
-/*    
-    private boolean isInSource(Node node) {
-        if (node instanceof AnnotatedNode) {
-            if (((AnnotatedNode) node).hasNoRealSourcePosition()) {
-                return false;
-            }
-        }
-
-        // FIXME probably http://jira.codehaus.org/browse/GROOVY-3263
-        if (node instanceof StaticMethodCallExpression && node.getLineNumber() == -1
-                && node.getLastLineNumber() == -1 && node.getColumnNumber() == -1
-                && node.getLastColumnNumber() == -1) {
-
-            StaticMethodCallExpression methodCall = (StaticMethodCallExpression) node;
-            if ("initMetaClass".equals(methodCall.getMethod())) { // NOI18N
-                Expression args = methodCall.getArguments();
-                if (args instanceof VariableExpression) {
-                    VariableExpression var = (VariableExpression) args;
-                    if ("this".equals(var.getName())) { // NOI18N
-                        return false;
-                    }
-                }
-            }
-        }
-        return true;
-    }
-    
-    private void fixNode(Node node)
-    {
-            
-    }
-    private boolean isInside(Node node, int line, int column, boolean addToPath) 
-    {
-        if (node == null || !isInSource(node)) {
-            return false;
-        }
-
-        fixNode(node);
-
-        int beginLine = node.getLineNumber();
-        int beginColumn = node.getColumnNumber();
-        int endLine = node.getLastLineNumber();
-        int endColumn = node.getLastColumnNumber();
-
-        if (LOG.isLoggable(Level.FINEST)) {
-            LOG.log(Level.FINEST, "isInside: " + node + " - "
-                    + beginLine + ", " + beginColumn + ", " + endLine + ", " + endColumn);
-        }
-
-        if (beginLine == -1 || beginColumn == -1 || endLine == -1 || endColumn == -1) {
-            // this node doesn't provide its coordinates, some wrappers do that
-            // let's say yes and visit its children
-            return addToPath ? true : false;
-        }
-
-        boolean result = false;
-
-        if (beginLine == endLine) {
-            if (line == beginLine && column >= beginColumn && column < endColumn) {
-                result = true;
-            }
-        } else if (line == beginLine) {
-            if (column >= beginColumn) {
-                result = true;
-            }
-        } else if (line == endLine) {
-            if (column < endColumn) {
-                result = true;
-            }
-        } else if (beginLine < line && line < endLine) {
-            result = true;
-        } else {
-            result = false;
-        }
-
-        if (result && addToPath) {
-            path.add(node);
-            LOG.log(Level.FINEST, "Path: {0}", path);
-        }
-
-        // if addToPath is false, return result, we want to know real state of affairs
-        // and not to continue traversing
-        return addToPath ? true : result;
-    }
-*/
     @SuppressWarnings("unchecked")
     private List<Node> find(Node node, int offset) {
         
@@ -325,53 +142,11 @@ public class AstPath implements Iterable<Node> {
         
         Script script = (Script) node;
         
-//        script.accept( new NodeScanner(){
-//            @Override
-//            public boolean enterDefault(Node node, Object arg) {
-//                if ( node != null )
-//                System.out.println(""+node+"["+node.position().startChar()+","+node.position().endChar()+"] "+node.parent());
-//                return super.enterDefault(node, arg);
-//            }
-//        }, null);
         PathFinderVisitor pathFinder = new PathFinderVisitor(offset);
         script.accept(pathFinder, null);
         return pathFinder.getPath();
 //        return new ArrayList<Node>();
     }
-    /*
-    @SuppressWarnings("unchecked")
-    private List<Node> find(Node node, int line, int column) {
-        
-        assert line >=0 : "line number was negative: " + line;
-        assert column >=0 : "column number was negative: " + column;
-        assert node != null : "Node should not be null";
-        assert node instanceof Script : "Node must be a ModuleNode";
-        
-        Script script = (Script) node;
-        
-//        script.accept( new NodeScanner(){
-//            @Override
-//            public boolean enterDefault(Node node, Object arg) {
-//                if ( node != null )
-//                System.out.println(""+node+"["+node.position().startChar()+","+node.position().endChar()+"] "+node.parent());
-//                return super.enterDefault(node, arg);
-//            }
-//        }, null);
-        PathFinderVisitor pathFinder = new PathFinderVisitor( line, column);
-        script.accept(pathFinder, null);
-        
-//        for (ClassDefinition classNode : script.getClasses()) {
-//            pathFinder.visitClass(classNode);
-//        }
-//
-//        for (MethodDefinition methodNode : script.getMethods()) {
-//            pathFinder.visitMethod(methodNode);
-//        }
-
-        return pathFinder.getPath();
-//        return new ArrayList<Node>();
-    }
-    */
     /**
      * Find the path to the given node in the AST
      */

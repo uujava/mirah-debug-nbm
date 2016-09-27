@@ -1,34 +1,62 @@
 package ru.programpark.mirah.compiler;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.mirah.tool.MirahCompiler;
+import ru.programpark.mirah.compiler.impl.MirahInteractiveCompiler;
 import ru.programpark.mirah.compiler.loaders.ResourceClassLoader;
 import ru.programpark.mirah.compiler.loaders.URLResourceLoader;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Enumeration;
 
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
 
 public class ResourceClassLoaderTest {
+
+    public static final Class MIRAHC_CLASS = MirahCompiler.class;
+    public static final String MIRAH_CLASS_NAME = MIRAHC_CLASS.getName();
+    public static final String TEST_CLASS_NAME = ResourceClassLoaderTest.class.getName();
+    private URLResourceLoader classes;
+    private URLResourceLoader testClasses;
+
+    @Before
+    public void init() throws MalformedURLException {
+        classes = new URLResourceLoader(new File("target/classes").toURI().toURL());
+        testClasses = new URLResourceLoader(new File("target/test-classes").toURI().toURL());
+    }
+
     @Test
     public void test() throws ClassNotFoundException, IOException, URISyntaxException {
-        URL classes = new File("target/classes").toURI().toURL();
-        URL testClasses = new File("target/test-classes").toURI().toURL();
-        ResourceClassLoader loader = new ResourceClassLoader(null, new URLResourceLoader(classes), new URLResourceLoader(testClasses));
+        ResourceClassLoader loader = new ResourceClassLoader(classes, testClasses);
         assertNotNull(loader.getResource("META-INF/generated-layer.xml"));
-        String className = "ru.programpark.mirah.compiler.ChainedClassLoaderTest";
-        assertNotNull(loader.loadClass(className));
+        assertNotNull(loader.loadClass(TEST_CLASS_NAME));
         String manifest = "META-INF/MANIFEST.MF";
         assertThat(count(loader.getResources(manifest)), equalTo(1));
-        loader = new ResourceClassLoader(MirahCompiler.class.getClassLoader(), new URLResourceLoader(classes), new URLResourceLoader(testClasses));
-        assertThat(loader.getResources(manifest).nextElement().toString(), equalTo(classes.toString() + manifest));
+        loader = new ResourceClassLoader(MIRAHC_CLASS.getClassLoader(),
+                MirahInteractiveCompiler.MIRAH_CLASS_PATTERN,
+                classes,
+                testClasses);
+        assertThat(loader.getResources(manifest).nextElement().toString(), equalTo(new File("target/classes").toURI().toURL() + manifest));
+    }
 
-//        assertThat(resources.nextElement().toString(), containsString("surefire"));
+    @Test
+    public void testMirahcProperlyLoaded() throws MalformedURLException, ClassNotFoundException {
+        String mirahUrlString = MIRAHC_CLASS.getClassLoader().getResource(MIRAH_CLASS_NAME.replace(".", "/") + ".class").toString();
+        URL mirahUrl = new URL(mirahUrlString.substring(0, mirahUrlString.length() - MIRAH_CLASS_NAME.length() - ".class".length()));
+        ResourceClassLoader loader = new ResourceClassLoader(MIRAHC_CLASS.getClassLoader(),
+                MirahInteractiveCompiler.MIRAH_CLASS_PATTERN,
+                new URLResourceLoader(mirahUrl),
+                classes,
+                testClasses);
+        assertThat(loader.loadClass(MIRAH_CLASS_NAME), equalTo(MIRAHC_CLASS));
+        assertNotNull(loader.loadClass(TEST_CLASS_NAME));
     }
 
     private int count(Enumeration<URL> resources) {

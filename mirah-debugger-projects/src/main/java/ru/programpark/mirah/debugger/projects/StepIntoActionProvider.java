@@ -74,7 +74,7 @@ import org.openide.util.WeakListeners;
 @ActionsProvider.Registration(actions = "stepInto")
 public class StepIntoActionProvider extends ActionsProviderSupport {
     private final static String MIME_TYPE = "text/x-vruby";
-
+    private static final Logger logger = Logger.getLogger(StepIntoActionProvider.class.getName());
 
 //    private MethodBreakpoint breakpoint;
     Listener listener;

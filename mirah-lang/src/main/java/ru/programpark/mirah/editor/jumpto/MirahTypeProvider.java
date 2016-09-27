@@ -74,13 +74,13 @@ public class MirahTypeProvider implements TypeProvider {
 
     @Override
     public String name() {
-        return "mirah"; // NOI18N
+        return "vrb"; // NOI18N
     }
 
     @Override
     public String getDisplayName() {
         // TODO - i18n
-        return "Mirah Classes";
+        return "VRuby Classes";
     }
 
     @Override

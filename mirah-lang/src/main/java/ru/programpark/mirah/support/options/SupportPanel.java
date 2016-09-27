@@ -72,8 +72,8 @@ import org.openide.util.NbBundle;
  */
 @OptionsPanelController.Keywords(
         location = OptionsDisplayer.ADVANCED, 
-        tabTitle = "Mirah",
-        keywords = {"mirah"})
+        tabTitle = "VRuby",
+        keywords = {"vrb", "vruby"})
 final class SupportPanel extends javax.swing.JPanel {
 
     private final Collection<MirahOptionsSubpanel> subpanels;

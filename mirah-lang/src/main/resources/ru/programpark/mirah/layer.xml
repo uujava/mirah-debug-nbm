@@ -88,7 +88,7 @@
         </folder>
         <folder name="PreviewExamples">
             <folder name="text">
-                <file name="x-vruby" url="MirahExample.mirah"/>
+                <file name="x-vruby" url="MyClass.vrb"/>
             </folder>
         </folder>
     </folder>

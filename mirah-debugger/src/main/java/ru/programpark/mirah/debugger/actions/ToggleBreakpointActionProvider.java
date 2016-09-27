@@ -88,8 +88,8 @@ import java.util.logging.Logger;
  * @see debugger.jpda.ui/src/org/netbeans/modules/debugger/jpda/ui/actions/ToggleBreakpointActionProvider.java
  */
 @ActionsProvider.Registrations({
-        @ActionsProvider.Registration(path = "", actions = {"toggleBreakpoint"}, activateForMIMETypes = {"text/x-mirah"}),
-        @ActionsProvider.Registration(path = "netbeans-JPDASession", actions = {"toggleBreakpoint"}, activateForMIMETypes = {"text/x-mirah"})
+        @ActionsProvider.Registration(path = "", actions = {"toggleBreakpoint"}, activateForMIMETypes = {"text/x-vruby"}),
+        @ActionsProvider.Registration(path = "netbeans-JPDASession", actions = {"toggleBreakpoint"}, activateForMIMETypes = {"text/x-vruby"})
 })
 public class ToggleBreakpointActionProvider extends ActionsProviderSupport
         implements PropertyChangeListener {
@@ -124,9 +124,7 @@ public class ToggleBreakpointActionProvider extends ActionsProviderSupport
         setEnabled(
                 ActionsManager.ACTION_TOGGLE_BREAKPOINT,
                 (EditorContextBridge.getContext().getCurrentLineNumber() >= 0)
-                        && // "text/x-mirah" MIMEType will be resolved by scala.editing module, thus this module should run-dependency on scala.editing
-                        (fo != null && "text/x-mirah".equals(fo.getMIMEType())) // NOI18N
-                //(fo != null && (url.endsWith (".scala")))  // NOI18N
+                        && (fo != null && "text/x-vruby".equals(fo.getMIMEType())) // NOI18N
         );
         if (debugger != null
                 && debugger.getState() == JPDADebugger.STATE_DISCONNECTED) {
@@ -180,7 +178,7 @@ public class ToggleBreakpointActionProvider extends ActionsProviderSupport
         if (source == null) {
             return null;
         }
-        if (!"text/x-mirah".equals(fo.getMIMEType())) {
+        if (!"text/x-vruby".equals(fo.getMIMEType())) {
             /**
              * Should return null instead of "" here,
              *
@@ -298,8 +296,6 @@ public class ToggleBreakpointActionProvider extends ActionsProviderSupport
         }
         if (logger.isLoggable(Level.FINE)) logger.log(Level.FINE,  "sourcePath = " + sourcePath);
         lb.setSourcePath(sourcePath);
-//      lb.setURL(url);
-//      lb.setStratum("MIRAH");
         lb.setPreferredClassName(preferredClassName);
         lb.setPrintText(NbBundle.getBundle(ToggleBreakpointActionProvider.class).getString("CTL_Line_Breakpoint_Print_Text"));
         d.addBreakpoint(lb);

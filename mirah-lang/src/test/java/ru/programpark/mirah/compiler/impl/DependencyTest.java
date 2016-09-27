@@ -32,11 +32,9 @@ public class DependencyTest extends CompilerTestHelper {
 
     @Test
     public void testSimpleCycle() {
-        mirah.add(new StringCodeSource("A.mirah", "class A;def b:B;B.newend;end"));
+        mirah.add(new StringCodeSource("A.mirah", "class A;def b:B;B.new;end;end"));
         mirah.add(new StringCodeSource("B.mirah", "class B;def a:A;A.new;end;end"));
-        assertThat("no errors", mirah.run(null), is(true));
-        assertThat("errors", 0, equalTo(errorCounter.errorCount()));
-        mirah.getResolvedTypes();
+        withErrors("no errors", mirah.run(null), is(true));
     }
 
 }

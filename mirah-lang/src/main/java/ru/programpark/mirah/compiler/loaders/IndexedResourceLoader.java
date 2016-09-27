@@ -1,28 +1,47 @@
 package ru.programpark.mirah.compiler.loaders;
 
-import org.mirah.jvm.mirrors.ResourceLoader;
-
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Enumeration;
 
 /**
- * Created by kozyr on 27.09.2016.
+ * ResourceLoader with indexed content
+ * Easier converts into ClassLoader.
  */
-public abstract class IndexedResourceLoader extends ResourceLoader {
+public interface IndexedResourceLoader {
 
-    public abstract boolean contains(String path);
+    /**
+     * check if resource identified by path known to this loader
+     *
+     * @param path - resource path, usually relative to some root folder
+     * @return
+     */
+    boolean contains(String path);
 
-    public abstract InputStream asStream(String path);
+    /**
+     * Open stream to known resource or null
+     *
+     * @param path- resource path, usually relative to some root folder
+     * @return
+     */
+    InputStream open(String path) throws IOException;
 
-    public abstract Enumeration<URL> findAll(String path);
+    /**
+     * URL for known resource or null
+     *
+     * @param path- resource path, usually relative to some root folder
+     * @return
+     */
+    URL find(String path);
 
-    @Override
-    protected InputStream findResource(String path) {
-        if (!contains(path)) {
-            return asStream(path);
-        } else {
-            return null;
-        }
-    }
+    /**
+     * Intended mainly for META-INF/services lookup
+     * Should also work for ALL file/jar based resources
+     *
+     * @param path- resource path, usually relative to some root folder
+     * @return
+     */
+    Enumeration<URL> findAll(String path) throws IOException;
+
 }

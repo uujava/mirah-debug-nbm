@@ -21,17 +21,17 @@ import static org.junit.Assert.assertThat;
  * Created by kozyr on 26.09.2016.
  */
 public class CompilerTestHelper {
-    protected ErrorCounter errorCounter;
-    protected InteractiveCompiler mirah;
+    protected ErrorLogger errorLogger;
+    protected MirahInteractiveCompiler mirah;
 
     @Before
     public void init() {
-        errorCounter = new ErrorCounter(null);
-        mirah = new MirahInteractiveCompiler(errorCounter);
+        errorLogger = new ErrorLogger();
+        mirah = new MirahInteractiveCompiler(errorLogger);
         CompilerUtil.vizitStat(new ResetStatVizitor());
     }
 
-    protected <T> void withErrors(ErrorLogger errorLogger, String message, T value, Matcher<T> objectMatcher) {
+    protected <T> void withErrors(String message, T value, Matcher<T> objectMatcher) {
         assertThat(message + "=>" + errorLogger, value, objectMatcher);
     }
 

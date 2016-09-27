@@ -1,8 +1,6 @@
 package ru.programpark.mirah.compiler.impl;
 
-import ru.programpark.mirah.compiler.MirahIncrementalCompiler;
 import ru.programpark.mirah.compiler.PathMapper;
-import ru.programpark.mirah.compiler.TypePathScanner;
 
 import java.nio.file.Path;
 import java.util.HashMap;
@@ -13,10 +11,10 @@ import java.util.Map;
  */
 public class CompiledPathMapper implements PathMapper {
 
-    private final MirahIncrementalCompiler compiler;
+    private final MirahInteractiveCompiler compiler;
     private final Map<String, Path> type2path;
 
-    public CompiledPathMapper(MirahIncrementalCompiler compiler) {
+    public CompiledPathMapper(MirahInteractiveCompiler compiler) {
         this.compiler = compiler;
         type2path = new HashMap<>();
     }

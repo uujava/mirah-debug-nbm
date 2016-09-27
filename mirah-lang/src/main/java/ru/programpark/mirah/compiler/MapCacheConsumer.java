@@ -12,7 +12,7 @@ import java.util.logging.Logger;
 /**
  * Cache class bytes aggregating by Path and type
  */
-public class MapCacheConsumer implements BytecodeConsumer, CacheConsumer {
+public class MapCacheConsumer implements CacheConsumer {
 
     private static final Logger logger = Logger.getLogger(MapCacheConsumer.class.getName());
     private final Map<Path, Set<String>> path2types = new HashMap<>();

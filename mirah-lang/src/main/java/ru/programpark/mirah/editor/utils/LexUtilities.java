@@ -113,17 +113,7 @@ public final class LexUtilities {
             if (document instanceof BaseDocument) {
                 return ((BaseDocument) document);
             } else {
-                // Must be testsuite execution
-                try {
-                    Class c = Class.forName("org.netbeans.modules.groovy.editor.test.GroovyTestBase");
-                    if (c != null) {
-                        @SuppressWarnings("unchecked")
-                        Method m = c.getMethod("getDocumentFor", new Class[] {FileObject.class});
-                        return (BaseDocument) m.invoke(null, (Object[]) new FileObject[] {fileObject});
-                    }
-                } catch (Exception ex) {
-                    Exceptions.printStackTrace(ex);
-                }
+                return null;
             }
         } catch (IOException ioe) {
             Exceptions.printStackTrace(ioe);

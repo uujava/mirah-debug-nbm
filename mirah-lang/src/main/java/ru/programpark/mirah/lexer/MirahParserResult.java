@@ -9,6 +9,7 @@ import org.openide.filesystems.FileObject;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -20,7 +21,7 @@ public class MirahParserResult extends ParserResult {
     private final ParseErrorListener diagnostics;
     List<ParserError> errorList = null;
     List parsedNodes;
-    HashMap<Node, ResolvedType> resolvedTypes = null;
+    Map<Node, ResolvedType> resolvedTypes = null;
     private BlockCollector blockCollector = null;
     private FileObject fileObject;
 
@@ -73,11 +74,11 @@ public class MirahParserResult extends ParserResult {
         this.parsedNodes = parsed;
     }
 
-    public HashMap<Node, ResolvedType> getResolvedTypes() {
+    public Map<Node, ResolvedType> getResolvedTypes() {
         return resolvedTypes;
     }
 
-    public void setResolvedTypes(HashMap<Node, ResolvedType> resolvedTypes) {
+    public void setResolvedTypes(Map<Node, ResolvedType> resolvedTypes) {
         this.resolvedTypes = resolvedTypes;
     }
 

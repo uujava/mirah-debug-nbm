@@ -1,21 +1,21 @@
 package ru.programpark.mirah.compiler.types;
 
-import mirah.objectweb.asm.Opcodes;
-import mirah.objectweb.asm.Type;
 import org.mirah.typer.ResolvedType;
 
 /**
+ * TODO implement java.lang.model??
  * Strip off Future specific from mirah types
  * Minimal memory footprint - most info stored in  backing AsmType
  */
 public class ErrorJType implements ResolvedType {
-    final Type asmType;
-    private final boolean block;
+
+    private String name;
+    private String message;
 
 
-    public ErrorJType(Type asmType, boolean block) {
-        this.asmType = asmType;
-        this.block = block;
+    public ErrorJType(String name, String message) {
+        this.name = name;
+        this.message = message;
     }
 
     @Override
@@ -30,17 +30,17 @@ public class ErrorJType implements ResolvedType {
 
     @Override
     public String name() {
-        return asmType.getClassName();
+        return name;
     }
 
     @Override
     public boolean isMeta() {
-        return (asmType.getOpcode(Opcodes.ACC_STATIC) & Opcodes.ACC_STATIC) == Opcodes.ACC_STATIC;
+        return false;
     }
 
     @Override
     public boolean isBlock() {
-        return block;
+        return false;
     }
 
     @Override
@@ -50,7 +50,7 @@ public class ErrorJType implements ResolvedType {
 
     @Override
     public boolean isError() {
-        return false;
+        return true;
     }
 
     @Override
@@ -70,13 +70,12 @@ public class ErrorJType implements ResolvedType {
 
         ErrorJType jType = (ErrorJType) o;
 
-        if (block != jType.block) return false;
-        return asmType.equals(jType.asmType);
+        return name.equals(jType.name) && message.equals(((ErrorJType) o).message);
 
     }
 
     @Override
     public int hashCode() {
-        return asmType.hashCode();
+        return name.hashCode();
     }
 }

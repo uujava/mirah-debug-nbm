@@ -1,6 +1,7 @@
 package ru.programpark.mirah.compiler.stat;
 
 import java.nio.file.Path;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Set;
 
@@ -9,10 +10,9 @@ import java.util.Set;
  */
 public class CacheStatistics {
     private final Path path;
-    private long inserts;
-    private long deleted;
+    private int inserts;
+    private int deleted;
     private long timeStamp;
-
     public CacheStatistics(Path path) {
         this.path = path;
     }
@@ -24,26 +24,16 @@ public class CacheStatistics {
 
     public void deleted() {
         this.deleted += 1;
+        this.timeStamp = System.currentTimeMillis();
     }
 
     @Override
     public String toString() {
-        long total = 0;
-        Set<String> strings = path2types.get(path);
-        if (strings != null) {
-            for (String type : strings) {
-                byte[] bytes = type2bytes.get(type);
-                if (bytes != null) {
-                    total += bytes.length;
-                }
-            }
-        }
-        return "CacheStatistics{" + path +
-                "=> totalSize=" + total +
-                ", classCount=" + (strings != null ? strings.size() : 0) +
-                ", inserts=" + inserts +
+
+        return "{" + path +
+                "=> inserts=" + inserts +
                 ", deleted=" + deleted +
-                ", modified=" + new Date(timeStamp) +
+                ", modified=" + new SimpleDateFormat("YYYYddMM-HH:mm:ss.SSS").format(new Date(timeStamp)) +
                 '}';
     }
 

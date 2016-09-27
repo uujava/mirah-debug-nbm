@@ -2,7 +2,6 @@ package ru.programpark.mirah.compiler.impl;
 
 import mirah.lang.ast.*;
 import org.mirah.typer.ResolvedType;
-import ru.programpark.mirah.compiler.MirahIncrementalCompiler;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -15,9 +14,9 @@ import java.util.logging.Logger;
 class TypePathScanner extends NodeScanner {
     private static final Logger logger = Logger.getLogger(TypePathScanner.class.getName());
     private final Map<String, Path> type2path;
-    private MirahIncrementalCompiler compiler;
+    private MirahInteractiveCompiler compiler;
 
-    public TypePathScanner(MirahIncrementalCompiler incrementalCompiler, Map<String, Path> type2path) {
+    public TypePathScanner(MirahInteractiveCompiler incrementalCompiler, Map<String, Path> type2path) {
         this.compiler = incrementalCompiler;
         this.type2path = type2path;
     }

@@ -1,7 +1,7 @@
 Manifest-Version: 1.0
-OpenIDE-Module-Display-Category: Mirah
 AutoUpdate-Show-In-Client: true
 OpenIDE-Module-Localizing-Bundle: ru/programpark/mirah/Bundle.properties
 OpenIDE-Module-Layer: ru/programpark/mirah/layer.xml
 OpenIDE-Module: ru.programpark.mirah.lang/1
-OpenIDE-Module-Long-Description: Mirah Language Support
+OpenIDE-Module-Long-Description: VRuby Language Support
+OpenIDE-Module-Display-Category: VRuby

@@ -66,15 +66,6 @@
           <value>Sun Microsystems Inc.</value>
         </property>
       </activation>
-      <dependencies>
-        <dependency>
-          <groupId>com.sun</groupId>
-          <artifactId>tools</artifactId>
-          <version>1.7</version>
-          <scope>system</scope>
-          <systemPath>${env.JAVA_HOME}/lib/tools.jar</systemPath>
-        </dependency>
-      </dependencies>
     </profile>
     <profile>
       <id>dependency-of-default-tools-jar-openjdk</id>
@@ -84,15 +75,6 @@
           <value>Oracle Corporation</value>
         </property>
       </activation>
-      <dependencies>
-        <dependency>
-          <groupId>com.sun</groupId>
-          <artifactId>tools</artifactId>
-          <version>1.7</version>
-          <scope>system</scope>
-          <systemPath>${env.JAVA_HOME}/lib/tools.jar</systemPath>
-        </dependency>
-      </dependencies>
     </profile>
     <profile>
       <id>updatesite</id>

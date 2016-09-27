@@ -116,7 +116,7 @@ class SyntaxErrorsHighlightingTask extends ParserResultTask {
         CodeHintsTask codeHints = new CodeHintsTask();
         codeHints.run(t, se);
         errors.addAll(codeHints.getErrors());
-        HintsController.setErrors(document, "mirah", errors);
+        HintsController.setErrors(document, "vrb", errors);
         
     }
 

@@ -169,7 +169,7 @@ public class RunToCursorActionProvider extends ActionsProviderSupport {
             return false;
         }
         FileObject fo = editorContext.getCurrentFile();
-        if (fo == null || !fo.hasExt("mirah")) {
+        if (fo == null || !fo.hasExt("vrb")) {
             return false;
         }
         

@@ -150,7 +150,7 @@ public abstract class ProjectTypeStrategy {
     }
 
     private FileObject lookForJUnitTemplate(FileObject templatesParent, int majorVersion) {
-        final String templateName = "MirahJUnit" + majorVersion + "Test.mirah"; //NOI18N
+        final String templateName = "Unit" + majorVersion + "Test.vrb"; //NOI18N
         for (FileObject child : templatesParent.getChildren()) {
             if (templateName.equals(child.getNameExt())) {
                 return child;
