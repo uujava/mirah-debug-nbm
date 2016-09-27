@@ -495,7 +495,7 @@ public class MirahStructureItem implements StructureItem, ElementHandle {
 
     @Override
     public String getMimeType() {
-        return "text/x-mirah";
+        return "text/x-vruby";
     }
 
     @Override

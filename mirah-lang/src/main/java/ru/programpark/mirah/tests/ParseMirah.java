@@ -236,9 +236,9 @@ public class ParseMirah {
         if ( doc == null ) return;
 
         FileObject fo = getFileObject(doc);
-        if ( ! fo.getExt().equals("mirah") ) return;
+        if ( ! fo.getExt().equals("vrb") ) return;
         
-        final InputOutput io = IOProvider.getDefault().getIO(fo.getName()+".mirah", false);
+        final InputOutput io = IOProvider.getDefault().getIO(fo.getName()+".vrb", false);
         
         long start = System.currentTimeMillis();
         

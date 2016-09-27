@@ -44,7 +44,7 @@ made subject to such option by the copyright holder.
 <filesystem>
     <folder name="Editors">
         <folder name="text">
-            <folder name="x-mirah">
+            <folder name="x-vruby">
                 <folder name="ToolTips">
                     <file name="org-netbeans-modules-debugger-jpda-projects-ToolTipAnnotation.instance"/>
                 </folder>
@@ -100,7 +100,7 @@ made subject to such option by the copyright holder.
     <!--
     <folder name="Loaders">
         <folder name="text">
-            <folder name="x-mirah">
+            <folder name="x-vruby">
                 <folder name="Actions">
                     <file name="org-netbeans-modules-debugger-ui-actions-DebugFileAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-DebugFileAction.instance"/>

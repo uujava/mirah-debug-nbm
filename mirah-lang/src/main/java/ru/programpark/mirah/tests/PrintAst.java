@@ -204,7 +204,7 @@ public class PrintAst {
         }
 
         FileObject fo = getFileObject(doc);
-        if (!fo.getExt().equals("mirah")) {
+        if (!fo.getExt().equals("vrb")) {
             return;
         }
 

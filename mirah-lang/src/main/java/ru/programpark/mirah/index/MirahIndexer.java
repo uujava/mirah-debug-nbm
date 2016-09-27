@@ -113,7 +113,7 @@ public class MirahIndexer extends EmbeddingIndexer {
 
     public static final class Factory extends EmbeddingIndexerFactory {
 
-        public static final String NAME = "mirah"; // NOI18N
+        public static final String NAME = "vrb"; // NOI18N
         public static final int VERSION = 8;
 
         @Override
@@ -142,8 +142,8 @@ public class MirahIndexer extends EmbeddingIndexer {
         private boolean isIndexable(Indexable indexable, Snapshot snapshot) {
             String extension = snapshot.getSource().getFileObject().getExt();
 
-//            if (logger.isLoggable(Level.FINE)) logger.log(Level.FINE, "isIndexable extension="+extension);
-            if (extension.equals("mirah")) { // NOI18N
+//            LOG.info(MirahIndexer.class,"isIndexable extension="+extension);
+            if (extension.equals("vrb")) { // NOI18N
                 return true;
             }
             return false;

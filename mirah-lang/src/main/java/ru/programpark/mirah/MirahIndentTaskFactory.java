@@ -14,7 +14,7 @@ import org.netbeans.modules.editor.indent.spi.IndentTask;
  *
  * @author shannah
  */
-@MimeRegistration(mimeType="text/x-mirah",service=IndentTask.Factory.class)
+@MimeRegistration(mimeType="text/x-vruby",service=IndentTask.Factory.class)
 public class MirahIndentTaskFactory implements IndentTask.Factory {
 
     @Override

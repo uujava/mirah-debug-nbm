@@ -63,7 +63,7 @@ private int caretPosition = -1;
         }
 
         @MimeRegistrations({
-            @MimeRegistration(mimeType = "text/x-mirah", service = TypedTextInterceptor.Factory.class)
+            @MimeRegistration(mimeType = "text/x-vruby", service = TypedTextInterceptor.Factory.class)
         })
         public static class Factory implements TypedTextInterceptor.Factory {
 

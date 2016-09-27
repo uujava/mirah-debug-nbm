@@ -1,0 +1,8 @@
+Manifest-Version: 1.0
+AutoUpdate-Show-In-Client: true
+OpenIDE-Module: ru.programpark.mirah.debugger/1
+OpenIDE-Module-Localizing-Bundle: ru/programpark/mirah/debugger/Bundle.properties
+OpenIDE-Module-Display-Category: VRuby
+OpenIDE-Module-Layer: ru/programpark/mirah/debugger/resources/layer.xml
+OpenIDE-Module-IDE-Dependencies: IDE/1 > 4.0 
+OpenIDE-Module-Specification-Version: 1.0

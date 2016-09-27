@@ -265,26 +265,26 @@ public final class MirahUtils {
         return null;
     }
 
-    private static void walkTree(Node node) {
-        NodeFilter f = new NodeFilter() {
-
-            @Override
-            public boolean matchesNode(Node node) {
-
-                return true;
-            }
-
-        };
-
-        List nodes = node.findChildren(f);
-
-        for (Object o : nodes) {
-            if (o instanceof Node) {
-                walkTree((Node) o);
-            }
-        }
-
-    }
+//    private static void walkTree(Node node) {
+//        NodeFilter f = new NodeFilter() {
+//
+//            @Override
+//            public boolean matchesNode(Node node) {
+//
+//                return true;
+//            }
+//
+//        };
+//
+//        List nodes = node.findChildren(f);
+//
+//        for (Object o : nodes) {
+//            if (o instanceof Node) {
+//                walkTree((Node) o);
+//            }
+//        }
+//
+//    }
 
     private static String nodeToString(Node n) {
         if (n == null || n.position() == null) {

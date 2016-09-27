@@ -231,7 +231,7 @@ public class MirahLanguageHierarchy extends LanguageHierarchy<MirahTokenId>{
     }
 
     protected String mimeType () {
-        return "text/x-mirah";
+        return "text/x-vruby";
     }
     
     
