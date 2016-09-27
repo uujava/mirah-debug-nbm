@@ -44,6 +44,7 @@ class NodeTypeScanner extends NodeScanner {
 
     @Override
     public boolean enterConstant(Constant node, Object arg) {
+        processNode(node, (Map<Node, ResolvedType>) arg);
         return false;
     }
 
@@ -66,6 +67,7 @@ class NodeTypeScanner extends NodeScanner {
 
     @Override
     public boolean enterSimpleString(SimpleString node, Object arg) {
+        processNode(node, (Map<Node, ResolvedType>) arg);
         return false;
     }
 

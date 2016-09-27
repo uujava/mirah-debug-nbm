@@ -375,7 +375,8 @@ public class MirahInteractiveCompiler implements JvmBackend, InteractiveCompiler
         if(node == null) return errorType(null);
         TypeFuture future = this.typer.getInferredType(node);
         if (future == null) {
-            logger.severe("null future for node: " + node + " " + node.position());
+            if (logger.isLoggable(Level.FINE))
+                logger.log(Level.FINE, "defer type to parent: " + node + " " + node.position());
             return type(node.parent());
         }
         if (future.isResolved()) {
