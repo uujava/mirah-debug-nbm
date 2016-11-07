@@ -231,7 +231,7 @@ public final class CompletionContext {
         while (ts.isValid() && ts.movePrevious() && ts.offset() >= 0) {
             Token<MirahTokenId> t = ts.token();
             MirahTokenId mt = t.id();
-            if (t.id().is(Tokens.tClass) || t.id().is(Tokens.tInterface)) {
+            if (t.id().is(Tokens.tClass) || t.id().is(Tokens.tInterface) || t.id().is(Tokens.tEnum)) {
                 classDefBeforePosition = true;
                 break;
             }
@@ -245,7 +245,7 @@ public final class CompletionContext {
         while (ts.isValid() && ts.moveNext() && ts.offset() < doc.getLength()) {
             Token<MirahTokenId> t = ts.token();
             MirahTokenId mt = t.id();
-            if (t.id().is(Tokens.tClass) || t.id().is(Tokens.tInterface)) {
+            if (t.id().is(Tokens.tClass) || t.id().is(Tokens.tInterface) || t.id().is(Tokens.tEnum)) {
                 classDefAfterPosition = true;
                 break;
             }

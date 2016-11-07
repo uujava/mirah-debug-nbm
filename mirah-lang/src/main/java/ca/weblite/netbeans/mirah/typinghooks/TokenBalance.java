@@ -111,6 +111,7 @@ class TokenBalance implements TokenHierarchyListener {
             final MirahTokenId tEnd = MirahTokenId.get(Tokens.tEnd);
             tb.addTokenPair(language, MirahTokenId.get(Tokens.tDo), tEnd);
             tb.addTokenPair(language, MirahTokenId.get(Tokens.tClass), tEnd);
+            tb.addTokenPair(language, MirahTokenId.get(Tokens.tEnum), tEnd);
             tb.addTokenPair(language, MirahTokenId.get(Tokens.tInterface), tEnd);
             tb.addTokenPair(language, MirahTokenId.get(Tokens.tDef), tEnd);
             tb.addTokenPair(language, MirahTokenId.get(Tokens.tCase), tEnd);

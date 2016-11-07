@@ -82,7 +82,7 @@ public class ConstructorGenerationCompletion extends BaseCompletion {
         }
 
         // We are after class definition
-        if (request.context.beforeLiteral != null && request.context.beforeLiteral.id().is(Tokens.tClass)) {
+        if (request.context.beforeLiteral != null && (request.context.beforeLiteral.id().is(Tokens.tClass) || request.context.beforeLiteral.id().is(Tokens.tEnum)) ) {
             return false;
         }
 

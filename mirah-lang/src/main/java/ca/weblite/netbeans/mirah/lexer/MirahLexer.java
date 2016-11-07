@@ -314,7 +314,7 @@ public class MirahLexer implements Lexer<MirahTokenId>{
             if ( inClassDeclaration && ordinal == Tokens.tCONSTANT.ordinal()){
                 inClassDeclaration = false;
                 ordinal = MirahLanguageHierarchy.CLASS_DECLARATION;
-            } else if ( ordinal == Tokens.tClass.ordinal() || ordinal == Tokens.tInterface.ordinal() ){
+            } else if ( ordinal == Tokens.tClass.ordinal() || ordinal == Tokens.tInterface.ordinal() || ordinal == Tokens.tEnum.ordinal() ){
                 inClassDeclaration = true;
             } else if ( inMethodDeclaration && ordinal == Tokens.tIDENTIFIER.ordinal()){
                 inMethodDeclaration = false;

@@ -275,6 +275,8 @@ public class MirahTypingCompletion {
         Tokens.tWhile,
         // puts "#{self.class}"
         Tokens.tClass,
+        Tokens.tEnum,
+        Tokens.tInterface,
         // abstract def build:void;end
         // instance.call_method_with_empty_block do end
         Tokens.tEnd
@@ -303,6 +305,7 @@ public class MirahTypingCompletion {
     private static final MirahTokenId[] starts = {
         MirahTokenId.get(Tokens.tDo.ordinal()),
         MirahTokenId.get(Tokens.tClass.ordinal()),
+        MirahTokenId.get(Tokens.tEnum.ordinal()),
         MirahTokenId.get(Tokens.tInterface.ordinal()),
         MirahTokenId.get(Tokens.tDef.ordinal()),
         MirahTokenId.get(Tokens.tCase.ordinal()),

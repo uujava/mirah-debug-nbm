@@ -132,7 +132,7 @@ class KeywordCompletion extends BaseCompletion {
         if (ctx.beforeLiteral.id().is(Tokens.tInterface)) {
             keywords.clear();
             addIfPrefixed(MirahKeyword.KEYWORD_extends);
-        } else if (ctx.beforeLiteral.id().is(Tokens.tClass)) {
+        } else if (ctx.beforeLiteral.id().is(Tokens.tClass) || ctx.beforeLiteral.id().is(Tokens.tEnum)) {
             keywords.clear();
             addIfPrefixed(MirahKeyword.KEYWORD_extends);
             addIfPrefixed(MirahKeyword.KEYWORD_implements);

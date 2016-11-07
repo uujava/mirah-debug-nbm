@@ -55,29 +55,43 @@ public class TokenBalanceFilterFactory {
                 };
             case tClass:
                 /** Задача - не учитывать в балансе токенов выражения Object.class, self.class */
-                return new TokenBalance.Filter<T>() {
-                    @Override
-                    public boolean apply(TokenSequence<?> ts) {
-                        TokenId prefixToken = null;
-                        // Запоминаем, т.к. будем навигироваться по последовательности токенов
-                        int offset = ts.offset();
-                        while (ts.movePrevious() && ts.token().id() != MirahTokenId.NL) {
-                            // Приходится проверяться на сам токен, т.к. в качестве стартовой позиции для поиска может 
-                            // прийти как позиция собственно токена, так и позиция конца текущей строки
-                            if (MirahTokenId.get(token).equals(ts.token().id())) {
-                                continue;
-                            }
-                            prefixToken = ts.token().id();
-                            break;
-                        }
-                        // Восстанавливаем. ts.moveNext() необходим после вызова ts.move(offset)
-                        ts.move(offset);
-                        ts.moveNext();
-                        return !MirahTokenId.get(Tokens.tDot).equals(prefixToken);
-                    }
-                };
+                return new ClassBalanceFilter<T>(token);
+            case tInterface:
+                /** Задача - не учитывать в балансе токенов выражения Object.class, self.class */
+                return new ClassBalanceFilter<T>(token);
+            case tEnum:
+                /** Задача - не учитывать в балансе токенов выражения Object.class, self.class */
+                return new ClassBalanceFilter<T>(token);
             default:
                 return null;
+        }
+    }
+
+    private static class ClassBalanceFilter<T> implements TokenBalance.Filter{
+        Tokens token;
+
+        public ClassBalanceFilter(Tokens token) {
+            this.token = token;
+        }
+
+        @Override
+        public boolean apply(TokenSequence ts) {
+            TokenId prefixToken = null;
+            // Запоминаем, т.к. будем навигироваться по последовательности токенов
+            int offset = ts.offset();
+            while (ts.movePrevious() && ts.token().id() != MirahTokenId.NL) {
+                // Приходится проверяться на сам токен, т.к. в качестве стартовой позиции для поиска может
+                // прийти как позиция собственно токена, так и позиция конца текущей строки
+                if (MirahTokenId.get(token).equals(ts.token().id())) {
+                    continue;
+                }
+                prefixToken = ts.token().id();
+                break;
+            }
+            // Восстанавливаем. ts.moveNext() необходим после вызова ts.move(offset)
+            ts.move(offset);
+            ts.moveNext();
+            return !MirahTokenId.get(Tokens.tDot).equals(prefixToken);
         }
     }
 }

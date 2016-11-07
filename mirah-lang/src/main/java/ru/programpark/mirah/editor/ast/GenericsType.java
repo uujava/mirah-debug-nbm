@@ -240,6 +240,26 @@ public class GenericsType implements Node {
         return null;
     }
 
+    @Override
+    public Node findChild(NodeFilter nodeFilter) {
+        return null;
+    }
+
+    @Override
+    public List findChildren(NodeFilter nodeFilter) {
+        return null;
+    }
+
+    @Override
+    public Node findDescendant(NodeFilter nodeFilter) {
+        return null;
+    }
+
+    @Override
+    public List findDescendants(NodeFilter nodeFilter) {
+        return null;
+    }
+
     /**
      * Implements generics type comparison.
      */

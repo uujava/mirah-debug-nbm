@@ -111,7 +111,7 @@ public class TypesCompletion extends BaseCompletion {
         if (literal != null) {
             
             // We don't need to complete Types after class definition
-            if (literal.id().is(Tokens.tClass)) {
+            if (literal.id().is(Tokens.tClass) || literal.id().is(Tokens.tEnum)) {
                 return false;
             }
 

@@ -66,7 +66,7 @@ public class FieldCompletion extends BaseCompletion {
             return false;
         }
         
-        if (context.context.beforeLiteral != null && context.context.beforeLiteral.id().is(Tokens.tClass)) {
+        if (context.context.beforeLiteral != null && (context.context.beforeLiteral.id().is(Tokens.tClass) || context.context.beforeLiteral.id().is(Tokens.tEnum) )) {
             return false;
         }
 

@@ -339,7 +339,7 @@
         <dependency>
             <groupId>org.mirah</groupId>
             <artifactId>mirahc-nbm</artifactId>
-            <version>0.1.5.138</version>
+            <version>0.2.1.167</version>
         </dependency>
         <dependency>
             <groupId>org.mirah</groupId>

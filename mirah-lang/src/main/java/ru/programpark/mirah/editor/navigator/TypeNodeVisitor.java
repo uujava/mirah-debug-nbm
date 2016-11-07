@@ -1,21 +1,8 @@
 package ru.programpark.mirah.editor.navigator;
 
 import ca.weblite.netbeans.mirah.AbstractNodeVisitor;
-import mirah.lang.ast.Array;
+import mirah.lang.ast.*;
 import mirah.lang.ast.Boolean;
-import mirah.lang.ast.Call;
-import mirah.lang.ast.FieldAnnotationRequest;
-import mirah.lang.ast.Fixnum;
-import mirah.lang.ast.FunctionalCall;
-import mirah.lang.ast.Hash;
-import mirah.lang.ast.HashEntry;
-import mirah.lang.ast.Identifier;
-import mirah.lang.ast.JavaDoc;
-import mirah.lang.ast.Node;
-import mirah.lang.ast.NodeList;
-import mirah.lang.ast.SimpleString;
-import mirah.lang.ast.Symbol;
-import mirah.lang.ast.SyntheticLambdaDefinition;
 
 /**
  *
@@ -47,6 +34,11 @@ public class TypeNodeVisitor extends AbstractNodeVisitor {
             }
         }
         return call.parameters().accept(this, o);
+    }
+
+    @Override
+    public Object visitEnumDefinition(EnumDefinition enumDefinition, Object o) {
+        return visitClassDefinition(enumDefinition, o);
     }
 
     @Override

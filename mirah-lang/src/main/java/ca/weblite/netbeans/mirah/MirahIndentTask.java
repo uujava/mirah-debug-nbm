@@ -121,6 +121,7 @@ public class MirahIndentTask implements IndentTask  {
         
         Set<MirahTokenId> blockBeginTokens = MirahTokenId.set(
                 Tokens.tClass,
+                Tokens.tEnum,
                 Tokens.tInterface,
                 Tokens.tDef,
                 Tokens.tIf,
@@ -350,7 +351,8 @@ public class MirahIndentTask implements IndentTask  {
                     Tokens.tDef, 
                     Tokens.tIf, 
                     Tokens.tClass, 
-                    Tokens.tInterface, 
+                    Tokens.tEnum,
+                    Tokens.tInterface,
                     Tokens.tDo, 
                     Tokens.tBegin,
                     Tokens.tUnless,
@@ -399,7 +401,8 @@ public class MirahIndentTask implements IndentTask  {
                     Tokens.tDef, 
                     Tokens.tIf, 
                     Tokens.tClass, 
-                    Tokens.tInterface, 
+                    Tokens.tEnum,
+                    Tokens.tInterface,
                     Tokens.tDo, 
                     Tokens.tBegin
             );
@@ -454,6 +457,7 @@ public class MirahIndentTask implements IndentTask  {
                     Tokens.tDef, 
                     Tokens.tBegin, 
                     Tokens.tClass, 
+                    Tokens.tEnum,
                     Tokens.tInterface,
                     Tokens.tUnless
             );
@@ -736,6 +740,7 @@ public class MirahIndentTask implements IndentTask  {
         MirahTokenId tEnd = MirahTokenId.get(Tokens.tEnd.ordinal());
         Set<MirahTokenId> openers = new HashSet<MirahTokenId>();
         openers.add(MirahTokenId.get(Tokens.tClass.ordinal()));
+        openers.add(MirahTokenId.get(Tokens.tEnum.ordinal()));
         openers.add(MirahTokenId.get(Tokens.tBegin.ordinal()));
         openers.add(MirahTokenId.get(Tokens.tIf.ordinal()));
         openers.add(MirahTokenId.get(Tokens.tDo.ordinal()));
