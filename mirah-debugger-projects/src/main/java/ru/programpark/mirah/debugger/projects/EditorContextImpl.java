@@ -40,9 +40,6 @@
  */
 package ru.programpark.mirah.debugger.projects;
 
-//import ca.weblite.netbeans.mirah.lexer.MirahParser;
-import ca.weblite.netbeans.mirah.lexer.MirahParser;
-import ca.weblite.netbeans.mirah.lexer.SourceQuery;
 import java.awt.Color;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -51,12 +48,13 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.net.MalformedURLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.Future;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.VariableElement;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
@@ -66,29 +64,18 @@ import javax.swing.JEditorPane;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePathScanner;
-
-import java.util.Collections;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.VariableElement;
-import mirah.lang.ast.MethodDefinition;
-import mirah.lang.ast.Named;
-import mirah.lang.ast.Node;
-import mirah.lang.ast.NodeFilter;
-import mirah.lang.ast.RequiredArgument;
-import mirah.lang.ast.Script;
-import org.netbeans.api.debugger.Breakpoint;
-import org.netbeans.api.debugger.DebuggerEngine;
-import org.netbeans.api.debugger.DebuggerManager;
-import org.netbeans.api.debugger.DebuggerManagerListener;
-import org.netbeans.api.debugger.Session;
-import org.netbeans.api.debugger.Watch;
-
 import org.netbeans.api.debugger.jpda.LineBreakpoint;
-
 import org.netbeans.api.java.source.CompilationController;
-
+import org.netbeans.editor.JumpList;
+import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.spi.debugger.jpda.EditorContext;
+import org.netbeans.spi.debugger.jpda.SourcePathProvider;
+import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
 import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
@@ -99,38 +86,24 @@ import org.openide.text.Line;
 import org.openide.text.NbDocument;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
-
-import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
-
-import org.netbeans.editor.JumpList;
-import org.netbeans.modules.csl.api.ElementKind;
-import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.parsing.api.ParserManager;
-import org.netbeans.modules.parsing.api.Source;
-import org.netbeans.modules.parsing.api.UserTask;
-import org.netbeans.modules.parsing.spi.ParseException;
-import org.netbeans.modules.parsing.spi.Parser.Result;
-import org.netbeans.spi.debugger.jpda.EditorContext;
-import org.netbeans.spi.debugger.jpda.SourcePathProvider;
+import ru.programpark.mirah.lexer.MirahParserResult;
+import ru.programpark.mirah.lexer.SourceQuery;
 
 /**
- *
  * @author Jan Jancura
  * @author Caoyuan Deng
- *
  * @todo This EditorContextImpl and the EditorContextImpl in debugger.jpda.projects
  * should be instanced and get lookuped in org.netbeans.modules.debugger.jpda.EditorContextImpl#getContext,
  * but, it seems org.netbeans.api.debugger.Lookup won't init the unloaded modules' META-INFO/debugger/
  * services. We have to apply following ugly hacking:
- *     1. Add debugger.jpda.projects module as run-dependency of this modules, so,
- *        when this module is loaded first, debugger.jpda.projects module will also
- *        be loaded.
- *     2. Set this module as eager, so, even debugger.jpda.projects is loaded first,
- *        this module will also be loaded
- *
+ * 1. Add debugger.jpda.projects module as run-dependency of this modules, so,
+ * when this module is loaded first, debugger.jpda.projects module will also
+ * be loaded.
+ * 2. Set this module as eager, so, even debugger.jpda.projects is loaded first,
+ * this module will also be loaded
  */
 public class EditorContextImpl extends EditorContext {
-
+    private static final Logger logger = Logger.getLogger(EditorContextImpl.class.getName());
     private static String fronting =
             System.getProperty("netbeans.debugger.fronting");
     private PropertyChangeSupport pcs;
@@ -146,59 +119,6 @@ public class EditorContextImpl extends EditorContext {
         contextDispatcher = EditorContextDispatcher.getDefault();
         contextDispatcher.addPropertyChangeListener("text/x-vruby",
                 WeakListeners.propertyChange(dispatchListener, contextDispatcher));
-    }
-/*
-    public static void putStack(String text) {
-
-        if ( true ) return;
-        if ( LOG == null ) return;
-
-        for (StackTraceElement ste : Thread.currentThread().getStackTrace()) {
-            if (LOG != null) LOG.info("STACK: "+text+"-> " + ste);
-        }
-        if ( true ) return;
-        DebuggerManager d = DebuggerManager.getDebuggerManager();
-        LOG.info("INFO: "+text+" DebuggerManager=" + d );
-        LOG.info("INFO: "+text+" d.getCurrentSession()="+d.getCurrentSession());
-        LOG.info("INFO: "+text+" d.getCurrentEngine()="+d.getCurrentEngine());
-        LOG.info("INFO: "+text+" d.getActionsManager()="+d.getActionsManager());
-//        LOG.info(""+text+" d.getCurrentSession()="+d.getCurrentSession());
-        if ( d.getCurrentSession() != null )
-        {
-            LOG.info("INFO: " + text + " EngineForLanguage[Java] =" + d.getCurrentSession().getEngineForLanguage("Java"));
-            LOG.info("INFO: " + text + " EngineForLanguage[MIRAX] =" + d.getCurrentSession().getEngineForLanguage("MIRAH"));
-
-            LOG.info("INFO: "+text+" d.getCurrentLanguage()="+d.getCurrentSession().getCurrentLanguage());
-            for( int j = 0 ; j < d.getCurrentSession().getSupportedLanguages().length ; j++ )
-            {
-                LOG.info("INFO: "+text+" SUPPORT LANG="+d.getCurrentSession().getSupportedLanguages()[j]);
-                LOG.info("INFO: " + text + " SUPPORT LANG class=" + d.getCurrentSession().getSupportedLanguages()[j].getClass());
-            }
-        }
-        LOG.info("INFO: "+text+" d.getCurrentLanguage()="+d.getCurrentSession().getCurrentLanguage());
-//        LOG.info("INFO: " + text + " d.getCurrentLanguage().class=" + d.getCurrentSession().getCurrentLanguage().getClass());
-
-//        Breakpoint []bl = d.getBreakpoints();
-//        for( int i = 0 ; i < bl.length ; i++ )
-//        {
-//            LOG.info("INFO: b["+i+"] = "+bl[i]+" isEnabled = "+bl[i].isEnabled());
-//        }
-    }
-*/
-    /**
-     * Shows source with given url on given line number.
-     *
-     * @param url a url of source to be shown
-     * @param lineNumber a number of line to be shown
-     * @param timeStamp a time stamp to be used
-     */
-    @Override
-    public boolean showSource(String url, int lineNumber, Object timeStamp) {
-        Line l = showSourceLine(url, lineNumber, timeStamp);
-        if (l != null) {
-            addPositionToJumpList(url, l, 0);
-        }
-        return l != null;
     }
 
     static Line showSourceLine(String url, int lineNumber, Object timeStamp) {
@@ -217,17 +137,149 @@ public class EditorContextImpl extends EditorContext {
         return l;
     }
 
+    private static Color getColor(String annotationType) {
+        if (annotationType.endsWith("_broken")) {
+            annotationType = annotationType.substring(0, annotationType.length() - "_broken".length());
+        }
+        if (EditorContext.BREAKPOINT_ANNOTATION_TYPE.equals(annotationType)) {
+            return new Color(0xFC9D9F);
+        } else if (EditorContext.CURRENT_LINE_ANNOTATION_TYPE.equals(annotationType) ||
+                EditorContext.CURRENT_OUT_OPERATION_ANNOTATION_TYPE.equals(annotationType)) {
+            return new Color(0xBDE6AA);
+        } else if (EditorContext.CURRENT_EXPRESSION_CURRENT_LINE_ANNOTATION_TYPE.equals(annotationType)) {
+            return new Color(0xE9FFE6); // 0xE3FFD2// 0xD1FFBC
+        } else if (EditorContext.CURRENT_LAST_OPERATION_ANNOTATION_TYPE.equals(annotationType)) {
+            return new Color(0x99BB8A);
+        } else {
+            return new Color(0x0000FF);
+        }
+    }
+
+    static int getFieldLineNumber(
+            FileObject fo,
+            final String className,
+            final String fieldName) {
+        Source source = Source.create(fo);
+        if (source == null) {
+            return -1;
+        }
+        final int[] result = new int[]{-1};
+
+        final DataObject dataObject;
+        try {
+            dataObject = DataObject.find(fo);
+        } catch (DataObjectNotFoundException ex) {
+            return -1;
+        }
+        try {
+            ParserManager.parse(Collections.singleton(source), new UserTask() {
+
+                @Override
+                public void run(ResultIterator resultIterator) throws Exception {
+                }
+            });
+        } catch (ParseException ex) {
+            ErrorManager.getDefault().notify(ex);
+            return -1;
+        }
+        return result[0];
+    }
+
+    static int[] getMethodLineNumbers(
+            FileObject fo,
+            final String className,
+            final String[] classExcludeNames,
+            final String methodName,
+            final String methodSignature) {
+        Source source = Source.create(fo);
+
+        if (source == null) {
+            return new int[]{};
+        }
+        final List<Integer> result = new ArrayList<Integer>();
+
+        final DataObject dataObject;
+        try {
+            dataObject = DataObject.find(fo);
+        } catch (DataObjectNotFoundException ex) {
+            return new int[]{};
+        }
+        try {
+            ParserManager.parse(Collections.singleton(source), new UserTask() {
+
+                @Override
+                public void run(ResultIterator resultIterator) throws Exception {
+                }
+            });
+        } catch (ParseException ex) {
+            ErrorManager.getDefault().notify(ex);
+            return new int[]{};
+        }
+        int[] resultArray = new int[result.size()];
+        for (int i = 0; i < resultArray.length; i++) {
+            resultArray[i] = result.get(i).intValue();
+        }
+        return resultArray;
+    }
+
+    private static boolean egualMethodSignatures(String s1, String s2) {
+        int i = s1.lastIndexOf(")");
+        if (i > 0) {
+            s1 = s1.substring(0, i);
+        }
+        i = s2.lastIndexOf(")");
+        if (i > 0) {
+            s2 = s2.substring(0, i);
+        }
+        return s1.equals(s2);
+    }
+
+
+    private static DataObject getDataObject(String url) {
+        FileObject file;
+        try {
+            file = URLMapper.findFileObject(new URL(url));
+        } catch (MalformedURLException e) {
+            return null;
+        }
+
+        if (file == null) {
+            return null;
+        }
+        try {
+            return DataObject.find(file);
+        } catch (DataObjectNotFoundException ex) {
+            return null;
+        }
+    }
+
     /**
      * Shows source with given url on given line number.
      *
-     * @param url a url of source to be shown
+     * @param url        a url of source to be shown
      * @param lineNumber a number of line to be shown
-     * @param timeStamp a time stamp to be used
+     * @param timeStamp  a time stamp to be used
+     */
+    @Override
+    public boolean showSource(String url, int lineNumber, Object timeStamp) {
+        Line l = showSourceLine(url, lineNumber, timeStamp);
+        if (l != null) {
+            addPositionToJumpList(url, l, 0);
+        }
+        return l != null;
+    }
+
+    /**
+     * Shows source with given url on given line number.
+     *
+     * @param url        a url of source to be shown
+     * @param lineNumber a number of line to be shown
+     * @param timeStamp  a time stamp to be used
      */
     public boolean showSource(String url, int lineNumber, int column, int length, Object timeStamp) {
-        
+
         //LOG.info("showSource url="+url+" lineNumber="+lineNumber);
-        
+
         Line l = LineTranslations.getTranslations().getLine(url, lineNumber, timeStamp); // false = use original ln
         if (l == null) {
             ErrorManager.getDefault().log(ErrorManager.WARNING,
@@ -243,7 +295,9 @@ public class EditorContextImpl extends EditorContext {
         return true;
     }
 
-    /** Add the line offset into the jump history */
+    /**
+     * Add the line offset into the jump history
+     */
     private void addPositionToJumpList(String url, Line l, int column) {
         DataObject dataObject = getDataObject(url);
         if (dataObject != null) {
@@ -282,8 +336,8 @@ public class EditorContextImpl extends EditorContext {
         LineTranslations.getTranslations().disposeTimeStamp(timeStamp);
     }
 
-    /**@Node:
-     * the chained annotate method from EditorContextImpl under debug.jpda.projects
+    /**
+     * @Node: the chained annotate method from EditorContextImpl under debug.jpda.projects
      * will also be called, so we do not need add a reduantant annotation
      */
     @Override
@@ -295,74 +349,6 @@ public class EditorContextImpl extends EditorContext {
         return null;
         //return annotate(url, lineNumber, annotationType, timeStamp, null);
     }
-//    public Object annotate (
-//        String url,
-//        int lineNumber,
-//        String annotationType,
-//        Object timeStamp,
-//        JPDAThread thread
-//    ) {
-//        Line l =  LineTranslations.getTranslations().getLine (
-//            url,
-//            lineNumber,
-//            (timeStamp instanceof JPDABreakpoint) ? null : timeStamp
-//        );
-//        if (l == null) return null;
-//        Annotation annotation;
-//        if (timeStamp instanceof JPDABreakpoint) {
-//            annotation = new DebuggerBreakpointAnnotation(annotationType, l, (JPDABreakpoint) timeStamp);
-//        } else {
-//            annotation = new DebuggerAnnotation (annotationType, l, thread);
-//        }
-//        annotationToURL.put (annotation, url);
-//
-//        return annotation;
-//    }
-//
-//    public Object annotate (
-//        String url,
-//        int startPosition,
-//        int endPosition,
-//        String annotationType,
-//        Object timeStamp
-//    ) {
-//        AttributeSet attrs;
-//        if (EditorContext.CURRENT_LAST_OPERATION_ANNOTATION_TYPE.equals(annotationType)) {
-//            attrs = AttributesUtilities.createImmutable(EditorStyleConstants.WaveUnderlineColor, getColor(annotationType));
-//        } else {
-//            attrs = AttributesUtilities.createImmutable(StyleConstants.Background, getColor(annotationType));
-//        }
-//        DebuggerAnnotation annotation;
-//        try {
-//            annotation = new DebuggerAnnotation(annotationType, attrs, startPosition, endPosition,
-//                    URLMapper.findFileObject(new URL(url)));
-//        } catch (MalformedURLException ex) {
-//            RuntimeException rex = new RuntimeException("Bad URL: "+url);
-//            rex.initCause(ex);
-//            throw rex;
-//        }
-//        annotationToURL.put (annotation, url);
-//
-//        return annotation;
-//    }
-
-    private static Color getColor(String annotationType) {
-        if (annotationType.endsWith("_broken")) {
-            annotationType = annotationType.substring(0, annotationType.length() - "_broken".length());
-        }
-        if (EditorContext.BREAKPOINT_ANNOTATION_TYPE.equals(annotationType)) {
-            return new Color(0xFC9D9F);
-        } else if (EditorContext.CURRENT_LINE_ANNOTATION_TYPE.equals(annotationType) ||
-                EditorContext.CURRENT_OUT_OPERATION_ANNOTATION_TYPE.equals(annotationType)) {
-            return new Color(0xBDE6AA);
-        } else if (EditorContext.CURRENT_EXPRESSION_CURRENT_LINE_ANNOTATION_TYPE.equals(annotationType)) {
-            return new Color(0xE9FFE6); // 0xE3FFD2// 0xD1FFBC
-        } else if (EditorContext.CURRENT_LAST_OPERATION_ANNOTATION_TYPE.equals(annotationType)) {
-            return new Color(0x99BB8A);
-        } else {
-            return new Color(0x0000FF);
-        }
-    }
 
     /**
      * Removes given annotation.
@@ -373,26 +359,13 @@ public class EditorContextImpl extends EditorContext {
     public void removeAnnotation(
             Object a) {
         return;
-//        if (a instanceof Collection) {
-//            Collection annotations = ((Collection) a);
-//            for (Iterator it = annotations.iterator(); it.hasNext(); ) {
-//                removeAnnotation((Annotation) it.next());
-//            }
-//        } else {
-//            removeAnnotation((Annotation) a);
-//        }
     }
-
-//    private void removeAnnotation(Annotation annotation) {
-//        annotation.detach ();
-//        annotationToURL.remove (annotation);
-//    }
+    
     /**
      * Returns line number given annotation is associated with.
      *
      * @param annotation an annotation, or an array of "url" and new Integer(line number)
-     * @param timeStamp a time stamp to be used
-     *
+     * @param timeStamp  a time stamp to be used
      * @return line number given annotation is associated with
      */
     @Override
@@ -429,7 +402,7 @@ public class EditorContextImpl extends EditorContext {
      * Updates timeStamp for gived url.
      *
      * @param timeStamp time stamp to be updated
-     * @param url an url
+     * @param url       an url
      */
     @Override
     public void updateTimeStamp(Object timeStamp, String url) {
@@ -443,10 +416,6 @@ public class EditorContextImpl extends EditorContext {
      */
     @Override
     public int getCurrentLineNumber() {
-//        LOG.info("getCurrentLineNumber contextDispatcher="+contextDispatcher);
-//        LOG.info("getCurrentLineNumber getCurrentEditor="+contextDispatcher.getCurrentEditor());
-//        LOG.info("getCurrentLineNumber getCurrentFile="+contextDispatcher.getCurrentFile());
-//        LOG.info("getCurrentLineNumber getMostRecentEditor="+contextDispatcher.getMostRecentEditor());
         return contextDispatcher.getCurrentLineNumber();
     }
 
@@ -623,20 +592,20 @@ public class EditorContextImpl extends EditorContext {
         try {
             javax.swing.text.Element lineElem =
                     org.openide.text.NbDocument.findLineRootElement(doc).
-                    getElement(line);
+                            getElement(line);
 
             if (lineElem == null) {
                 return "";
             }
             int lineStartOffset = lineElem.getStartOffset();
             int lineLen = lineElem.getEndOffset() - lineStartOffset;
-        // t contains current line in editor
+            // t contains current line in editor
             t = doc.getText(lineStartOffset, lineLen);
 
             int identStart = col;
             while (identStart > 0 &&
                     Character.isJavaIdentifierPart(
-                    t.charAt(identStart - 1))) {
+                            t.charAt(identStart - 1))) {
                 identStart--;
             }
 
@@ -662,26 +631,13 @@ public class EditorContextImpl extends EditorContext {
         }
     }
 
-//    private static TypeElement getTypeElement(CompilationController ci,
-//                                              String binaryName,
-//                                              String[] classExcludeNames) {
-//        ClassScanner cs = new ClassScanner(ci.getTrees(), ci.getElements(),
-//                                           binaryName, classExcludeNames);
-//        TypeElement te = cs.scan(ci.getCompilationUnit(), null);
-//        if (te != null) {
-//            return te;
-//        } else {
-//            return null;
-//        }
-//    }
     /**
      * Returns line number of given field in given class.
      *
-     * @param url the url of file the class is deined in
+     * @param url       the url of file the class is deined in
      * @param className the name of class (or innerclass) the field is
      *                  defined in
      * @param fieldName the name of field
-     *
      * @return line number or -1
      */
     @Override
@@ -696,92 +652,15 @@ public class EditorContextImpl extends EditorContext {
         return getFieldLineNumber(dataObject.getPrimaryFile(), className, fieldName);
     }
 
-    static int getFieldLineNumber(
-            FileObject fo,
-            final String className,
-            final String fieldName) {
-        Source source = Source.create(fo);
-        if (source == null) {
-            return -1;
-        }
-        final int[] result = new int[]{-1};
-
-        final DataObject dataObject;
-        try {
-            dataObject = DataObject.find(fo);
-        } catch (DataObjectNotFoundException ex) {
-            return -1;
-        }
-        try {
-            ParserManager.parse(Collections.singleton(source), new UserTask() {
-
-                @Override
-                public void run(ResultIterator resultIterator) throws Exception {
-//                    Elements elms = ci.getElements();
-//                    TypeElement classElement = getTypeElement(ci, className, null);
-//                    if (classElement == null) {
-//                        return;
-//                    }
-//                    List classMemberElements = elms.getAllMembers(classElement);
-//                    for (Iterator it = classMemberElements.iterator(); it.hasNext();) {
-//                        Element elm = (Element) it.next();
-//                        if (elm.getKind() == ElementKind.FIELD) {
-//                            String name = ((VariableElement) elm).getSimpleName().toString();
-//                            if (name.equals(fieldName)) {
-//                                SourcePositions positions = ci.getTrees().getSourcePositions();
-//                                Tree tree = ci.getTrees().getTree(elm);
-//                                int pos = (int) positions.getStartPosition(ci.getCompilationUnit(), tree);
-//                                EditorCookie editor = (EditorCookie) dataObject.getCookie(EditorCookie.class);
-//                                result[0] = NbDocument.findLineNumber(editor.openDocument(), pos) + 1;
-//                            //return elms.getSourcePosition(elm).getLine();
-//                            }
-//                        }
-//                    }
-                }
-            });
-        } catch (ParseException ex) {
-            ErrorManager.getDefault().notify(ex);
-            return -1;
-        }
-        return result[0];
-        /*
-        CompilationUnitTree cutree = ci.getTree();
-        if (cutree == null) return -1;
-        List typeDecls = cutree.getTypeDecls();
-        ClassTree ctree = findClassTree(typeDecls, className);
-         */
-        /*
-        Elements elms = ci.getElements();
-        SourceCookie.Editor sc = (SourceCookie.Editor) dataObject.getCookie
-        (SourceCookie.Editor.class);
-        if (sc == null) return -1;
-        sc.open ();
-        StyledDocument sd = sc.getDocument ();
-        if (sd == null) return -1;
-        ClassElement[] classes = sc.getSource ().getAllClasses ();
-        FieldElement fe = null;
-        int i, k = classes.length;
-        for (i = 0; i < k; i++)
-        if (classes [i].getName ().getFullName ().equals (className)) {
-        fe = classes [i].getField (Identifier.create (fieldName));
-        break;
-        }
-        if (fe == null) return -1;
-        int position = sc.sourceToText (fe).getStartOffset ();
-        return NbDocument.findLineNumber (sd, position) + 1;
-         */
-    }
-
     /**
      * Returns line number of given method in given class.
      *
-     * @param url the url of file the class is deined in
-     * @param className the name of class (or innerclass) the method is
-     *                  defined in
-     * @param methodName the name of method
+     * @param url             the url of file the class is deined in
+     * @param className       the name of class (or innerclass) the method is
+     *                        defined in
+     * @param methodName      the name of method
      * @param methodSignature the JNI-style signature of the method.
-     *        If <code>null</code>, then the first method found is returned.
-     *
+     *                        If <code>null</code>, then the first method found is returned.
      * @return line number or -1
      */
     @Override
@@ -802,82 +681,6 @@ public class EditorContextImpl extends EditorContext {
         }
     }
 
-    static int[] getMethodLineNumbers(
-            FileObject fo,
-            final String className,
-            final String[] classExcludeNames,
-            final String methodName,
-            final String methodSignature) {
-        Source source = Source.create(fo);
-
-        if (source == null) {
-            return new int[]{};
-        }
-        final List<Integer> result = new ArrayList<Integer>();
-
-        final DataObject dataObject;
-        try {
-            dataObject = DataObject.find(fo);
-        } catch (DataObjectNotFoundException ex) {
-            return new int[]{};
-        }
-        try {
-            ParserManager.parse(Collections.singleton(source), new UserTask() {
-
-                @Override
-                public void run(ResultIterator resultIterator) throws Exception {
-//                    TypeElement classElement = getTypeElement(ci, className, classExcludeNames);
-//                    if (classElement == null) {
-//                        return;
-//                    }
-//                    List classMemberElements = ci.getElements().getAllMembers(classElement);
-//                    for (Iterator it = classMemberElements.iterator(); it.hasNext();) {
-//                        Element elm = (Element) it.next();
-//                        if (elm.getKind() == ElementKind.METHOD || elm.getKind() == ElementKind.CONSTRUCTOR) {
-//                            String name;
-//                            if (elm.getKind() == ElementKind.CONSTRUCTOR && !methodName.equals("<init>")) {
-//                                name = elm.getEnclosingElement().getSimpleName().toString();
-//                            } else {
-//                                name = elm.getSimpleName().toString();
-//                            }
-//                            if (name.equals(methodName)) {
-//                                if (methodSignature == null || egualMethodSignatures(methodSignature, createSignature((ExecutableElement) elm))) {
-//                                    SourcePositions positions = ci.getTrees().getSourcePositions();
-//                                    Tree tree = ci.getTrees().getTree(elm);
-//                                    int pos = (int) positions.getStartPosition(ci.getCompilationUnit(), tree);
-//                                    EditorCookie editor = (EditorCookie) dataObject.getCookie(EditorCookie.class);
-//                                    result.add(new Integer(NbDocument.findLineNumber(editor.openDocument(), pos) + 1));
-//                                }
-//                            }
-//                        }
-//                    }
-                }
-            });
-        } catch (ParseException ex) {
-            ErrorManager.getDefault().notify(ex);
-            return new int[]{};
-        }
-        int[] resultArray = new int[result.size()];
-        for (int i = 0; i < resultArray.length; i++) {
-            resultArray[i] = result.get(i).intValue();
-        }
-        return resultArray;
-    }
-
-    private static boolean egualMethodSignatures(String s1, String s2) {
-        int i = s1.lastIndexOf(")");
-        if (i > 0) {
-            s1 = s1.substring(0, i);
-        }
-        i = s2.lastIndexOf(")");
-        if (i > 0) {
-            s2 = s2.substring(0, i);
-        }
-        return s1.equals(s2);
-    }
-
-    /** @return { "method name", "method signature", "enclosing class name" }
-     */
     @Override
     public String[] getCurrentMethodDeclaration() {
 
@@ -888,117 +691,13 @@ public class EditorContextImpl extends EditorContext {
         }
         JEditorPane ep = contextDispatcher.getCurrentEditor();
         Source source = Source.create(fo);
-        LOG.info(this,"getCurrentMethodDeclaration source="+source);
+        if (logger.isLoggable(Level.FINE)) logger.log(Level.FINE, this.toString());
         if (source == null) {
             return null;
         }
         final int currentOffset = (ep == null) ? 0 : ep.getCaretPosition();
         final String[] currentMethodPtr = new String[]{null, null, null};
         final Future<Void> scanFinished;
-//        try {
-//            scanFinished = js.runWhenScanFinished(new CancellableTask<CompilationController>() {
-//
-//                public void cancel() {
-//                }
-//
-//                public void run(CompilationController ci) throws Exception {
-//                    if (ci.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {//TODO: ELEMENTS_RESOLVED may be sufficient
-//                        ErrorManager.getDefault().log(ErrorManager.WARNING,
-//                                "Unable to resolve " + ci.getFileObject() + " to phase " + Phase.RESOLVED + ", current phase = " + ci.getPhase() +
-//                                "\nFree memory = " + Runtime.getRuntime().freeMemory());
-//                        return;
-//                    }
-//                    int offset = currentOffset;
-//                    //AstScope scope = ci.getTreeUtilities().scopeFor(offset);
-//                    String text = ci.getText();
-//                    int l = text.length();
-//                    char c = 0;
-//                    while (offset < l && (c = text.charAt(offset)) != '(' && c != ')' && c != '\n' && c != '\r') {
-//                        offset++;
-//                    }
-//                    if (offset >= l) {
-//                        return;
-//                    }
-//                    if (c == '(') {
-//                        offset--;
-//                    }
-//
-//                    Tree tree = ci.getTreeUtilities().pathFor(offset).getLeaf();
-//                    if (tree.getKind() == Tree.Kind.METHOD) {
-//                        Element el = ci.getTrees().getElement(ci.getTrees().getPath(ci.getCompilationUnit(), tree));
-//
-//                        //Element el = ci.getTrees().getElement(ci.getTreeUtilities().pathFor(offset));
-//                        if (el != null && (el.getKind() == ElementKind.METHOD || el.getKind() == ElementKind.CONSTRUCTOR)) {
-//                            currentMethodPtr[0] = el.getSimpleName().toString();
-//                            if (currentMethodPtr[0].equals("<init>")) {
-//                                // The constructor name is the class name:
-//                                currentMethodPtr[0] = el.getEnclosingElement().getSimpleName().toString();
-//                            }
-//                            currentMethodPtr[1] = createSignature((ExecutableElement) el);
-//                            Element enclosingClassElement = el;
-//                            TypeElement te = null; // SourceUtils.getEnclosingTypeElement(el);
-//                            while (enclosingClassElement != null) {
-//                                ElementKind kind = enclosingClassElement.getKind();
-//                                if (kind == ElementKind.CLASS || kind == ElementKind.INTERFACE) {
-//                                    te = (TypeElement) enclosingClassElement;
-//                                    break;
-//                                } else {
-//                                    enclosingClassElement = enclosingClassElement.getEnclosingElement();
-//                                }
-//                            }
-//                            if (te != null) {
-//                                currentMethodPtr[2] = ElementUtilities.getBinaryName(te);
-//                            }
-//                        }
-//                    }
-//                }
-//            }, true);
-//            if (!scanFinished.isDone()) {
-//                if (java.awt.EventQueue.isDispatchThread()) {
-//                    // Hack: We should not wait for the scan in AWT!
-//                    //       Thus we throw IllegalComponentStateException,
-//                    //       which returns the data upon call to getMessage()
-//                    throw new java.awt.IllegalComponentStateException() {
-//
-//                        private void waitScanFinished() {
-//                            try {
-//                                scanFinished.get();
-//                            } catch (InterruptedException iex) {
-//                            } catch (java.util.concurrent.ExecutionException eex) {
-//                                ErrorManager.getDefault().notify(eex);
-//                            }
-//                        }
-//
-//                        public String getMessage() {
-//                            waitScanFinished();
-//                            return currentMethodPtr[0];
-//                        }
-//
-//                        public String getLocalizedMessage() {
-//                            waitScanFinished();
-//                            return currentMethodPtr[1];
-//                        }
-//                    };
-//                } else {
-//                    try {
-//                        scanFinished.get();
-//                    } catch (InterruptedException iex) {
-//                        return null;
-//                    } catch (java.util.concurrent.ExecutionException eex) {
-//                        ErrorManager.getDefault().notify(eex);
-//                        return null;
-//                    }
-//                }
-//            }
-//        } catch (IOException ioex) {
-//            ErrorManager.getDefault().notify(ioex);
-//            return null;
-//        }
-//        if (currentMethodPtr[0] != null) {
-//            return currentMethodPtr;
-//        } else {
-//            return null;
-//        }
         return null;
     }
 
@@ -1037,6 +736,7 @@ public class EditorContextImpl extends EditorContext {
             return "L" + javaType.replace('.', '/') + ";";
         }
     }
+
     public StyledDocument getStyledDocument(String url) {
         DataObject dataObject = getDataObject(url);
         if (dataObject == null) {
@@ -1089,18 +789,17 @@ public class EditorContextImpl extends EditorContext {
         }
         return source;
     }
-    
+
     /**
      * Returns binary class name for given url and line number or null.
      *
-     * @param url a url
+     * @param url        a url
      * @param lineNumber a line number
-     *
      * @return binary class name for given url and line number or null
      */
     @Override
     public String getClassName(String url, final int lineNumber) {
-        LOG.info(this,"getClassName url =" + url + " lineNumber=" + lineNumber);
+        if (logger.isLoggable(Level.FINE)) logger.log(Level.FINE, this.toString());
         try {
             final StyledDocument doc = getStyledDocument(url);
             Source source = getSource(url);
@@ -1112,7 +811,7 @@ public class EditorContextImpl extends EditorContext {
             ParserManager.parse(Collections.singleton(source), new UserTask() {
                 @Override
                 public void run(ResultIterator ri) throws Exception {
-                    SourceQuery queryDocument = new SourceQuery(doc);
+                    SourceQuery queryDocument = new SourceQuery((MirahParserResult) ri.getParserResult());
                     String clzFqn = queryDocument.findClassName(offset);
                     result[0] = clzFqn;
                 }
@@ -1129,7 +828,7 @@ public class EditorContextImpl extends EditorContext {
 
     @Override
     public Operation[] getOperations(String url, final int lineNumber,
-            final BytecodeProvider bytecodeProvider) {
+                                     final BytecodeProvider bytecodeProvider) {
         DataObject dataObject = getDataObject(url);
 //        LOG.info("getOperations url=" + url + " lineNumber=" + lineNumber);
         if (dataObject == null) {
@@ -1218,12 +917,12 @@ public class EditorContextImpl extends EditorContext {
     }
 
     private void assignNextOperations(Tree methodTree,
-            CompilationUnitTree cu,
-            CompilationController ci,
-            BytecodeProvider bytecodeProvider,
-            List<Tree> treeNodes,
-            ExpressionScanner.ExpressionsInfo info,
-            Map<Tree, Operation> nodeOperations) {
+                                      CompilationUnitTree cu,
+                                      CompilationController ci,
+                                      BytecodeProvider bytecodeProvider,
+                                      List<Tree> treeNodes,
+                                      ExpressionScanner.ExpressionsInfo info,
+                                      Map<Tree, Operation> nodeOperations) {
         int length = treeNodes.size();
         for (int treeIndex = 0; treeIndex < length; treeIndex++) {
             Tree node = treeNodes.get(treeIndex);
@@ -1282,8 +981,9 @@ public class EditorContextImpl extends EditorContext {
 
     }
 
-    /** return the offset of the first non-whitespace character on the line,
-    or -1 when the line does not exist
+    /**
+     * return the offset of the first non-whitespace character on the line,
+     * or -1 when the line does not exist
      */
     private static int findLineOffset(StyledDocument doc, int lineNumber) {
         int offset;
@@ -1402,11 +1102,26 @@ public class EditorContextImpl extends EditorContext {
         return args[0];
     }
 
+//    private JavaSource getJavaSource(SourcePathProvider sp) {
+//        String[] roots = sp.getOriginalSourceRoots();
+//        List<FileObject> sourcePathFiles = new ArrayList<FileObject>();
+//        for (String root : roots) {
+//            FileObject fo = FileUtil.toFileObject(new java.io.File(root));
+//            if (fo != null && FileUtil.isArchiveFile(fo)) {
+//                fo = FileUtil.getArchiveRoot(fo);
+//            }
+//            sourcePathFiles.add(fo);
+//        }
+//        ClassPath bootPath = ClassPathSupport.createClassPath(new FileObject[]{});
+//        ClassPath classPath = ClassPathSupport.createClassPath(new FileObject[]{});
+//        ClassPath sourcePath = ClassPathSupport.createClassPath(sourcePathFiles.toArray(new FileObject[]{}));
+//        return JavaSource.create(ClasspathInfo.create(bootPath, classPath, sourcePath), new FileObject[]{});
+//    }
+
     /**
      * Returns list of imports for given source url.
      *
      * @param url the url of source file
-     *
      * @return list of imports for given source url
      */
     public String[] getImports(
@@ -1455,30 +1170,39 @@ public class EditorContextImpl extends EditorContext {
         return is2;
          */
     }
+    /*
+    private static void addStatement(TreeMaker tm, Trees trees, TreePath positionPath, int offset, StatementTree statement) {
+    SourcePositions sourcePositions = trees.getSourcePositions();
+    CompilationUnitTree root = positionPath.getCompilationUnit();
+    Tree newTree = null;
+    for (java.util.Iterator<Tree> it = positionPath.iterator(); it.hasNext(); ) {
+    Tree element = it.next();
+    if (element.getKind() == Tree.Kind.BLOCK && newTree == null) {
+    BlockTree block = (BlockTree) element;
+    List<? extends StatementTree> statements = block.getStatements();
+    int index = 0;
+    for (StatementTree st : statements) {
+    if (sourcePositions.getStartPosition(root, st) >= offset) {
+    break;
+    }
+    index++;
+    }
+    newTree = tm.insertBlockStatement(block, index, statement);
+    } else {
 
-//    private JavaSource getJavaSource(SourcePathProvider sp) {
-//        String[] roots = sp.getOriginalSourceRoots();
-//        List<FileObject> sourcePathFiles = new ArrayList<FileObject>();
-//        for (String root : roots) {
-//            FileObject fo = FileUtil.toFileObject(new java.io.File(root));
-//            if (fo != null && FileUtil.isArchiveFile(fo)) {
-//                fo = FileUtil.getArchiveRoot(fo);
-//            }
-//            sourcePathFiles.add(fo);
-//        }
-//        ClassPath bootPath = ClassPathSupport.createClassPath(new FileObject[]{});
-//        ClassPath classPath = ClassPathSupport.createClassPath(new FileObject[]{});
-//        ClassPath sourcePath = ClassPathSupport.createClassPath(sourcePathFiles.toArray(new FileObject[]{}));
-//        return JavaSource.create(ClasspathInfo.create(bootPath, classPath, sourcePath), new FileObject[]{});
-//    }
+    }
+    }
+    }
+     */
+
     /**
      * Parse the expression into AST tree and traverse is via the provided visitor.
      *
      * @return the visitor value or <code>null</code>.
      */
     public <R, D> R parseExpression(final String expression, String url, final int line,
-            final TreePathScanner<R, D> visitor, final D context,
-            final SourcePathProvider sp) {
+                                    final TreePathScanner<R, D> visitor, final D context,
+                                    final SourcePathProvider sp) {
         DataObject dataObject = getDataObject(url);
         if (dataObject == null) {
             return null;
@@ -1581,30 +1305,6 @@ public class EditorContextImpl extends EditorContext {
 //            return null;
 //        }
     }
-    /*
-    private static void addStatement(TreeMaker tm, Trees trees, TreePath positionPath, int offset, StatementTree statement) {
-    SourcePositions sourcePositions = trees.getSourcePositions();
-    CompilationUnitTree root = positionPath.getCompilationUnit();
-    Tree newTree = null;
-    for (java.util.Iterator<Tree> it = positionPath.iterator(); it.hasNext(); ) {
-    Tree element = it.next();
-    if (element.getKind() == Tree.Kind.BLOCK && newTree == null) {
-    BlockTree block = (BlockTree) element;
-    List<? extends StatementTree> statements = block.getStatements();
-    int index = 0;
-    for (StatementTree st : statements) {
-    if (sourcePositions.getStartPosition(root, st) >= offset) {
-    break;
-    }
-    index++;
-    }
-    newTree = tm.insertBlockStatement(block, index, statement);
-    } else {
-
-    }
-    }
-    }
-     */
 
     /**
      * Adds a property change listener.
@@ -1628,7 +1328,7 @@ public class EditorContextImpl extends EditorContext {
      * Adds a property change listener.
      *
      * @param propertyName the name of property
-     * @param l the listener to add
+     * @param l            the listener to add
      */
     public void addPropertyChangeListener(
             String propertyName,
@@ -1640,7 +1340,7 @@ public class EditorContextImpl extends EditorContext {
      * Removes a property change listener.
      *
      * @param propertyName the name of property
-     * @param l the listener to remove
+     * @param l            the listener to remove
      */
     public void removePropertyChangeListener(
             String propertyName,
@@ -1648,7 +1348,7 @@ public class EditorContextImpl extends EditorContext {
         pcs.removePropertyChangeListener(propertyName, l);
     }
 
-//  private helper methods ..................................................
+    //  private helper methods ..................................................
 //    public void fileChanged (FileEvent fe) {
 //	pcs.firePropertyChange (PROP_LINE_NUMBER, null, null);
 //    }
@@ -1662,7 +1362,9 @@ public class EditorContextImpl extends EditorContext {
         return getCurrentElement(kind, null);
     }
 
-    /** throws IllegalComponentStateException when can not return the data in AWT. */
+    /**
+     * throws IllegalComponentStateException when can not return the data in AWT.
+     */
     private String getCurrentElement(final ElementKind kind, final Element[] elementPtr)
             throws java.awt.IllegalComponentStateException {
         FileObject fo = contextDispatcher.getCurrentFile();
@@ -1857,24 +1559,6 @@ public class EditorContextImpl extends EditorContext {
 //        }
 //        return currentElementPtr[0];
         return null;
-    }
-
-    private static DataObject getDataObject(String url) {
-        FileObject file;
-        try {
-            file = URLMapper.findFileObject(new URL(url));
-        } catch (MalformedURLException e) {
-            return null;
-        }
-
-        if (file == null) {
-            return null;
-        }
-        try {
-            return DataObject.find(file);
-        } catch (DataObjectNotFoundException ex) {
-            return null;
-        }
     }
 
     private class EditorContextDispatchListener extends Object implements PropertyChangeListener {

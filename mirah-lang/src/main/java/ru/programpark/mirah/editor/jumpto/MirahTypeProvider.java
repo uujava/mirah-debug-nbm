@@ -1,7 +1,6 @@
 package ru.programpark.mirah.editor.jumpto;
 
-import ru.programpark.mirah.editor.jumpto.MirahTypeDescription;
-import ca.weblite.netbeans.mirah.LOG;
+
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -18,21 +17,17 @@ import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.api.java.source.ClassIndex.NameKind;
 import org.netbeans.api.java.source.ClassIndex.SearchScope;
 import org.netbeans.api.java.source.ClassIndex.SearchScopeType;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ElementHandle;
-import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.ui.TypeElementFinder;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.modules.java.BinaryElementOpen;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl;
 import org.netbeans.modules.java.source.usages.ClassIndexImplEvent;
 import org.netbeans.modules.java.source.usages.ClassIndexImplListener;
@@ -40,8 +35,6 @@ import org.netbeans.modules.java.source.usages.ClassIndexManager;
 import org.netbeans.modules.java.source.usages.DocumentUtil;
 import org.netbeans.modules.parsing.lucene.support.Convertor;
 import org.netbeans.modules.parsing.lucene.support.Index;
-import org.netbeans.modules.parsing.lucene.support.IndexManager;
-import org.netbeans.modules.parsing.lucene.support.IndexManager.Action;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.jumpto.support.NameMatcherFactory;
@@ -49,9 +42,6 @@ import org.netbeans.spi.jumpto.type.SearchType;
 import org.netbeans.spi.jumpto.type.TypeProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
-import org.openide.util.Exceptions;
-import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 import org.openide.util.lookup.ServiceProvider;
 import ru.programpark.mirah.index.MirahIndex;
@@ -69,8 +59,7 @@ import ru.programpark.mirah.index.elements.IndexedClass;
 //@ServiceProvider(service=org.netbeans.spi.jumpto.type.TypeProvider.class)
 @ServiceProvider(service=TypeProvider.class)
 public class MirahTypeProvider implements TypeProvider {
-    private static final Logger LOGGER = Logger.getLogger(MirahTypeProvider.class.getName());
-    private static final Level LEVEL = Level.FINE;
+    private static final Logger logger = Logger.getLogger(MirahTypeProvider.class.getName());
     private static final Collection<? extends MirahTypeDescription> ACTIVE = Collections.unmodifiableSet(new HashSet<MirahTypeDescription>());  //Don't replace with C.emptySet() has to be identity unique.
 
     //@NotThreadSafe //Confinement within a thread
@@ -85,13 +74,13 @@ public class MirahTypeProvider implements TypeProvider {
 
     @Override
     public String name() {
-        return "mirah"; // NOI18N
+        return "vrb"; // NOI18N
     }
 
     @Override
     public String getDisplayName() {
         // TODO - i18n
-        return "Mirah Classes";
+        return "VRuby Classes";
     }
 
     @Override
@@ -125,21 +114,8 @@ public class MirahTypeProvider implements TypeProvider {
                     Collections.singleton(ClassPath.SOURCE),
                     Collections.<String>emptySet(),
                     Collections.<String>emptySet());
-            /*
-            Project projects[] = OpenProjects.getDefault().getOpenProjects();
-            Collection<FileObject> roots = new ArrayList<FileObject>();
-            for( Project p : projects )
-            {
-                FileObject dir = p.getProjectDirectory();
-                Collection<FileObject> coll = QuerySupport.findRoots(dir, Collections.singleton(ClassPath.SOURCE), null, null);
-    //            roots.add(p.getProjectDirectory());
-//                for( FileObject ff : coll )
-//                    LOG.info(this,"coll = "+ff);
-                roots.addAll(coll);
-            }
-            */
             index = MirahIndex.get(roots);
-            LOG.info(this, "roots = " + roots.size());
+            if (logger.isLoggable(Level.FINE)) logger.log(Level.FINE,  "roots = " + roots.size());
             
         }
         return index;
@@ -478,16 +454,10 @@ public class MirahTypeProvider implements TypeProvider {
 
     @CheckForNull
     private Map<URI, CacheItem> getRootCache() {
-        if (LOGGER.isLoggable(LEVEL) && rootCache == null) {
-            LOGGER.log(LEVEL, "Returning null cache entries.", new Exception());
-        }
         return rootCache == null ? null : Collections.<URI, CacheItem>unmodifiableMap(rootCache);
     }
 
     private void setRootCache(@NullAllowed final Map<URI,CacheItem> cache) {
-        if (LOGGER.isLoggable(LEVEL)) {
-            LOGGER.log(LEVEL, "Setting cache entries from " + this.rootCache + " to " + cache + ".", new Exception());
-        }
         if (this.rootCache != null) {
             for (CacheItem ci : rootCache.values()) {
                 ci.dispose();
@@ -522,7 +492,6 @@ public class MirahTypeProvider implements TypeProvider {
             }
         }
         sb.append(".*(\\..*)?");  //NOI18N
-        LOGGER.log(Level.FINE, "Package pattern: {0}", sb); //NOI18N
         return Pattern.compile(sb.toString());
     }
 
@@ -787,10 +756,7 @@ public class MirahTypeProvider implements TypeProvider {
                     null :
                     uri.toURL();
             } catch (MalformedURLException ex) {
-                LOGGER.log(
-                    Level.FINE,
-                    "Cannot convert URI to URL",    //NOI18N
-                    ex);
+                logger.severe("Cannot convert URI to URL " +ex);
                 return null;
             }
         }

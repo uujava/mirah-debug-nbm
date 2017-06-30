@@ -39,8 +39,8 @@
 package ru.programpark.mirah.editor;
 
 import ru.programpark.mirah.editor.navigator.MirahStructureAnalyzer;
-import ca.weblite.netbeans.mirah.lexer.MirahParser;
-import ca.weblite.netbeans.mirah.lexer.MirahTokenId;
+import ru.programpark.mirah.lexer.MirahLanguageParser;
+import ru.programpark.mirah.lexer.MirahTokenId;
 import java.util.Set;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -99,13 +99,6 @@ import ru.programpark.mirah.editor.completion.MirahCompletionHandler;
 )
 public class MirahLanguage extends DefaultLanguageConfig {
 
-//    @MultiViewElement.Registration(displayName = "#LBL_MirahEditorTab",
-//    iconBase = "ca/weblite/netbeans/mirah/1391571312_application-x-ruby.png",
-//    persistenceType = TopComponent.PERSISTENCE_ONLY_OPENED,
-//    preferredID = "mirah.source",
-//    mimeType = "text/x-vruby",
-//    position = 1)
-
     public static MultiViewEditorElement createMultiViewEditorElement(Lookup context) {
         return new MultiViewEditorElement(context);
     }
@@ -149,13 +142,13 @@ public class MirahLanguage extends DefaultLanguageConfig {
 
     @Override
     public Parser getParser() {
-//        LOG.info(this,"--- getParser ---");
-        return new MirahParser();
+//        if (logger.isLoggable(Level.FINE)) logger.log(Level.FINE, "--- getParser ---");
+        return new MirahLanguageParser();
     }
 
     @Override
     public SemanticAnalyzer getSemanticAnalyzer() {
-//        LOG.info(this,"--- getSemanticAnalyzer ---");
+//        if (logger.isLoggable(Level.FINE)) logger.log(Level.FINE, "--- getSemanticAnalyzer ---");
         return null; //new MirahSemanticAnalyzer();
     }
 

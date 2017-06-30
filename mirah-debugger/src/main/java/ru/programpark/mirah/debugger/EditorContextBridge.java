@@ -48,6 +48,8 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.netbeans.api.debugger.Breakpoint.VALIDITY;
 import org.netbeans.api.debugger.DebuggerManager;
@@ -69,7 +71,7 @@ import ru.programpark.mirah.debugger.actions.ToggleMethodFieldBreakpointAction;
  * @author Jan Jancura
  */
 public class EditorContextBridge {
-
+    private static final Logger logger = Logger.getLogger(EditorContextBridge.class.getName());
     public static final String FIELD = "field";
     public static final String METHOD = "method";
     public static final String CLASS = "class";
@@ -310,7 +312,7 @@ public class EditorContextBridge {
         String stratumn
     ) {
         
-        LOG.info(EditorContextBridge.class,"getRelativePath thread="+thread+" stratumn="+stratumn);
+        if (logger.isLoggable(Level.FINE)) logger.log(Level.FINE, "getRelativePath thread="+thread+" stratumn="+stratumn);
         try {
             return convertSlash (thread.getSourcePath (stratumn));
         } catch (AbsentInformationException e) {
@@ -322,7 +324,7 @@ public class EditorContextBridge {
         CallStackFrame csf,
         String stratumn
     ) {
-        LOG.info(EditorContextBridge.class, "getRelativePath csf=" + csf + " stratumn=" + stratumn);
+        if (logger.isLoggable(Level.FINE)) logger.log(Level.FINE,  "getRelativePath csf=" + csf + " stratumn=" + stratumn);
         try {
             return convertSlash (csf.getSourcePath (stratumn));
         } catch (AbsentInformationException e) {
@@ -333,7 +335,7 @@ public class EditorContextBridge {
     public static String getRelativePath (
         String className
     ) {
-        LOG.info(EditorContextBridge.class, "getRelativePath className=" + className);
+        if (logger.isLoggable(Level.FINE)) logger.log(Level.FINE,  "getRelativePath className=" + className);
         int i = className.indexOf ('$');
         if (i > 0) className = className.substring (0, i);
         String sourceName = className.replace

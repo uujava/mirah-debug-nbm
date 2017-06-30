@@ -51,6 +51,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -73,6 +75,7 @@ import org.openide.util.WeakListeners;
 class LineTranslations {
 
     private static LineTranslations translations;
+    private static final Logger logger = Logger.getLogger(LineTranslations.class.getName());
 
     private ChangeListener          changedFilesListener;
     private Map<Object, Registry>   timeStampToRegistry = new WeakHashMap<Object, Registry>();
@@ -184,23 +187,16 @@ class LineTranslations {
         int currentLineNumber,
         Object timeStamp
     ) {
-//        LOG.info("getOriginalLineNumber("+url+", "+currentLineNumber+", "+timeStamp+")");
         if (timeStamp == null) {
             return currentLineNumber;
         } else {
             Line.Set lineSet = getLineSet (url, timeStamp);
             if (lineSet == null) return currentLineNumber;
-            LOG.info(this,"  lineSet = "+lineSet+"date = "+lineSet.getDate());
+            if (logger.isLoggable(Level.FINE)) logger.log(Level.FINE, "  lineSet = "+lineSet+"date = "+lineSet.getDate());
             try {
                 Line line = lineSet.getCurrent(currentLineNumber);
-//                LOG.info("  current line = "+line);
-//                LOG.info("  original line = "+lineSet.getOriginalLineNumber(line));
-//                LOG.info("  original line2 = "+lineSet.getOriginal(currentLineNumber));
-//                LOG.info("Original line of "+currentLineNumber+" IS "+lineSet.getOriginalLineNumber(lineSet.getCurrent(currentLineNumber)));
                 return lineSet.getOriginalLineNumber(lineSet.getCurrent(currentLineNumber));
             } catch (IndexOutOfBoundsException ioobex) {
-                //ioobex.printStackTrace();
-                //System.err.println("  getOriginalLineNumber.return "+currentLineNumber);
                 return currentLineNumber;
             }
         }
@@ -213,7 +209,7 @@ class LineTranslations {
      * @param url an url
      */
     synchronized void updateTimeStamp (Object timeStamp, String url) {
-//        LOG.info("LineTranslations.updateTimeStamp("+timeStamp+", "+url+")");
+//        if (logger.isLoggable(Level.FINE)) logger.log(Level.FINE,  "+url+")");
         Registry registry = timeStampToRegistry.get (timeStamp);
         registry.register (getDataObject (url));
         Map<LineBreakpoint, Integer> bpLines = originalBreakpointLines.get(timeStamp);
@@ -249,9 +245,9 @@ class LineTranslations {
     }
 
     Line getLine (String url, int lineNumber, Object timeStamp) {
-//        LOG.info("LineTranslations.getLine("+lineNumber+", "+timeStamp+")");
+//        if (logger.isLoggable(Level.FINE)) logger.log(Level.FINE,  "+timeStamp+")");
         Line.Set ls = getLineSet (url, timeStamp);
-//        LOG.info("  Line.Set = "+ls+", date = "+ls.getDate());
+//        if (logger.isLoggable(Level.FINE)) logger.log(Level.FINE,  date = "+ls.getDate());
 //        LOG.info("  current("+(lineNumber-1)+") = "+ls.getCurrent (lineNumber - 1));
 //        LOG.info("  originl("+(lineNumber-1)+") = "+ls.getOriginal (lineNumber - 1));
         if (ls == null) return null;

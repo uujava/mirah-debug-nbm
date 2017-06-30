@@ -1,20 +1,21 @@
 package ru.programpark.mirah.editor.utils;
 
-import ca.weblite.netbeans.mirah.LOG;
-import ca.weblite.netbeans.mirah.lexer.MirahParser;
-import ca.weblite.netbeans.mirah.lexer.MirahTokenId;
+
+import ru.programpark.mirah.lexer.MirahTokenId;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+
+import ru.programpark.mirah.lexer.MirahParserResult;
 import mirah.impl.Tokens;
 import mirah.lang.ast.FieldDeclaration;
 import mirah.lang.ast.Node;
 import mirah.lang.ast.NodeFilter;
 import mirah.lang.ast.NodeScanner;
-import mirah.lang.ast.Position;
-import org.mirah.typer.ResolvedType;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
@@ -31,6 +32,7 @@ import org.openide.filesystems.FileObject;
  * @author Gopala Krishnan Sankaran
  */
 public final class MirahUtils {
+    private static final Logger logger = Logger.getLogger(MirahUtils.class.getName());
 
     /**
      * Return substring after last dot.
@@ -202,9 +204,9 @@ public final class MirahUtils {
         ble.initCause(ex);
         return ble;
     }
-    public static FieldDeclaration[] findFields(final MirahParser.DocumentDebugger dbg, final int rightEdge, final boolean isClassVar) {
+    public static FieldDeclaration[] findFields(final MirahParserResult dbg, final int rightEdge, final boolean isClassVar) {
         final ArrayList<FieldDeclaration> foundNodes = new ArrayList<FieldDeclaration>();
-        for (Object node : dbg.compiler.compiler().getParsedNodes()) {
+        for (Object node : dbg.getParsedNodes()) {
             if (node instanceof Node) {
                 ((Node) node).accept(new NodeScanner() {
                     @Override
@@ -212,66 +214,29 @@ public final class MirahUtils {
                         if (node.isStatic() == isClassVar) {
                             foundNodes.add(node);
                         }
-                        LOG.info(this, "findFields fields = " + super.enterFieldDeclaration(node, arg));
+                        if (logger.isLoggable(Level.FINE)) logger.log(Level.FINE,  "findFields fields = " + super.enterFieldDeclaration(node, arg));
 
                         return super.enterFieldDeclaration(node, arg);
                     }
 
                 }, null);
             }
-        };
-        LOG.info(MirahUtils.class, "findFields = [[]");
+        }
+        if (logger.isLoggable(Level.FINE)) logger.log(Level.FINE,  "findFields = [[]");
 
         return foundNodes.toArray(new FieldDeclaration[0]);
     }
 
-    public static Node findNode(final MirahParser.DocumentDebugger dbg, final int rightEdge) {
-        final Node[] foundNode = new Node[1];
-
-        for (Object node : dbg.compiler.compiler().getParsedNodes()) {
-
-            if (node instanceof Node) {
-                ((Node) node).accept(new NodeScanner() {
-
-                    @Override
-                    public boolean enterDefault(Node node, Object arg) {
-                        if (node != null) {
-                            Position nodePos = node.position();
-                            ResolvedType type = dbg.getType(node);
-
-//                            if ( nodePos != null )
-//                            LOG.info(MirahUtils.class,"enterDefault node = " + node + " ["+nodePos.startLine() +"," + nodePos.startChar()+"," + nodePos.startColumn()+"-"+nodePos.endLine()+","+nodePos.endChar()+"," + nodePos.endColumn()+"] type ="+type+" rightEdge="+rightEdge);
-//                            else
-//                            LOG.info(MirahUtils.class,"enterDefault node = " + node + " pos="+nodePos +" type ="+type+" rightEdge="+rightEdge);
-                            if (type != null && nodePos != null && nodePos.endChar() == rightEdge) {
-                                foundNode[0] = node;
-                            } else if (nodePos != null && nodePos.endChar() == rightEdge) {
-
-                            } else {
-
-                            }
-                        }
-                        return super.enterDefault(node, arg); //To change body of generated methods, choose Tools | Templates.
-                    }
-                }, null);
-                //walkTree((Node)node);
-
-            }
-        };
-//        LOG.info(MirahUtils.class,"findNode node[0] = " + foundNode[0]);
-
-        return foundNode[0];
-    }
     static public Class findClass(FileObject o, String name) {
-        LOG.info(MirahUtils.class, "findClass o=" + o + " name=" + name);
+        if (logger.isLoggable(Level.FINE)) logger.log(Level.FINE,  "findClass o=" + o + " name=" + name);
         return findClass(o, name, true);
     }
 
     static Class findClass(FileObject o, String name, boolean cache) {
         Project proj = FileOwnerQuery.getOwner(o);
         FileObject projectDirectory = proj.getProjectDirectory();
-        LOG.info(MirahUtils.class, "findClass o=" + o + " name=" + name);
-        LOG.info(MirahUtils.class, "findClass proj=" + proj + " projectDirectory=" + projectDirectory);
+        if (logger.isLoggable(Level.FINE)) logger.log(Level.FINE,  "findClass o=" + o + " name=" + name);
+        if (logger.isLoggable(Level.FINE)) logger.log(Level.FINE,  "findClass proj=" + proj + " projectDirectory=" + projectDirectory);
 
         ClassPath[] paths = new ClassPath[]{
             ClassPath.getClassPath(o, ClassPath.SOURCE),
@@ -282,12 +247,12 @@ public final class MirahUtils {
 
         for (int i = 0; i < paths.length; i++) {
             ClassPath cp = paths[i];
-            LOG.info(MirahUtils.class, "findClass cp[" + i + "] =" + cp);
+            if (logger.isLoggable(Level.FINE)) logger.log(Level.FINE,  "findClass cp[" + i + "] =" + cp);
             try {
 
                 Class c = cp.getClassLoader(true).loadClass(name);
                 if (c != null) {
-                    LOG.info(MirahUtils.class, "findClass c =" + c);
+                    if (logger.isLoggable(Level.FINE)) logger.log(Level.FINE,  "findClass c =" + c);
                     return c;
                 }
             } catch (ClassNotFoundException ex) {
@@ -295,31 +260,31 @@ public final class MirahUtils {
             }
         }
 
-        LOG.info(MirahUtils.class, "findClass NULL");
+        if (logger.isLoggable(Level.FINE)) logger.log(Level.FINE,  "findClass NULL");
 
         return null;
     }
 
-    private static void walkTree(Node node) {
-        NodeFilter f = new NodeFilter() {
-
-            @Override
-            public boolean matchesNode(Node node) {
-
-                return true;
-            }
-
-        };
-
-        List nodes = node.findChildren(f);
-
-        for (Object o : nodes) {
-            if (o instanceof Node) {
-                walkTree((Node) o);
-            }
-        }
-
-    }
+//    private static void walkTree(Node node) {
+//        NodeFilter f = new NodeFilter() {
+//
+//            @Override
+//            public boolean matchesNode(Node node) {
+//
+//                return true;
+//            }
+//
+//        };
+//
+//        List nodes = node.findChildren(f);
+//
+//        for (Object o : nodes) {
+//            if (o instanceof Node) {
+//                walkTree((Node) o);
+//            }
+//        }
+//
+//    }
 
     private static String nodeToString(Node n) {
         if (n == null || n.position() == null) {
@@ -364,7 +329,7 @@ public final class MirahUtils {
 //                    {
 //                        String text = javaInnerTS.token().text().toString();
 //                        if ( text != null ) text = text.replaceAll("\n","\\n");
-//                        LOG.info(MirahUtils.class,"toks3: " + javaInnerTS.token().id().name()+" offset="+javaInnerTS.token().offset(hi)+ " text:"+ text);
+//                        if (logger.isLoggable(Level.FINE)) logger.log(Level.FINE, "toks3: " + javaInnerTS.token().id().name()+" offset="+javaInnerTS.token().offset(hi)+ " text:"+ text);
 //                        if ( ! javaInnerTS.moveNext() ) break;
 //                    }
                     javaInnerTS.moveStart();
@@ -406,7 +371,7 @@ public final class MirahUtils {
         BaseDocument bd = (BaseDocument) doc;
         bd.readLock();
 
-        LOG.info(MirahUtils.class, "getBeginningOfLine doc=" + doc + " caretOffset =" + caretOffset);
+        if (logger.isLoggable(Level.FINE)) logger.log(Level.FINE,  "getBeginningOfLine doc=" + doc + " caretOffset =" + caretOffset);
 
         try {
             TokenHierarchy<?> hi = TokenHierarchy.get(doc);

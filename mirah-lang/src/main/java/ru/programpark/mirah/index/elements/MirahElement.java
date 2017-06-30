@@ -1,6 +1,6 @@
 package ru.programpark.mirah.index.elements;
 
-import ca.weblite.netbeans.mirah.lexer.MirahTokenId;
+import ru.programpark.mirah.lexer.MirahTokenId;
 import java.util.Collections;
 import java.util.Set;
 import org.netbeans.modules.csl.api.ElementHandle;

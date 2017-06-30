@@ -1,9 +1,7 @@
 package ru.programpark.mirah.editor.utils;
 
 //import ru.programpark.mirah.tests.LexUtilities;
-import ca.weblite.netbeans.mirah.lexer.MirahLexerUtils;
-import ca.weblite.netbeans.mirah.lexer.MirahParser;
-import ca.weblite.netbeans.mirah.lexer.MirahTokenId;
+import ru.programpark.mirah.lexer.MirahTokenId;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.HashSet;
@@ -11,6 +9,8 @@ import java.util.List;
 import java.util.Set;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+
+import ru.programpark.mirah.lexer.MirahParserResult;
 import mirah.impl.Tokens;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.lexer.Token;
@@ -69,7 +69,7 @@ public final class LexUtilities {
     }
 
     @CheckForNull
-    public static BaseDocument getDocument(MirahParser.NBMirahParserResult info, boolean forceOpen) {
+    public static BaseDocument getDocument(MirahParserResult info, boolean forceOpen) {
         if (info != null) {
             Source source = info.getSnapshot().getSource();
             return getDocument(source, forceOpen);
@@ -113,17 +113,7 @@ public final class LexUtilities {
             if (document instanceof BaseDocument) {
                 return ((BaseDocument) document);
             } else {
-                // Must be testsuite execution
-                try {
-                    Class c = Class.forName("org.netbeans.modules.groovy.editor.test.GroovyTestBase");
-                    if (c != null) {
-                        @SuppressWarnings("unchecked")
-                        Method m = c.getMethod("getDocumentFor", new Class[] {FileObject.class});
-                        return (BaseDocument) m.invoke(null, (Object[]) new FileObject[] {fileObject});
-                    }
-                } catch (Exception ex) {
-                    Exceptions.printStackTrace(ex);
-                }
+                return null;
             }
         } catch (IOException ioe) {
             Exceptions.printStackTrace(ioe);
@@ -135,7 +125,7 @@ public final class LexUtilities {
     private LexUtilities() {
     }
 
-    public static OffsetRange getLexerOffsets(MirahParser.NBMirahParserResult info, OffsetRange astRange) {
+    public static OffsetRange getLexerOffsets(MirahParserResult info, OffsetRange astRange) {
         int rangeStart = astRange.getStart();
         int start = info.getSnapshot().getOriginalOffset(rangeStart);
         if (start == rangeStart) {

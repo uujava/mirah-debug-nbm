@@ -1,9 +1,9 @@
 package ru.programpark.mirah.editor.navigator;
 
-import ca.weblite.netbeans.mirah.lexer.Block;
-import ca.weblite.netbeans.mirah.lexer.BlockCollector;
-import ca.weblite.netbeans.mirah.lexer.DocumentQuery;
-import ca.weblite.netbeans.mirah.lexer.MirahParser.NBMirahParserResult;
+import ru.programpark.mirah.lexer.Block;
+import ru.programpark.mirah.lexer.BlockCollector;
+import ru.programpark.mirah.lexer.DocumentQuery;
+import ru.programpark.mirah.lexer.MirahParserResult;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -26,7 +26,7 @@ public class MirahStructureAnalyzer implements StructureScanner {
 
     @Override
     public List<? extends StructureItem> scan(ParserResult pr) {
-        NBMirahParserResult res = (NBMirahParserResult) pr;
+        MirahParserResult res = (MirahParserResult) pr;
         
         //список блоков в MirahParser формируется после парсинга файла mirah, до подстановки макросов и инферинга,
         // поэтому не обрабатываются поля, заданные макросами fx_attr и др
@@ -63,7 +63,7 @@ public class MirahStructureAnalyzer implements StructureScanner {
     @Override
     public Map<String, List<OffsetRange>> folds(ParserResult pr) {
         Map<String, List<OffsetRange>> out = new HashMap<>();
-        NBMirahParserResult res = (NBMirahParserResult) pr;
+        MirahParserResult res = (MirahParserResult) pr;
 
 //        BlockCollector coll = new BlockCollector();
 //        coll.prepareBlocks(res);

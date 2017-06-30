@@ -1,6 +1,6 @@
 package ru.programpark.mirah.editor.navigator;
 
-import ca.weblite.netbeans.mirah.AbstractNodeVisitor;
+import ru.programpark.mirah.AbstractNodeVisitor;
 import mirah.lang.ast.Array;
 import mirah.lang.ast.Boolean;
 import mirah.lang.ast.Call;

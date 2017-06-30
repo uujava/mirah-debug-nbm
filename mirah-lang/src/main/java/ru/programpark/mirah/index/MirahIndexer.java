@@ -1,13 +1,17 @@
 package ru.programpark.mirah.index;
 
-import ca.weblite.netbeans.mirah.LOG;
-import ca.weblite.netbeans.mirah.lexer.MirahParser;
+
+
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import ru.programpark.mirah.lexer.MirahParserResult;
 import mirah.lang.ast.Arguments;
 import mirah.lang.ast.ClassDefinition;
 import mirah.lang.ast.ClosureDefinition;
@@ -42,7 +46,7 @@ import org.mirah.typer.MethodType;
 import org.mirah.typer.ResolvedType;
 
 public class MirahIndexer extends EmbeddingIndexer {
-
+    private static final Logger logger = Logger.getLogger(MirahIndexer.class.getName());
     public static final String FQN_NAME = "fqn"; // class
     public static final String CLASS_NAME = "class";
     public static final String CASE_INSENSITIVE_CLASS_NAME = "class-ig";
@@ -57,7 +61,6 @@ public class MirahIndexer extends EmbeddingIndexer {
     /** Attributes: "i" -> private, "o" -> protected, ", "s" - static/notinstance, "d" - documented */
     //static final String ATTRIBUTE_NAME = "attribute";
 
-    private static FileObject preindexedDb;
 
     // some statistics about the indexer
 
@@ -68,47 +71,8 @@ public class MirahIndexer extends EmbeddingIndexer {
     
     private ClassNode lastFoundClass = null;
     
-/*    
-    static {
-            OpenProjects.getDefault().addPropertyChangeListener(
-//                new OpenedProjectChangeListener() { 
-//                    public void propertyChanged(OpenProjectChangeEvent evt) { 
-//                            Set<Project> openedProjects = evt.getOpenProjects()
-//                    }
-//                }
-   new PropertyChangeListener() {
-        public void propertyChange(PropertyChangeEvent evt) {
-//            LOG.info(MirahIndexer.class, "PropertyChangeEvent = "+evt);
-            if (OpenProjects.PROPERTY_OPEN_PROJECTS.equals(evt.getPropertyName())) {
-                List<Project> oldOpenProjectsList = Arrays.asList((Project[])evt.getOldValue());
-                List<Project> newOpenProjectsList = Arrays.asList((Project[])evt.getNewValue());
-                
-                Set<Project> closedProjectsSet = new LinkedHashSet<Project>(oldOpenProjectsList);
-                closedProjectsSet.removeAll(newOpenProjectsList);
-                for (Project project : closedProjectsSet) {
-                    // Process closed projects
-                LOG.info(MirahIndexer.class, "closedProjectsSet = "+project);
-                }
-                
-                Set<Project> openedProjectsSet = new LinkedHashSet<Project>(newOpenProjectsList);
-                openedProjectsSet.removeAll(oldOpenProjectsList);
-                for (Project project : openedProjectsSet) {
-                    // Process opened projects
-                LOG.info(MirahIndexer.class, "openedProjectsSet = "+project);
-                }
-            }
-        }       
-    });
-            
-            
-        
-    }
- */   
-    
     //todo индексирование валится при выходе из IDE
     
-//    private static final Logger LOG = Logger.getLogger(MirahIndexer.class.getName());
-
     @Override
     protected void index(Indexable indexable, Result parserResult, Context context) {
         long indexerThisStartTime = System.currentTimeMillis();
@@ -119,20 +83,15 @@ public class MirahIndexer extends EmbeddingIndexer {
                 indexerFirstRun = indexerThisStartTime;
             }
             Node ast = null; 
-            if ( parserResult instanceof MirahParser.NBMirahParserResult )
+            if ( parserResult instanceof MirahParserResult)
             {
-//                ast = ((MirahParser.NBMirahParserResult)parserResult).getRoot();
-//            }
-//            if ( ast != null )
-//            {
                 IndexingSupport support;
                 try {
                     support = IndexingSupport.getInstance(context);
                 } catch (IOException ioe) {
-    //                LOG.exception(this, ioe);
                     return;
                 }
-                IndexScanner scanner = new IndexScanner((MirahParser.NBMirahParserResult)parserResult,support,indexable);
+                IndexScanner scanner = new IndexScanner((MirahParserResult)parserResult,support,indexable);
                 scanner.analyze();
                 for (IndexDocument doc : scanner.getDocuments()) {
                     support.addDocument(doc);
@@ -143,27 +102,13 @@ public class MirahIndexer extends EmbeddingIndexer {
             long indexerThisRunTime = indexerThisStopTime - indexerThisStartTime;
             indexerRunTime += indexerThisRunTime;
 
-            LOG.info(null, "Indexed File: " + parserResult.getSnapshot().getSource().getFileObject().getNameExt()+" Time = "+indexerThisRunTime+" ms");
-            /*
-            LOG.info(this, "---------------------------------------------------------------------------------");
-            LOG.info(this,"Indexed File                : "+parserResult.getSnapshot().getSource().getFileObject().getPath());
-            LOG.info(this,"Indexing time (ms)          : "+indexerThisRunTime);
-            LOG.info(this,"Number of files indexed     : "+filesIndexed);
-            LOG.info(this,"Time spend indexing (ms)    : "+indexerRunTime);
-            LOG.info(this,"Avg indexing time/file (ms) : "+indexerRunTime/filesIndexed);
-            LOG.info(this,"Time betw. 1st and Last idx : "+(indexerThisStopTime - indexerFirstRun));
-            LOG.info(this, "---------------------------------------------------------------------------------");
-            */
+            if (logger.isLoggable(Level.FINE)) logger.log(Level.FINE,  "Indexed File: " + parserResult.getSnapshot().getSource().getFileObject().getNameExt()+" Time = "+indexerThisRunTime+" ms");
         }
         catch( Exception e )
         {
-//            LOG.exception(this, e);
-            e.printStackTrace();
+            if (logger.isLoggable(Level.SEVERE))
+                logger.log(Level.SEVERE, "unable to index: " + indexable + "\n result: " +  parserResult + "\n context: " + context, e);
         }
-    }
-
-    public FileObject getPreindexedDb() {
-        return preindexedDb;
     }
 
     public static final class Factory extends EmbeddingIndexerFactory {
@@ -173,13 +118,13 @@ public class MirahIndexer extends EmbeddingIndexer {
 
         @Override
         public EmbeddingIndexer createIndexer(Indexable indexable, Snapshot snapshot) {
-//            LOG.info(MirahIndexer.class,"createIndexer indexable="+indexable);
+//            if (logger.isLoggable(Level.FINE)) logger.log(Level.FINE, "createIndexer indexable="+indexable);
 
             if (isIndexable(indexable, snapshot)) {
-//                LOG.info(MirahIndexer.class, "return new MirahIndexer()");
+//                if (logger.isLoggable(Level.FINE)) logger.log(Level.FINE,  "return new MirahIndexer()");
                 return new MirahIndexer();
             } else {
-//                LOG.info(MirahIndexer.class, "return NULL");
+//                if (logger.isLoggable(Level.FINE)) logger.log(Level.FINE,  "return NULL");
                 return null;
             }
         }
@@ -198,15 +143,16 @@ public class MirahIndexer extends EmbeddingIndexer {
             String extension = snapshot.getSource().getFileObject().getExt();
 
 //            LOG.info(MirahIndexer.class,"isIndexable extension="+extension);
+            //TODO reimplement indexing
             if (extension.equals("vrb")) { // NOI18N
-                return true;
+                return false;
             }
             return false;
         }
 
         @Override
         public void filesDeleted(Iterable<? extends Indexable> deleted, Context context) {
-//            LOG.info(MirahIndexer.class, "filesDeleted deleted=" + deleted);
+//            if (logger.isLoggable(Level.FINE)) logger.log(Level.FINE,  "filesDeleted deleted=" + deleted);
             try {
                 IndexingSupport support = IndexingSupport.getInstance(context);
                 for (Indexable indexable : deleted) {
@@ -237,7 +183,7 @@ public class MirahIndexer extends EmbeddingIndexer {
         @Override
         public boolean scanStarted(Context context) {
             //ClassNodeCache.createThreadLocalInstance();
-//            if ( ! context.getRoot().getPath().isEmpty() ) LOG.info(MirahIndexer.class, "scanStarted context=" + context.getRoot().getPath());
+//            if ( ! context.getRoot().getPath().isEmpty() ) if (logger.isLoggable(Level.FINE)) logger.log(Level.FINE,  "scanStarted context=" + context.getRoot().getPath());
             return super.scanStarted(context);
         }
 
@@ -245,7 +191,7 @@ public class MirahIndexer extends EmbeddingIndexer {
         public void scanFinished(Context context) {
             //ClassNodeCache.clearThreadLocalInstance();
 //            if ( ! context.getRoot().getPath().isEmpty() ) 
-//                LOG.info(MirahIndexer.class, "scanFinished context=" + context.getRoot().getPath());
+//                if (logger.isLoggable(Level.FINE)) logger.log(Level.FINE,  "scanFinished context=" + context.getRoot().getPath());
             super.scanFinished(context);
         }
         
@@ -262,11 +208,11 @@ public class MirahIndexer extends EmbeddingIndexer {
         private String packageName = null;
         private ClassNode lastFoundClass = null;
         private final List<String> classNames = new ArrayList<String>();
-        private MirahParser.NBMirahParserResult parsed;
+        private MirahParserResult parsed;
 
         private HashMap fields = new HashMap();
 
-        public IndexScanner( MirahParser.NBMirahParserResult parsed, IndexingSupport support, Indexable indexable )
+        public IndexScanner( MirahParserResult parsed, IndexingSupport support, Indexable indexable )
         {
             this.parsed = parsed;
             this.file = parsed.getSnapshot().getSource().getFileObject();
@@ -345,12 +291,7 @@ public class MirahIndexer extends EmbeddingIndexer {
             if (getCurrentDocument() != null)
                 getCurrentDocument().addPair(METHOD_NAME, sb.toString(), true, true);
             
-//      LOG.info(MirahIndexer.class, "enterMethodDefinition name=" + node.name().identifier()+" file="+file.getName()+" node="+node);
-//            LOG.info(null, ""+getClassName()+": METHOD_NAME="+sb.toString());
-//            if ( node.type() != null && node.type().typeref() != null )
-//            LOG.info(MirahIndexer.class, "return="+node.type().typeref().name()+" array="+node.type().typeref().isArray()+" static="+node.type().typeref().isStatic());
             return true;
-    //            return enterMethodDefinition(node, arg);
         }
         @Override
         public boolean enterStaticMethodDefinition(StaticMethodDefinition node, Object arg)
@@ -365,19 +306,7 @@ public class MirahIndexer extends EmbeddingIndexer {
                 return true;
             }
             packageName = node.name().identifier();
-    //            LOG.info(MirahIndexer.class, "enterClassDefinition packageName=" + packageName);
-    //                ClassFinder scope = new ClassFinder(
-    //                        context.get(ca.weblite.asm.ClassLoader.class),
-    //                        null
-    //                );
-    //                if (packageName != null) {
-    //                    scope.addImport(packageName + ".*");
-    //                }
-    //                if (!scopeStack.isEmpty()) {
-    //                    scopeStack.pop();
-    //                }
-    //                scopeStack.push(scope);
-            return super.enterPackage(node, arg);
+           return super.enterPackage(node, arg);
         }
 
         @Override
@@ -413,7 +342,7 @@ public class MirahIndexer extends EmbeddingIndexer {
             if ( packageName != null ) className = packageName + ".";
             className += node.name().identifier();
 
-//            LOG.info(null, "Add document " + className);
+//            if (logger.isLoggable(Level.FINE)) logger.log(Level.FINE,  "Add document " + className);
             
             for( Iterator it = node.interfaces().iterator() ; it.hasNext() ; )
             {
@@ -451,16 +380,6 @@ public class MirahIndexer extends EmbeddingIndexer {
         @Override
         public boolean enterImport( Import node, Object arg ) 
         {
-    //          if (scopeStack.isEmpty()) {
-    //             ClassFinder scope = new ClassFinder(
-    //             context.get(ca.weblite.asm.ClassLoader.class),
-    //             null
-    //          );
-    //          scopeStack.push(scope);
-    //          }
-    //          scopeStack.peek().addImport(node.fullName().identifier());
-//            System.out.println("Entering import: "+node.fullName().identifier());
-            
             return super.enterImport(node, arg);
         }
 
@@ -478,19 +397,7 @@ public class MirahIndexer extends EmbeddingIndexer {
         }
 
         
-    //    public boolean enterAnnotation(Annotation node, Object arg) {
-    //    public boolean enterAnnotationList(AnnotationList node, Object arg) {
-    //    @Override
-    //    public boolean enterArguments(Arguments node, Object arg) {
-    //        
-    //        return super.enterArguments(node, arg);
-    //    }
-    //    public boolean enterBlock(Block node, Object arg) {
-    //    public boolean enterBlockArgument(BlockArgument node, Object arg) {
-    //    public boolean enterBlockPass(BlockPass node, Object arg) {
-    //    public boolean enterClosureDefinition(ClosureDefinition node, Object arg) {
-        // into index saved string: #{method_name}(#{arguments});#{modifiers};#{line_number}
-        @Override
+    @Override
         public boolean enterConstructorDefinition(ConstructorDefinition node, Object arg) 
         {
             if (node.position() == null || node.position().startChar() == 0 ) {
@@ -500,15 +407,6 @@ public class MirahIndexer extends EmbeddingIndexer {
             
             StringBuilder sb = new StringBuilder();
             sb.append(node.name().identifier());
-//            sb.append(';');
-
-    //            for( int i = 0 ; i < node.arguments().required().size() ; i++ )
-    //            {
-    //                RequiredArgument a = node.arguments().required().get(i);
-    //                sb.append(a.name());
-    //                sb.append(':');
-    //                sb.append(a.type().typeref().name());
-    //            }
 
             prepareArguments(node.arguments(), sb);
             sb.append(';');
@@ -520,7 +418,7 @@ public class MirahIndexer extends EmbeddingIndexer {
             if (getCurrentDocument() != null)
                 getCurrentDocument().addPair(CONSTRUCTOR, sb.toString(), true, true);
 
-//            LOG.info(MirahIndexer.class, "" + getClassName() + ": CONSTRUCTOR=" + sb.toString());
+//            if (logger.isLoggable(Level.FINE)) logger.log(Level.FINE,  "" + getClassName() + ": CONSTRUCTOR=" + sb.toString());
 
             return super.enterConstructorDefinition(node, arg);
         }
@@ -547,24 +445,9 @@ public class MirahIndexer extends EmbeddingIndexer {
         {
             StringBuilder sb = new StringBuilder(node.name().identifier());
 
-    //        sb.append(';').append(org.netbeans.modules.groovy.editor.java.Utilities.translateClassLoaderTypeName(
-    //                node.getType().getName()));
-
             prepareModifiers(node.modifiers(), sb);
             prepareLocation(node, sb);
 
-    //            int flags = getFieldModifiersFlag(child.getModifiers());
-    //            if (flags != 0 || child.isProperty()) {
-    //                sb.append(';');
-    //                sb.append(IndexedElement.flagToFirstChar(flags));
-    //                sb.append(IndexedElement.flagToSecondChar(flags));
-    //            }
-    //
-    //            if (child.isProperty()) {
-    //                sb.append(';');
-    //                sb.append(child.isProperty());
-    //            }
-//                System.out.println("FIELD_NAME="+sb.toString());
 
             // TODO - gather documentation on fields? naeh
             if (getCurrentDocument() != null)
@@ -575,49 +458,15 @@ public class MirahIndexer extends EmbeddingIndexer {
         @Override
         public boolean enterMacroDefinition(MacroDefinition node, Object arg) 
         {
-            /*
-            try {
-                StringBuilder sb = new StringBuilder(); //ASTUtils.getDefSignature(childNode));
-                sb.append(node.name().identifier());
-                prepareArguments(node.arguments(), sb);
-                sb.append(';');
-                sb.append(';');
-    //            prepareModifiers(node.modifiers(), sb);
-
-                sb.append(';');
-                prepareLocation(node, sb);
-                if (getCurrentDocument() != null) {
-                    getCurrentDocument().addPair(METHOD_NAME, sb.toString(), true, true);
-                }
-                LOG.info(null, "" + getClassName() + ": MACRO_NAME=" + sb.toString());
-            } catch (Exception e) {
-                e.printStackTrace();
-                LOG.info(null, "Add macro " + node.name().identifier() + " EXCEPTION=" + e);
-            }
-            */
             return super.enterMacroDefinition(node, arg);
         }
         
         @Override
         public Object exitMacroDefinition(MacroDefinition node, Object arg) {
-//            classNames.remove(0);
-//            nestedDocuments.remove(0);
             return super.exitMacroDefinition(node, arg);
         }
-    //    public boolean enterModifier(Modifier node, Object arg) {
-    //    public boolean enterOptionalArgument(OptionalArgument node, Object arg) {
-    //    public boolean enterOptionalArgumentList(OptionalArgumentList node, Object arg) {
-    //    public boolean enterRequiredArgument(RequiredArgument node, Object arg) {
-    //    public boolean enterRequiredArgumentList(RequiredArgumentList node, Object arg) {
-    //    @Override
-    //    public boolean enterStaticMethodDefinition(StaticMethodDefinition node, Object arg) 
-    //    {
-    //        return super.enterStaticMethodDefinition(node, arg);
-    //    }
         private void prepareLocation(Node node, StringBuilder sb)
         {
-    //        sb.append(file.getPath());
-    //        sb.append(':');
             Position p = node.position();
             if ( /*p == null &&*/ node.originalNode() != null )
             {
@@ -625,7 +474,6 @@ public class MirahIndexer extends EmbeddingIndexer {
                 p = node.originalNode().position();
             }
             if ( p != null ) sb.append(p.startChar());
-//            sb.append(';');
         }
 
         private void prepareArguments(Arguments arguments, StringBuilder sb)
@@ -672,17 +520,8 @@ public class MirahIndexer extends EmbeddingIndexer {
                 if ( i != 0 ) sb.append(',');
                 mirah.lang.ast.Modifier m = modifiers.get(i);
                 sb.append(m.value());
-    //            System.out.println("mody = "+mody.value());
             }
 
-    //        int flags = modifiers.contains(Modifier.STATIC) ? Opcodes.ACC_STATIC : 0;
-    //        if (modifiers.contains(Modifier.PRIVATE)) {
-    //            flags |= Opcodes.ACC_PRIVATE;
-    //        } else if (modifiers.contains(Modifier.PROTECTED)) {
-    //            flags |= Opcodes.ACC_PROTECTED;
-    //        }
-    //
-    //        return flags;
         }
 
     }

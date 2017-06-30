@@ -1,23 +1,25 @@
 package ru.programpark.mirah.editor;
 
-import ca.weblite.netbeans.mirah.LOG;
-import ca.weblite.netbeans.mirah.lexer.MirahLexerUtils;
-import ca.weblite.netbeans.mirah.lexer.MirahTokenId;
+import ru.programpark.mirah.lexer.MirahLexerUtils;
+import ru.programpark.mirah.lexer.MirahTokenId;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import mirah.impl.Tokens;
+
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.spi.editor.bracesmatching.BracesMatcher;
 import org.netbeans.spi.editor.bracesmatching.MatcherContext;
+
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
  * @author Caoyuan Deng
  */
 class MirahBracesMatcher implements BracesMatcher {
+    private static final Logger logger = Logger.getLogger(MirahBracesMatcher.class.getName());
 
     private MatcherContext context;
     
@@ -55,7 +57,7 @@ class MirahBracesMatcher implements BracesMatcher {
                 if (text != null) {
                     text = text.replaceAll("\n", "\\n");
                 }
-                LOG.info(this, "toks3: " + tokens.token().id().name() + " text:" + text);
+                if (logger.isLoggable(Level.FINE)) logger.log(Level.FINE,  "toks3: " + tokens.token().id().name() + " text:" + text);
                 if (!tokens.moveNext()) break;
                 
                 if ( current.id() == MirahTokenId.LPAREN
@@ -87,7 +89,7 @@ class MirahBracesMatcher implements BracesMatcher {
                 if (text != null) {
                     text = text.replaceAll("\n", "\\n");
                 }
-                LOG.info(this, "toks3: " + tokens.token().id().name() + " text:" + text);
+                if (logger.isLoggable(Level.FINE)) logger.log(Level.FINE,  "toks3: " + tokens.token().id().name() + " text:" + text);
                 if (!tokens.moveNext()) {
                     break;
                 }

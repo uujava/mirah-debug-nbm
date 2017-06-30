@@ -6,69 +6,21 @@
 
 package ru.programpark.mirah.editor;
 
-import ca.weblite.asm.LOG;
-import ru.programpark.mirah.editor.ast.AstSupport;
-import ca.weblite.netbeans.mirah.lexer.MirahLanguageHierarchy;
-import ca.weblite.netbeans.mirah.lexer.MirahParser;
-import ca.weblite.netbeans.mirah.lexer.MirahTokenId;
+import ru.programpark.mirah.lexer.MirahLanguageHierarchy;
+import ru.programpark.mirah.lexer.MirahTokenId;
+import ru.programpark.mirah.lexer.MirahParserResult;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.Trees;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet; 
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.CountDownLatch;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Name;
-import javax.lang.model.element.TypeElement;
-import javax.lang.model.type.TypeKind;
-import javax.lang.model.type.TypeMirror;
-import javax.lang.model.util.ElementFilter;
-import javax.lang.model.util.Elements;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
 import mirah.impl.Tokens;
-import mirah.lang.ast.Call;
-import mirah.lang.ast.ClassDefinition;
-import mirah.lang.ast.Constant;
-import mirah.lang.ast.FieldAssign;
-import mirah.lang.ast.FunctionalCall;
-import mirah.lang.ast.Import;
-import mirah.lang.ast.MethodDefinition;
-import mirah.lang.ast.Node;
-import mirah.lang.ast.NodeFilter;
-import mirah.lang.ast.NodeList;
-import mirah.lang.ast.NodeScanner;
-import mirah.lang.ast.OptionalArgument;
-import mirah.lang.ast.OptionalArgumentList;
+import mirah.lang.ast.*;
 import mirah.lang.ast.Package;
-import mirah.lang.ast.RequiredArgument;
-import mirah.lang.ast.RequiredArgumentList;
-import mirah.lang.ast.Script;
-import mirah.lang.ast.Self;
-import mirah.lang.ast.SimpleString;
-import mirah.lang.ast.Super;
-import mirah.lang.ast.TypeName;
-import mirah.lang.ast.TypeNameList;
-import mirah.lang.ast.TypeRef;
-import mirah.lang.ast.TypeRefImpl;
 import org.mirah.typer.MethodType;
 import org.mirah.typer.ProxyNode;
 import org.mirah.typer.ResolvedType;
 import org.mirah.typer.TypeFuture;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.source.ClasspathInfo;
-import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.ElementHandle;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.SourceUtils;
-import org.netbeans.api.java.source.Task;
+import org.netbeans.api.java.source.*;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
@@ -77,12 +29,12 @@ import org.netbeans.modules.csl.api.DeclarationFinder;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
-import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
 import ru.programpark.mirah.editor.ast.ASTUtils;
 import ru.programpark.mirah.editor.ast.AstPath;
+import ru.programpark.mirah.editor.ast.AstSupport;
 import ru.programpark.mirah.editor.java.ElementDeclaration;
 import ru.programpark.mirah.editor.java.ElementSearch;
 import ru.programpark.mirah.editor.utils.LexUtilities;
@@ -90,6 +42,19 @@ import ru.programpark.mirah.index.MirahIndex;
 import ru.programpark.mirah.index.elements.IndexedClass;
 import ru.programpark.mirah.index.elements.IndexedElement;
 import ru.programpark.mirah.index.elements.IndexedMethod;
+
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Name;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.ElementFilter;
+import javax.lang.model.util.Elements;
+import javax.swing.text.Document;
+import java.io.IOException;
+import java.util.*;
+import java.util.concurrent.CountDownLatch;
 
 /**
  *
@@ -147,7 +112,7 @@ public class MirahDeclarationFinder implements DeclarationFinder {
     }
 
     // Check name as imported class
-    public DeclarationLocation checkImportClasses( MirahParser.NBMirahParserResult parsed, SimpleString ss, MirahIndex index )
+    public DeclarationLocation checkImportClasses( MirahParserResult parsed, SimpleString ss, MirahIndex index )
     {
         Node root = parsed.getRoot();
         String name = ss.identifier();
@@ -166,7 +131,7 @@ public class MirahDeclarationFinder implements DeclarationFinder {
         return DeclarationLocation.NONE;
     }
 
-    public String findClassFqn( MirahParser.NBMirahParserResult parsed, String className )
+    public String findClassFqn( MirahParserResult parsed, String className )
     {
         Node root = parsed.getRoot();
         if ( root != null )
@@ -183,7 +148,7 @@ public class MirahDeclarationFinder implements DeclarationFinder {
         return null;
     }
    
-    public ArrayList<String> findAsteriskClassFqns( MirahParser.NBMirahParserResult parsed, String className )
+    public ArrayList<String> findAsteriskClassFqns( MirahParserResult parsed, String className )
     {
         ArrayList<String> fqns = new ArrayList<String>();
         Node root = parsed.getRoot();
@@ -202,7 +167,7 @@ public class MirahDeclarationFinder implements DeclarationFinder {
     //todo - добавить проверку имени класса и дерева наследования
     //todo - добавить проверку сигнатуры!!!
     //todo - добавить обработку конструкторов
-    private DeclarationLocation processCall( Call call, ClassDefinition classDef, MirahParser.NBMirahParserResult parsed, int caretOffset, AstPath path, MirahIndex index ) // Р’С‹Р·РѕРІ РјРµС‚РѕРґР°?
+    private DeclarationLocation processCall( Call call, ClassDefinition classDef, MirahParserResult parsed, int caretOffset, AstPath path, MirahIndex index ) // Р’С‹Р·РѕРІ РјРµС‚РѕРґР°?
     {
         ResolvedType type = parsed.getResolvedType(call);
         String methodName = call.name().identifier();
@@ -245,7 +210,7 @@ public class MirahDeclarationFinder implements DeclarationFinder {
         return location == null ? DeclarationLocation.NONE : location;
     }
 
-    private DeclarationLocation processFunctionalCall( FunctionalCall call, ClassDefinition classDef, MirahParser.NBMirahParserResult parsed, int caretOffset, AstPath path, MirahIndex index ) // Р’С‹Р·РѕРІ РјРµС‚РѕРґР°?
+    private DeclarationLocation processFunctionalCall( FunctionalCall call, ClassDefinition classDef, MirahParserResult parsed, int caretOffset, AstPath path, MirahIndex index ) // Р’С‹Р·РѕРІ РјРµС‚РѕРґР°?
     {
         ResolvedType type = parsed.getResolvedType(call);
         String methodName = call.name().identifier();
@@ -300,7 +265,7 @@ public class MirahDeclarationFinder implements DeclarationFinder {
     }
 
     //todo - если в конце *, пропустить
-    private DeclarationLocation processImport( Import imp, BaseDocument doc, MirahParser.NBMirahParserResult info, MirahIndex index )
+    private DeclarationLocation processImport( Import imp, BaseDocument doc, MirahParserResult info, MirahIndex index )
     {
         String fqName = imp.fullName().identifier();
         if ( fqName.endsWith(".*") ) return DeclarationLocation.NONE;
@@ -308,7 +273,7 @@ public class MirahDeclarationFinder implements DeclarationFinder {
     }
     
     // ссылка на имя класса
-    private DeclarationLocation processRef( TypeRefImpl ref, BaseDocument doc, MirahParser.NBMirahParserResult parsed, MirahIndex index )
+    private DeclarationLocation processRef( TypeRefImpl ref, BaseDocument doc, MirahParserResult parsed, MirahIndex index )
     {
         String name = ref.name();
         String fqn = null;
@@ -340,7 +305,7 @@ public class MirahDeclarationFinder implements DeclarationFinder {
         return location;        
     }
     
-    DeclarationLocation tryToFindClass( BaseDocument bdoc, MirahParser.NBMirahParserResult parsed, FileObject fo, String packg, String className, MirahIndex index ) 
+    DeclarationLocation tryToFindClass( BaseDocument bdoc, MirahParserResult parsed, FileObject fo, String packg, String className, MirahIndex index )
     {
         DeclarationLocation location = null;
     
@@ -373,7 +338,7 @@ public class MirahDeclarationFinder implements DeclarationFinder {
     @Override
     public DeclarationLocation findDeclaration(ParserResult info, int caretOffset) 
     {
-        MirahParser.NBMirahParserResult parsed = (MirahParser.NBMirahParserResult)info;
+        MirahParserResult parsed = (MirahParserResult)info;
         FileObject fo = info.getSnapshot().getSource().getFileObject();
         BaseDocument bdoc = (BaseDocument)info.getSnapshot().getSource().getDocument(false);
 //        AstPath path = ASTUtils.getPath(info, (BaseDocument)doc, caretOffset);
@@ -727,7 +692,7 @@ public class MirahDeclarationFinder implements DeclarationFinder {
         return OffsetRange.NONE;
     }
 
-    private DeclarationLocation getClassDeclaration(MirahParser.NBMirahParserResult info, Set<IndexedClass> classes,
+    private DeclarationLocation getClassDeclaration(MirahParserResult info, Set<IndexedClass> classes,
             AstPath path, Node closest, MirahIndex index, BaseDocument doc) {
         final IndexedClass candidate =
             findBestClassMatch(classes, path, closest, index);
@@ -803,7 +768,7 @@ public class MirahDeclarationFinder implements DeclarationFinder {
             String possibleFqn,
             String returnType,
             ArrayList<String> parameterTypes,
-            MirahParser.NBMirahParserResult parsed,
+            MirahParserResult parsed,
             MirahIndex index)
     {
         // Make sure that the best fit method actually has a corresponding valid source location
@@ -865,7 +830,7 @@ public class MirahDeclarationFinder implements DeclarationFinder {
             String possibleFqn, 
             String returnType, 
             ArrayList<String> parameterTypes, 
-            MirahParser.NBMirahParserResult parsed,
+            MirahParserResult parsed,
             MirahIndex index) 
     {
         Set<IndexedMethod> methods = getApplicableMethods(methodName, possibleFqn, returnType, parameterTypes, index);

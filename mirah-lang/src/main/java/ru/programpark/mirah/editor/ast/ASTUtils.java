@@ -1,11 +1,12 @@
 package ru.programpark.mirah.editor.ast;
 
-import ca.weblite.netbeans.mirah.lexer.MirahParser;
-import ca.weblite.netbeans.mirah.lexer.MirahTokenId;
+import ru.programpark.mirah.lexer.MirahTokenId;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
+
+import ru.programpark.mirah.lexer.MirahParserResult;
 import mirah.impl.Tokens;
 import mirah.lang.ast.ClassDefinition;
 import mirah.lang.ast.MethodDefinition;
@@ -42,23 +43,23 @@ public class ASTUtils {
     private static final Logger LOGGER = Logger.getLogger(ASTUtils.class.getName());
 
     public static int getAstOffset(Parser.Result info, int lexOffset) {
-        MirahParser.NBMirahParserResult result = getParseResult(info);
+        MirahParserResult result = getParseResult(info);
         if (result != null) {
             return result.getSnapshot().getEmbeddedOffset(lexOffset);
         }
         return lexOffset;
     }
 
-    public static MirahParser.NBMirahParserResult getParseResult(Parser.Result info) {
-        assert info instanceof MirahParser.NBMirahParserResult : "Expecting MirahParseResult, but have " + info; //NOI18N
-        return (MirahParser.NBMirahParserResult) info;
+    public static MirahParserResult getParseResult(Parser.Result info) {
+        assert info instanceof MirahParserResult : "Expecting MirahParseResult, but have " + info; //NOI18N
+        return (MirahParserResult) info;
     }
 
     public static Node getRoot( ParserResult r) {
         
-        assert r instanceof MirahParser.NBMirahParserResult;
+        assert r instanceof MirahParserResult;
 
-        MirahParser.NBMirahParserResult result = (MirahParser.NBMirahParserResult)r;
+        MirahParserResult result = (MirahParserResult)r;
 
         if (result.getParsedNodes() == null) {
             return null;
@@ -372,7 +373,7 @@ public class ASTUtils {
             ParserManager.parse(Collections.singleton(source), new UserTask() {
                 @Override
                 public void run(ResultIterator resultIterator) throws Exception {
-                    MirahParser.NBMirahParserResult result = ASTUtils.getParseResult(resultIterator.getParserResult());
+                    MirahParserResult result = ASTUtils.getParseResult(resultIterator.getParserResult());
                     
                     String signature = o.getSignature();
                     if (signature == null) {

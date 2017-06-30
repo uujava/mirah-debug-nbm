@@ -2,3 +2,5 @@
 .idea/
 target/
 classes/
+/sample-project/nbproject/private/
+/sample-project/build/

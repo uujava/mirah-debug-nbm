@@ -50,6 +50,8 @@ import java.net.URL;
 import java.util.*;
 import java.util.HashSet;
 import java.util.TreeSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 
@@ -88,7 +90,7 @@ import org.openide.util.WeakListeners;
  */
 @SourcePathProvider.Registration(path = "netbeans-JPDASession")
 public class SourcePathProviderImpl extends SourcePathProvider {
-
+    private static final Logger logger = Logger.getLogger(SourcePathProviderImpl.class.getName());
     private static boolean          verbose = true;
 //        System.getProperty ("netbeans.debugger.sourcepathproviderimpl") != null;
 
@@ -279,7 +281,7 @@ public class SourcePathProviderImpl extends SourcePathProvider {
      */
     public String[] getAllURLs (String relativePath, boolean global) {      
         List<FileObject> fos;
-        LOG.info(this,"getAllURLs relativePath="+relativePath);
+        if (logger.isLoggable(Level.FINE)) logger.log(Level.FINE, "getAllURLs relativePath="+relativePath);
 
         relativePath = normalize(relativePath);
         if (originalSourcePath == null) {
@@ -291,10 +293,10 @@ public class SourcePathProviderImpl extends SourcePathProvider {
             synchronized (this) {
                 if (!global) {
                     fos = smartSteppingSourcePath.findAllResources(relativePath);
-                    LOG.info(this, "getAllURLs fos " + fos);
+                    if (logger.isLoggable(Level.FINE)) logger.log(Level.FINE,  "getAllURLs fos " + fos);
                 } else {
                     fos = originalSourcePath.findAllResources(relativePath);
-                    LOG.info(this, "getAllURLs fos2 " + fos);
+                    if (logger.isLoggable(Level.FINE)) logger.log(Level.FINE,  "getAllURLs fos2 " + fos);
                 }
             }
         }
@@ -330,10 +332,10 @@ public class SourcePathProviderImpl extends SourcePathProvider {
         
         // 1) url -> FileObject
         FileObject fo = null;                                       
-//        LOG.info(this,"SPPI: getRelativePath " + url);
+//        if (logger.isLoggable(Level.FINE)) logger.log(Level.FINE, "SPPI: getRelativePath " + url);
         try {
             fo = URLMapper.findFileObject (new URL (url));          
-//            LOG.info(this,"SPPI:   fo " + fo);
+//            if (logger.isLoggable(Level.FINE)) logger.log(Level.FINE, "SPPI:   fo " + fo);
         } catch (MalformedURLException e) {
             //e.printStackTrace ();
             return null;
@@ -343,7 +345,7 @@ public class SourcePathProviderImpl extends SourcePathProvider {
             directorySeparator,
             includeExtension
         );
-//        LOG.info(this, "SPPI:   relativePath = " + relativePath);
+//        if (logger.isLoggable(Level.FINE)) logger.log(Level.FINE,  "SPPI:   relativePath = " + relativePath);
         if (relativePath == null) {
             // fallback to FileObject's class path
             ClassPath cp = ClassPath.getClassPath (fo, ClassPath.SOURCE);
@@ -355,9 +357,9 @@ public class SourcePathProviderImpl extends SourcePathProvider {
                 directorySeparator,
                 includeExtension
             );
-//            LOG.info(this, "SPPI:  relativePath2 = " + relativePath);
+//            if (logger.isLoggable(Level.FINE)) logger.log(Level.FINE,  "SPPI:  relativePath2 = " + relativePath);
         }
-//        LOG.info(this, "url:" + url+" relative path:" + relativePath);
+//        if (logger.isLoggable(Level.FINE)) logger.log(Level.FINE,  "url:" + url+" relative path:" + relativePath);
 //        LOG.putStack("");
         return relativePath;
     }

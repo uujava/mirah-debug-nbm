@@ -12,6 +12,7 @@ import org.openide.util.Exceptions;
 
 import javax.lang.model.element.Element;
 import java.io.IOException;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
@@ -28,7 +29,7 @@ import org.netbeans.modules.csl.api.DeclarationFinder.DeclarationLocation;
  * @author Jan Lahoda
  */
 public final class ElementDeclaration {
-    private static Logger log = Logger.getLogger(ElementDeclaration.class.getName());
+    private static final Logger logger = Logger.getLogger(ElementDeclaration.class.getName());
 
     private ElementDeclaration() {
         super();
@@ -59,7 +60,7 @@ public final class ElementDeclaration {
 
     private static int getOffset(FileObject fo, final ElementHandle<? extends Element> handle) throws IOException {
         if (IndexingManager.getDefault().isIndexing()) {
-            log.info("Skipping location of element offset within file, Scannig in progress");
+            if (logger.isLoggable(Level.FINE)) logger.log(Level.FINE,  "Skipping location of element offset within file, Scannig in progress");
             return 0; //we are opening @ 0 position. Fix #160478
         }
 
@@ -76,7 +77,7 @@ public final class ElementDeclaration {
                     }
                     Element el = handle.resolve(info);
                     if (el == null) {
-                        log.severe("Cannot resolve " + handle + ". " + info.getClasspathInfo());
+                        logger.severe("Cannot resolve " + handle + ". " + info.getClasspathInfo());
                         return;
                     }
 

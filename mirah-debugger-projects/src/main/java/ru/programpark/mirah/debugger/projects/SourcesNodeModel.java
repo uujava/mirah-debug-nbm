@@ -42,6 +42,8 @@
 package ru.programpark.mirah.debugger.projects;
 
 import java.io.File;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -59,7 +61,7 @@ import org.openide.util.NbBundle;
  * @author   Jan Jancura
  */
 public class SourcesNodeModel implements NodeModel {
-
+    private static final Logger logger = Logger.getLogger(SourcesNodeModel.class.getName());
     public static final String SOURCE_ROOT =
         "org/netbeans/modules/debugger/jpda/resources/root";
     public static final String FILTER =
@@ -67,7 +69,7 @@ public class SourcesNodeModel implements NodeModel {
 
     public String getDisplayName (Object o) throws UnknownTypeException {
         
-        LOG.info(this,"getDisplayName o="+o);
+        if (logger.isLoggable(Level.FINE)) logger.log(Level.FINE, "getDisplayName o="+o);
         if (o == TreeModel.ROOT) {
             return NbBundle.getBundle(SourcesNodeModel.class).getString("CTL_SourcesModel_Column_Name_Name");
         } else
@@ -91,7 +93,7 @@ public class SourcesNodeModel implements NodeModel {
     }
 
     public String getShortDescription (Object o) throws UnknownTypeException {
-                LOG.info(this,"getShortDescription o="+o);
+                if (logger.isLoggable(Level.FINE)) logger.log(Level.FINE, "getShortDescription o="+o);
 
         if (o == TreeModel.ROOT)
             return NbBundle.getBundle(SourcesNodeModel.class).getString("CTL_SourcesModel_Column_Name_Desc");

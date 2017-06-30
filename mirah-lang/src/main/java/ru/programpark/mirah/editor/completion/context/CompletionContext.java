@@ -1,6 +1,6 @@
 package ru.programpark.mirah.editor.completion.context;
 
-import ca.weblite.netbeans.mirah.lexer.MirahTokenId;
+import ru.programpark.mirah.lexer.MirahTokenId;
 import java.util.Iterator;
 import java.util.Set;
 import javax.swing.text.BadLocationException;

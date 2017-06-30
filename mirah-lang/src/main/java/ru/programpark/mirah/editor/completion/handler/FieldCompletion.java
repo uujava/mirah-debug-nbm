@@ -1,15 +1,14 @@
 package ru.programpark.mirah.editor.completion.handler;
 
-import ru.programpark.mirah.editor.completion.handler.BaseCompletion;
+import ru.programpark.mirah.lexer.MirahParserResult;
 import ru.programpark.mirah.editor.completion.context.CompletionContext;
 import ru.programpark.mirah.editor.completion.context.CaretLocation;
 import ru.programpark.mirah.editor.completion.context.ContextHelper;
-import ca.weblite.netbeans.mirah.lexer.MirahParser;
-import ca.weblite.netbeans.mirah.lexer.MirahTokenId;
+import ru.programpark.mirah.lexer.MirahTokenId;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
-import javax.swing.text.BadLocationException;
+
 import mirah.impl.Tokens;
 import mirah.lang.ast.FieldDeclaration;
 import org.netbeans.api.java.source.ClasspathInfo;
@@ -17,11 +16,6 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.CompletionProposal;
-import org.netbeans.modules.parsing.api.Snapshot;
-import org.netbeans.modules.parsing.api.Source;
-import org.netbeans.modules.parsing.spi.ParseException;
-import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
 import ru.programpark.mirah.editor.completion.CompletionItem;
 import ru.programpark.mirah.editor.completion.FieldSignature;
 import ru.programpark.mirah.editor.completion.provider.CompleteElementHandler;
@@ -112,18 +106,16 @@ public class FieldCompletion extends BaseCompletion {
     {
         BaseDocument doc = (BaseDocument)context.doc;
         int caretOffset = context.astOffset;
-        FileObject fileObject = context.getSourceFile();
         if ( caretOffset < initialOffset ) return;
 
         String filter = null;
-        MirahParser.NBMirahParserResult parserResult = (MirahParser.NBMirahParserResult)context.getParserResult();
+        MirahParserResult parserResult = (MirahParserResult)context.getParserResult();
 
         try
         {
             doc.readLock();
 
-            MirahParser.DocumentDebugger dbg = MirahParser.getDocumentDebugger(doc);
-            if ( dbg == null ) return;
+            if ( parserResult == null ) return;
 
             int p = caretOffset-1;
             if ( p < 0 ) return;
@@ -132,16 +124,15 @@ public class FieldCompletion extends BaseCompletion {
             if ( toks == null ) return;
             
             Token<MirahTokenId> foundToken = null;
-            int tokenStart = -1;
-            int tokenLen = -1;
+
 
             boolean isClassVar = false;
             while ( toks.token() != null && toks.offset() >= anchor ){
+                int tokenStart;
                 Token<MirahTokenId> tok = toks.token();
                 if ( tok.id().is(Tokens.tInstVar) ){
                     foundToken = tok;
                     tokenStart = toks.offset();
-                    tokenLen = tok.length();
                     filter = doc.getText(tokenStart+1, caretOffset-tokenStart-1);
                     break;
 
@@ -150,7 +141,6 @@ public class FieldCompletion extends BaseCompletion {
                     isClassVar = true;
                     foundToken = tok;
                     tokenStart = toks.offset();
-                    tokenLen = tok.length();
                     filter = doc.getText(tokenStart+2, caretOffset-tokenStart-2);
                     break;
                 }
@@ -164,11 +154,9 @@ public class FieldCompletion extends BaseCompletion {
                 if ( tok.id().is(Tokens.tAt)){
                     foundToken = tok;
                     tokenStart = anchor+1; // Not sure why we need to do +1.  May be a bug in lexer
-                    tokenLen = 1;
                     if ( "@".equals(doc.getText(tokenStart-1,1)) ){
                         isClassVar = true;
                         tokenStart--;
-                        tokenLen = 2;
                     }
                     break;
                 }
@@ -176,35 +164,8 @@ public class FieldCompletion extends BaseCompletion {
                 
             if ( foundToken == null ) return;
                 
-            FieldDeclaration[] fields = MirahUtils.findFields(dbg, anchor, isClassVar);
-/*                
-                if ( fields.length == 0 ){
+            FieldDeclaration[] fields = MirahUtils.findFields(parserResult, anchor, isClassVar);
 
-                    Source src = Source.create(doc);
-                    MirahParser parser = new MirahParser();
-                    try {
-                        Snapshot snapshot = src.createSnapshot();
-                        String text = snapshot.getText().toString();
-                        StringBuilder sb = new StringBuilder();
-                        sb.append(text.substring(0, tokenStart));
-                        for ( int i=tokenStart; i<eol; i++){
-                            sb.append(' ');
-                        }
-                        sb.append(text.substring(eol));
-
-                        parser.reparse(snapshot, sb.toString());
-
-                    } catch (ParseException ex){
-                        Exceptions.printStackTrace(ex);
-                    }
-
-                    dbg = MirahParser.getDocumentDebugger(doc);
-                    //printNodes(dbg.compiler.compiler(), rightEdgeFinal);
-                    fields = MirahUtils.findFields(dbg, tAtPos, isClassVar);
-                    
-                    
-                }
-  */              
             for ( FieldDeclaration declaration : fields ){
             if ( filter == null || declaration.name().identifier().startsWith(filter))
                 proposals.add(CompletionItem.forDynamicField(anchor, declaration.name().identifier(), declaration.type().toString()));

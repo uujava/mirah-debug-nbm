@@ -5,13 +5,13 @@
  */
 package ru.programpark.mirah.editor.navigator;
 
-import ca.weblite.netbeans.mirah.lexer.MirahParser;
-import ca.weblite.netbeans.mirah.lexer.MirahTokenId;
+import ru.programpark.mirah.lexer.MirahTokenId;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
+
+import ru.programpark.mirah.lexer.MirahParserResult;
 import mirah.lang.ast.ClassDefinition;
 import mirah.lang.ast.ClosureDefinition;
 import mirah.lang.ast.ConstructorDefinition;
@@ -28,7 +28,6 @@ import org.mirah.typer.ResolvedType;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
-import ru.programpark.mirah.editor.ast.AstPath;
 import ru.programpark.mirah.editor.utils.LexUtilities;
 
 /**
@@ -47,11 +46,11 @@ public class VariablesCollector extends NodeScanner {
 
     private ArrayList<String> variables = new ArrayList<String>();
     private Node leaf;
-    private MirahParser.NBMirahParserResult parsed;
+    private MirahParserResult parsed;
     private HashMap uniqueNames = new HashMap();
     
 //    public VariablesCollector( AstPath path, BaseDocument doc, int cursorOffset) {
-    public VariablesCollector( MirahParser.NBMirahParserResult parsed, Node leaf, BaseDocument doc, int cursorOffset) {
+    public VariablesCollector( MirahParserResult parsed, Node leaf, BaseDocument doc, int cursorOffset) {
 //        this.path = path;
         this.parsed = parsed;
         this.leaf = leaf;
