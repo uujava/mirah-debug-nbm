@@ -56,8 +56,8 @@ import org.openide.util.NbBundle;
  * @author Martin Janicek
  */
 @NbBundle.Messages(value = {
-    "LBL_DisplayName_MirahClass=Mirah Class",
-    "LBL_DisplayName_MirahScript=Mirah Script"
+    "LBL_DisplayName_MirahClass=VRuby Класс",
+    "LBL_DisplayName_MirahScript=VRuby Скрипт"
 })
 @TemplateRegistrations(value = {
     @TemplateRegistration(

@@ -47,7 +47,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.java.source.indexing.TransactionContext;
 import org.netbeans.modules.java.source.parsing.FileManagerTransaction;
 import org.netbeans.modules.java.source.parsing.ProcessorGenerated;
-import org.netbeans.modules.java.source.ui.JavaSymbolDescriptor;
+//import org.netbeans.modules.java.source.ui.JavaSymbolDescriptor;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl;
 import org.netbeans.modules.java.source.usages.ClassIndexManager;
 import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;

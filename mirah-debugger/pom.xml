@@ -4,7 +4,7 @@
    <parent>
         <groupId>ru.programpark.mirah</groupId>
         <artifactId>root</artifactId>
-        <version>1.0-SNAPSHOT</version>
+        <version>1.0.174</version>
 	<!--<relativePath>../pom.xml</relativePath>-->
     </parent>
     <artifactId>mirah-debugger</artifactId>    
@@ -83,11 +83,11 @@
             <artifactId>org-openide-text</artifactId>
             <version>${netbeans.version}</version>
         </dependency>
-        <dependency>
+<!--        <dependency>
             <groupId>org.netbeans.api</groupId>
             <artifactId>org-openide-util</artifactId>
             <version>${netbeans.version}</version>
-        </dependency>
+        </dependency>-->
         <dependency>
             <groupId>org.netbeans.api</groupId>
             <artifactId>org-openide-util-lookup</artifactId>
@@ -140,7 +140,43 @@
             <groupId>org.netbeans.api</groupId>
             <artifactId>org-netbeans-modules-parsing-api</artifactId>
             <version>${netbeans.version}</version>
+            <!--<version>RELEASE81</version>-->
         </dependency>
+<!--        <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-netbeans-modules-parsing-api</artifactId>-->
+            <!--<version>${netbeans.version}</version>-->
+<!--            <version>RELEASE81</version>
+            <scope>provided</scope>
+        </dependency>-->
+        <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-netbeans-modules-parsing-indexing</artifactId>
+            <version>${netbeans.version}</version>
+            <!--<version>RELEASE81</version>-->
+            <scope>provided</scope>
+        </dependency>
+        
+<!--        <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-netbeans-modules-java-source-compat8</artifactId>
+            <version>RELEASE82</version>
+            <scope>provided</scope>
+            <type>nbm</type>
+        </dependency>-->
+        <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-openide-util</artifactId>
+            <version>RELEASE802</version>
+            <!--<scope>runtime</scope>-->
+        </dependency>
+        <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-openide-util-ui</artifactId>
+            <version>${netbeans.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+        
     </dependencies>
 
     <build>
@@ -166,6 +202,12 @@
                     <licenseFile>license.txt</licenseFile>    
                     <verifyRuntime>warn</verifyRuntime>
                     <useOSGiDependencies>true</useOSGiDependencies>
+                    <moduleDependencies>
+                        <dependency>
+                            <id>org.netbeans.api:org-netbeans-modules-parsing-api</id> 
+                            <type>impl</type> 
+                        </dependency>
+                    </moduleDependencies>
                     <publicPackages>
                     </publicPackages>
                 </configuration>

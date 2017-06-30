@@ -15,10 +15,8 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.openide.filesystems.FileObject;
-import ru.programpark.mirah.editor.completion.context.CaretLocation;
 import ru.programpark.mirah.editor.ast.ASTUtils;
 import ru.programpark.mirah.editor.ast.AstPath;
-import ru.programpark.mirah.editor.completion.AccessLevel;
 import ru.programpark.mirah.editor.completion.AccessLevel;
 import ru.programpark.mirah.editor.utils.LexUtilities;
 

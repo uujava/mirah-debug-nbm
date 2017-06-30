@@ -706,7 +706,7 @@ public class MirahParser extends Parser {
         FileChangeAdapter fileChangeListener = null;
         try {
             if (compileClassPath != null) {
-                compiler.compile(new String[]{"--new-closures"});
+                compiler.compile(new String[]{ /*"--new-closures"*/ });
             }
             if (mirahDir != null) {
 
@@ -1106,14 +1106,14 @@ public class MirahParser extends Parser {
             super(false);
         }
 
-        @Override
+//        @Override
         public int errorCount() {
             return errorCount;
         }
         
-        @Override
+//        @Override
         public void log(Diagnostic.Kind kind, String position, String message) {
-            super.log(kind, position, message);
+//            super.log(kind, position, message);
             if (!"ERROR_TO_PREVENT_COMPILING".equals(message)) {
                 errors.add(new SyntaxError(kind, position, message));
             }

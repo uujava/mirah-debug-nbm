@@ -5,7 +5,7 @@
     <parent>
         <groupId>ru.programpark.mirah</groupId>
         <artifactId>root</artifactId>
-        <version>1.0-SNAPSHOT</version>
+        <version>1.0.174</version>
 	<!--<relativePath>../pom.xml</relativePath>-->
     </parent>
     <artifactId>mirah-debugger-projects</artifactId>    
@@ -56,6 +56,7 @@
             <groupId>org.netbeans.api</groupId>
             <artifactId>org-netbeans-modules-csl-api</artifactId>
             <version>${netbeans.version}</version>
+            <!--<version>RELEASE81</version>-->
         </dependency>
         <dependency>
             <groupId>org.netbeans.modules</groupId>
@@ -93,11 +94,12 @@
             <groupId>org.netbeans.api</groupId>
             <artifactId>org-netbeans-modules-java-project</artifactId>
             <version>${netbeans.version}</version>
+            <!--<version>RELEASE802</version>-->
         </dependency>
         <dependency>
             <groupId>org.netbeans.api</groupId>
             <artifactId>org-netbeans-modules-java-source</artifactId>
-            <version>${netbeans.version}</version>
+            <version>RELEASE802</version>
         </dependency>
         <dependency>
             <groupId>org.netbeans.api</groupId>
@@ -108,16 +110,30 @@
             <groupId>org.netbeans.api</groupId>
             <artifactId>org-netbeans-modules-parsing-api</artifactId>
             <version>${netbeans.version}</version>
+          <!--<version>RELEASE81</version>-->
+            <!--<scope>provided</scope>-->
+        </dependency>
+        <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-netbeans-modules-parsing-indexing</artifactId>
+            <version>${netbeans.version}</version>
+          <!--<version>RELEASE81</version>-->
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.netbeans.api</groupId>
             <artifactId>org-netbeans-modules-projectapi</artifactId>
             <version>${netbeans.version}</version>
+            <!-- 802 only -->
+<!--            <version>RELEASE81</version>
+            <scope>provided</scope>-->
         </dependency>
         <dependency>
             <groupId>org.netbeans.api</groupId>
             <artifactId>org-netbeans-modules-projectuiapi</artifactId>
             <version>${netbeans.version}</version>
+            <!--<version>RELEASE802</version>-->
+            <!--<scope>provided</scope>-->
         </dependency>
         <dependency>
             <groupId>org.netbeans.api</groupId>
@@ -164,7 +180,6 @@
             <artifactId>org-openide-windows</artifactId>
             <version>${netbeans.version}</version>
         </dependency>
-
         <dependency>
             <groupId>org.netbeans.api</groupId>
             <artifactId>org-netbeans-api-annotations-common</artifactId>
@@ -243,6 +258,7 @@
         <dependency>
             <groupId>org.netbeans.api</groupId>
             <artifactId>org-netbeans-modules-java-sourceui</artifactId>
+            <!--<version>RELEASE802</version>-->
             <version>${netbeans.version}</version>
         </dependency>
         <dependency>
@@ -272,6 +288,45 @@
             <artifactId>org-netbeans-api-java-classpath</artifactId>
             <version>${netbeans.version}</version>
         </dependency>
+        <!-- 82 -->
+        <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-netbeans-modules-csl-types</artifactId>
+            <version>${netbeans.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.netbeans.modules</groupId>
+            <artifactId>org-netbeans-modules-masterfs</artifactId>
+            <version>${netbeans.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-openide-util-ui</artifactId>
+            <version>${netbeans.version}</version>
+        </dependency>
+<!--        <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-netbeans-modules-java-source-compat8</artifactId>
+            <version>RELEASE82</version>
+            <scope>provided</scope>
+            <type>nbm</type>
+        </dependency>-->
+<!--        <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-netbeans-modules-project-ant-compat8</artifactId>
+            <version>RELEASE82</version>
+            <scope>provided</scope>
+            <type>nbm</type>
+        </dependency>-->
+        <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-netbeans-modules-projectuiapi-base</artifactId>
+            <version>${netbeans.version}</version>
+<!--            <version>RELEASE81</version>
+            <scope>provided</scope>-->
+        </dependency>
     </dependencies>
 
     <build>
@@ -283,7 +338,7 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>nbm-maven-plugin</artifactId>
-                <version>3.13.3</version>
+                <version>3.14.1</version>
                 <extensions>true</extensions>
                 <configuration>
                     <codeNameBase>ru.programpark.mirah.debugger.projects/1</codeNameBase>
@@ -314,6 +369,91 @@
                              <type>spec</type> 
                              <explicitValue>org.netbeans.modules.options.keymap/1 = 1</explicitValue> 
                          </dependency>
+                         <!-- 82 -->
+                        <dependency> 
+                             <id>org.netbeans.api:org-netbeans-modules-csl-api</id> 
+                             <type>impl</type> 
+                             <!--<explicitValue>org.netbeans.modules.csl.types/1 = 1</explicitValue>--> 
+                        </dependency>
+                        <dependency> 
+                             <id>org.netbeans.api:org-netbeans-modules-csl-types</id> 
+                             <type>impl</type> 
+                             <!--<explicitValue>org.netbeans.modules.csl.types/1 = 1</explicitValue>--> 
+                        </dependency>
+                        <dependency> 
+                             <id>org.netbeans.api:org-netbeans-modules-projectapi</id> 
+                             <type>impl</type> 
+                             <explicitValue>org.netbeans.modules.projectapi/1 > 1</explicitValue> 
+                        </dependency>
+                        <dependency> 
+                             <id>org.netbeans.modules:org-netbeans-modules-jumpto</id> 
+                             <type>spec</type> 
+                             <explicitValue>org.netbeans.modules.jumpto/1 = 1</explicitValue> 
+                        </dependency>
+                        <dependency> 
+                             <id>org.netbeans.modules:org-netbeans-modules-parsing-lucene</id> 
+                             <type>spec</type> 
+                             <explicitValue>org.netbeans.modules.parsing.lucene/1 = 1</explicitValue> 
+                        </dependency>
+                        <dependency> 
+                             <id>org.netbeans.modules:org-netbeans-core</id> 
+                             <type>spec</type> 
+                             <explicitValue>org.netbeans.core/1 = 1</explicitValue> 
+                        </dependency>
+                        <dependency> 
+                             <id>org.netbeans.modules:org-netbeans-bootstrap</id> 
+                             <type>spec</type> 
+                             <explicitValue>org.netbeans.bootstrap/1 = 1</explicitValue> 
+                        </dependency>
+                        <dependency> 
+                            <id>org.netbeans.modules:org-netbeans-core-startup</id> 
+                            <type>spec</type> 
+                            <explicitValue>org.netbeans.core.startup/1 = 1</explicitValue> 
+                        </dependency>
+                        <dependency> 
+                            <id>org.netbeans.modules:org-netbeans-core-startup-base</id> 
+                            <type>spec</type> 
+                            <explicitValue>org.netbeans.core.startup.base/1 = 1</explicitValue> 
+                        </dependency>
+                        <dependency> 
+                            <id>org.netbeans.modules:org-netbeans-modules-masterfs</id> 
+                            <type>spec</type> 
+                            <explicitValue>org.netbeans.modules.masterfs/1 = 1</explicitValue> 
+                        </dependency>
+                        <dependency>
+                            <id>org.netbeans.api:org-netbeans-modules-parsing-api</id> 
+                            <type>impl</type> 
+                        </dependency>
+                        <dependency> 
+                            <id>org.netbeans.api:org-netbeans-modules-parsing-indexing</id> 
+                            <type>spec</type> 
+                            <explicitValue>org.netbeans.modules.parsing.indexing/1 = 1</explicitValue> 
+                        </dependency>
+                        <dependency> 
+                            <id>org.netbeans.api:org-netbeans-modules-projectuiapi</id> 
+                            <type>impl</type> 
+                            <explicitValue>org.netbeans.modules.projectuiapi/1 > 1</explicitValue> 
+                        </dependency>
+                        <dependency> 
+                            <id>org.netbeans.api:org-netbeans-modules-projectuiapi-base</id> 
+                            <type>impl</type> 
+                            <explicitValue>org.netbeans.modules.projectuiapi.base/1 > 1</explicitValue> 
+                        </dependency>
+<!--                        <dependency> 
+                            <id>org.netbeans.api:org-openide-util</id> 
+                            <type>spec</type> 
+                            <explicitValue>org.openide.util/1 = 1</explicitValue> 
+                        </dependency>
+                        <dependency> 
+                            <id>org.netbeans.api:org-openide-util-ui</id> 
+                            <type>spec</type> 
+                            <explicitValue>org.openide.util.ui/1 = 1</explicitValue> 
+                        </dependency>-->
+<!--                        <dependency> 
+                            <id>org.netbeans.api:org-netbeans-modules-java-source-compat8</id> 
+                            <type>spec</type> 
+                            <explicitValue>org.netbeans.modules.java.source.compat8/1 = 1</explicitValue> 
+                        </dependency>-->
                     </moduleDependencies>
                     <publicPackages>
                     </publicPackages>
@@ -321,8 +461,8 @@
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>                
-            </plugin>            
+                <artifactId>maven-jar-plugin</artifactId>
+            </plugin>
         </plugins>
     </build>
 

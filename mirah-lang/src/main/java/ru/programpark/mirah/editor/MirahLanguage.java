@@ -38,7 +38,6 @@
  */
 package ru.programpark.mirah.editor;
 
-import ca.weblite.netbeans.mirah.LOG;
 import ru.programpark.mirah.editor.navigator.MirahStructureAnalyzer;
 import ca.weblite.netbeans.mirah.lexer.MirahParser;
 import ca.weblite.netbeans.mirah.lexer.MirahTokenId;
@@ -46,7 +45,6 @@ import java.util.Set;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.lexer.Language;
-import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
 import org.netbeans.modules.csl.api.CodeCompletionHandler;
 import org.netbeans.modules.csl.api.DeclarationFinder;
@@ -64,7 +62,6 @@ import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory;
 import org.openide.filesystems.MIMEResolver;
 import org.openide.util.Lookup;
-import org.openide.windows.TopComponent;
 import ru.programpark.mirah.index.MirahIndexer;
 import ru.programpark.mirah.editor.completion.MirahCompletionHandler;
 

@@ -3,7 +3,7 @@
     <parent>
         <groupId>ru.programpark.mirah</groupId>
         <artifactId>root</artifactId>
-        <version>1.0-SNAPSHOT</version>
+        <version>1.0.174</version>
         <!--<relativePath>../pom.xml</relativePath>-->
     </parent>
     <groupId>ru.programpark.mirah</groupId>
@@ -45,10 +45,23 @@
             <groupId>org.netbeans.api</groupId>
             <artifactId>org-netbeans-modules-csl-api</artifactId>
             <version>${netbeans.version}</version>
+            <!--<scope>provided</scope>-->
         </dependency>
         <dependency>
             <groupId>org.netbeans.api</groupId>
+            <artifactId>org-netbeans-modules-csl-types</artifactId>
+            <version>${netbeans.version}</version>
+            <!--<scope>provided</scope>-->
+        </dependency>
+        
+        <dependency>
+            <groupId>org.netbeans.api</groupId>
             <artifactId>org-netbeans-modules-editor</artifactId>
+            <version>${netbeans.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-netbeans-modules-editor-document</artifactId>
             <version>${netbeans.version}</version>
         </dependency>
         <dependency>
@@ -90,13 +103,14 @@
         </dependency>
         <dependency>
             <groupId>org.netbeans.api</groupId>
-            <artifactId>org-netbeans-modules-java-project</artifactId>
-            <version>${netbeans.version}</version>
+            <artifactId>org-netbeans-modules-java-project-ui</artifactId>
+            <version>RELEASE81</version>
         </dependency>
         <dependency>
             <groupId>org.netbeans.api</groupId>
             <artifactId>org-netbeans-modules-java-source</artifactId>
             <version>${netbeans.version}</version>
+            <!--<version>RELEASE802</version>-->
         </dependency>
         <dependency>
             <groupId>org.netbeans.api</groupId>
@@ -113,6 +127,15 @@
             <groupId>org.netbeans.api</groupId>
             <artifactId>org-netbeans-modules-parsing-api</artifactId>
             <version>${netbeans.version}</version>
+            <!--<version>RELEASE81</version>-->
+            <!--<scope>provided</scope>-->
+        </dependency>
+        <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-netbeans-modules-parsing-indexing</artifactId>
+            <version>${netbeans.version}</version>
+            <!--<version>RELEASE81</version>-->
+            <!--<scope>provided</scope>-->
         </dependency>
         <dependency>
             <groupId>org.netbeans.api</groupId>
@@ -206,7 +229,6 @@
             <version>${netbeans.version}</version>
             <scope>runtime</scope>
         </dependency>
-
         <dependency>
             <groupId>org.netbeans.modules</groupId>
             <artifactId>org-netbeans-modules-parsing-lucene</artifactId>
@@ -315,11 +337,6 @@
             <artifactId>org-netbeans-modules-project-libraries</artifactId>
             <version>${netbeans.version}</version>
         </dependency>
-        <!-- dependency>
-            <groupId>org.netbeans.modules</groupId>
-            <artifactId>org-netbeans-modules-maven-model</artifactId>
-            <version>${netbeans.version}</version>
-        </dependency -->
         <dependency>
             <groupId>org.netbeans.api</groupId>
             <artifactId>org-openide-modules</artifactId>
@@ -335,16 +352,17 @@
             <artifactId>org-netbeans-modules-autoupdate-services</artifactId>
             <version>${netbeans.version}</version>
         </dependency>
-        
         <dependency>
             <groupId>org.mirah</groupId>
             <artifactId>mirahc</artifactId>
-            <version>0.1.5-59</version>
+            <!--<version>0.1.5-59</version>-->
+            <version>0.2.1.181</version>
         </dependency>
         <dependency>
             <groupId>org.mirah</groupId>
             <artifactId>mirah-ant</artifactId>
-            <version>0.1.5</version>
+            <!--<version>0.1.5</version>-->
+            <version>0.1.5-30</version>
         </dependency>
         <dependency>
             <groupId>com.sun</groupId>
@@ -384,6 +402,13 @@
             <version>${netbeans.version}</version>
             <!--<scope>compile</scope>-->
         </dependency>
+<!--        <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-netbeans-modules-project-ant-compat8</artifactId>
+            <version>RELEASE82</version>
+            <scope>provided</scope>
+            <type>nbm</type>
+        </dependency>-->
     </dependencies>
 
     <build>
@@ -450,6 +475,22 @@
                             <id>org.netbeans.api:org-netbeans-modules-java-sourceui</id> 
                             <type>impl</type> 
                         </dependency>
+                        <dependency>
+                            <id>org.netbeans.api:org-netbeans-modules-parsing-api</id> 
+                            <type>impl</type> 
+                        </dependency>
+                        <dependency>
+                            <id>org.netbeans.api:org-netbeans-modules-parsing-indexing</id> 
+                            <type>impl</type> 
+                        </dependency>
+<!--                        <dependency>
+                            <id>org.netbeans.api:org-netbeans-modules-csl-api</id> 
+                            <type>impl</type> 
+                        </dependency>
+                        <dependency>
+                            <id>org.netbeans.api:org-netbeans-modules-csl-types</id> 
+                            <type>impl</type> 
+                        </dependency>-->
                     </moduleDependencies>
                     <publicPackages>
                         <publicPackage>ca.weblite.netbeans.mirah.lexer</publicPackage>

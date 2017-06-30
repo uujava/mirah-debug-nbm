@@ -4,6 +4,7 @@ import ca.weblite.netbeans.mirah.AbstractNodeVisitor;
 import mirah.lang.ast.Array;
 import mirah.lang.ast.Boolean;
 import mirah.lang.ast.Call;
+import mirah.lang.ast.EnumDefinition;
 import mirah.lang.ast.FieldAnnotationRequest;
 import mirah.lang.ast.Fixnum;
 import mirah.lang.ast.FunctionalCall;
@@ -131,6 +132,11 @@ public class TypeNodeVisitor extends AbstractNodeVisitor {
 
     @Override
     public Object visitSyntheticLambdaDefinition(SyntheticLambdaDefinition sld, Object o) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Object visitEnumDefinition(EnumDefinition ed, Object o) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

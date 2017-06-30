@@ -4,7 +4,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>ru.programpark.mirah</groupId>
   <artifactId>root</artifactId>
-  <version>1.0-SNAPSHOT</version>
+  <version>1.0.174</version>
   <packaging>pom</packaging>
   <name>root</name>
   <modules>
@@ -16,7 +16,8 @@
     <deploy.version>snapshots</deploy.version>
     <brandingToken>mirah</brandingToken>
     <!-- netbeans.version>RELEASE721</netbeans.version -->
-    <netbeans.version>RELEASE802</netbeans.version>
+    <!--<netbeans.version>RELEASE802</netbeans.version>-->
+    <netbeans.version>RELEASE82</netbeans.version>
     <bundle.namespace>${project.groupId}.${project.artifactId}</bundle.namespace>	
   </properties>
     <repositories>

@@ -471,6 +471,7 @@ public class MirahIndexer extends EmbeddingIndexer {
             ResolvedType type = parsed.getResolvedType(node);
             if ( type != null ) {
                 String typeName = type.name();
+                if ( getCurrentDocument() != null ) //todo разобраться
                 getCurrentDocument().addPair(SUPER_CLASS, typeName, true, true);    
             }
             return super.enterSuper(node, arg);
