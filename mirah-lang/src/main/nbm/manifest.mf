@@ -1,7 +1,8 @@
 Manifest-Version: 1.0
 OpenIDE-Module-Display-Category: VRuby
 AutoUpdate-Show-In-Client: true
-OpenIDE-Module-Localizing-Bundle: ca/weblite/netbeans/mirah/Bundle.properties
-OpenIDE-Module-Layer: ca/weblite/netbeans/mirah/layer.xml
-OpenIDE-Module: ca.weblite.netbeans.mirah/1
+OpenIDE-Module-Localizing-Bundle: ru/programpark/mirah/Bundle.properties
+OpenIDE-Module-Layer: ru/programpark/mirah/layer.xml
+OpenIDE-Module: ru.programpark.mirah.lang/1
 OpenIDE-Module-Long-Description: VRuby Language Support
+OpenIDE-Module-Display-Category: VRuby

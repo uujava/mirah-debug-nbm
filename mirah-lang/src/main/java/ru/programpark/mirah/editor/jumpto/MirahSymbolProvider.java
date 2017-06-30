@@ -1,57 +1,13 @@
 package ru.programpark.mirah.editor.jumpto;
 
-import ca.weblite.asm.LOG;
-import java.io.IOException;
-import java.lang.annotation.Annotation;
-import java.net.URL;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.ElementVisitor;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Modifier;
-import javax.lang.model.element.Name;
-import javax.lang.model.element.QualifiedNameable;
-import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.ArrayType;
-import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.ErrorType;
-import javax.lang.model.type.TypeKind;        
-import javax.lang.model.type.TypeMirror;
-import javax.lang.model.type.TypeVariable;
-import javax.lang.model.type.WildcardType;
-import javax.lang.model.util.SimpleTypeVisitor6;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ClassIndex;
-import org.netbeans.api.java.source.ClasspathInfo;
-import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
-import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.SourceUtils;
-import org.netbeans.api.java.source.Task;
-import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.java.source.indexing.TransactionContext;
-import org.netbeans.modules.java.source.parsing.FileManagerTransaction;
-import org.netbeans.modules.java.source.parsing.ProcessorGenerated;
-//import org.netbeans.modules.java.source.ui.JavaSymbolDescriptor;
-import org.netbeans.modules.java.source.usages.ClassIndexImpl;
 import org.netbeans.modules.java.source.usages.ClassIndexManager;
-import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
-import org.netbeans.modules.java.source.usages.DocumentUtil;
 import org.netbeans.modules.parsing.lucene.support.IndexManager;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.spi.jumpto.support.NameMatcher;
@@ -59,18 +15,21 @@ import org.netbeans.spi.jumpto.support.NameMatcherFactory;
 import org.netbeans.spi.jumpto.symbol.SymbolProvider;
 import org.netbeans.spi.jumpto.type.SearchType;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
-import org.openide.util.NbBundle;
 import org.openide.util.Pair;
 import org.openide.util.lookup.ServiceProvider;
-import ru.programpark.mirah.editor.completion.ElementHandleSupport;
 import ru.programpark.mirah.index.MirahIndex;
 import ru.programpark.mirah.index.elements.IndexedClass;
 import ru.programpark.mirah.index.elements.IndexedMethod;
 
+import javax.lang.model.element.*;
+import javax.lang.model.type.*;
+import javax.lang.model.util.SimpleTypeVisitor6;
+import java.io.IOException;
+import java.util.*;
+import java.util.logging.Logger;
+
 /**
- *
  * @author Tomas Zezula
  */
 @ServiceProvider(service=SymbolProvider.class)
@@ -164,24 +123,6 @@ public class MirahSymbolProvider implements SymbolProvider {
                         Collections.<String>emptySet());
 
                 final MirahIndex index = MirahIndex.get(roots);
-                /*
-                final Set<URL> rootUrls = new HashSet<URL>();
-                for(FileObject root : roots) {
-                    if (canceled) {
-                        return;
-                    }          
-                    LOG.info(this,"ROOT: "+root.toURL());
-                    rootUrls.add(root.toURL());
-                }
-
-                if (LOGGER.isLoggable(Level.FINE)) {
-                    LOGGER.log(Level.FINE, "Querying following roots:"); //NOI18N
-                    for (URL url : rootUrls) {
-                        LOGGER.log(Level.FINE, "  {0}", url); //NOI18N
-                    }
-                    LOGGER.log(Level.FINE, "-------------------------"); //NOI18N
-                }
-                */
                 
                 final String text = textToSearch;
 
@@ -194,8 +135,7 @@ public class MirahSymbolProvider implements SymbolProvider {
 //                        Set<IndexedClass> classes = index.getClasses("Base", QuerySupport.Kind.PREFIX);
                         Set<IndexedClass> classes = index.getClasses(text, QuerySupport.Kind.CASE_INSENSITIVE_PREFIX);
 //                        Set<IndexedClass> classes = index.getAllClasses();
-                        for( IndexedClass indexedClass : classes )
-                        {
+                        for (IndexedClass indexedClass : classes) {
                             String className = indexedClass.getName();
                             if ( className.indexOf("$Closure") != -1 || className.indexOf("$ZBinding") != -1) {
                                 int t = 0;
@@ -236,8 +176,7 @@ public class MirahSymbolProvider implements SymbolProvider {
                                     fqn));
                         }
                         Set<IndexedMethod> methods = index.getMethods(text, null, QuerySupport.Kind.CASE_INSENSITIVE_PREFIX);
-                        for( IndexedMethod indexedMethod : methods )
-                        {
+                        for (IndexedMethod indexedMethod : methods) {
                             String[] signatures = new String[]{};
 //                            ElementHandle eh = ElementHandle.createTypeElementHandle(ElementKind.METHOD, "");
 //                            ElementHandle eh = ElementHandleSupport.createHandle(null, indexedMethod.getName(), org.netbeans.modules.csl.api.ElementKind.METHOD, new HashSet<Modifier>());
@@ -353,8 +292,7 @@ public class MirahSymbolProvider implements SymbolProvider {
                 });
             } catch (IOException ioe) {
                 Exceptions.printStackTrace(ioe);
-            }
-            catch (InterruptedException ie) {
+            } catch (InterruptedException ie) {
                 return;
             }
         } finally {

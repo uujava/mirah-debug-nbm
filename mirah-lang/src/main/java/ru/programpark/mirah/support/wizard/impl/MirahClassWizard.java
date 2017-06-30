@@ -40,15 +40,14 @@
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 
-package ca.weblite.netbeans.mirah.support.wizard.impl;
+package ru.programpark.mirah.support.wizard.impl;
 
-import java.util.Arrays;
 import java.util.List;
-import org.netbeans.api.project.ProjectUtils;
+
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.templates.TemplateRegistration;
 import org.netbeans.api.templates.TemplateRegistrations;
-import ca.weblite.netbeans.mirah.support.wizard.AbstractMirahWizard;
+import ru.programpark.mirah.support.wizard.AbstractMirahWizard;
 import org.openide.util.NbBundle;
 
 /**
@@ -56,34 +55,34 @@ import org.openide.util.NbBundle;
  * @author Martin Janicek
  */
 @NbBundle.Messages(value = {
-    "LBL_DisplayName_MirahClass=VRuby Класс",
-    "LBL_DisplayName_MirahScript=VRuby Скрипт"
+    "LBL_DisplayName_MirahClass=VRuby Class",
+    "LBL_DisplayName_MirahScript=VRuby Script"
 })
 @TemplateRegistrations(value = {
     @TemplateRegistration(
-        folder = "Mirah",
+        folder = "VRuby",
         position = 100,
-        content = "/ca/weblite/netbeans/mirah/support/resources/MirahClass.mirah",
+        content = "/ru/programpark/mirah/support/resources/MyClass.vrb",
         scriptEngine = "freemarker",
         displayName = "#LBL_DisplayName_MirahClass",
-        iconBase = "ca/weblite/netbeans/mirah/support/resources/MirahFile16x16.png",
-        description = "/ca/weblite/netbeans/mirah/support/resources/MirahClass.html",
+        iconBase = "ru/programpark/mirah/support/resources/MirahFile16x16.png",
+        description = "/ru/programpark/mirah/support/resources/MyClass.html",
         category = {
-            "mirah",
+            "vruby",
             "java-main-class"
         }
     ),
 
     @TemplateRegistration(
-        folder = "Mirah",
+        folder = "VRuby",
         position = 110,
-        content = "/ca/weblite/netbeans/mirah/support/resources/MirahScript.mirah",
+        content = "/ru/programpark/mirah/support/resources/MyScript.vrb",
         scriptEngine = "freemarker",
         displayName = "#LBL_DisplayName_MirahScript",
-        iconBase = "ca/weblite/netbeans/mirah/support/resources/MirahFile16x16.png",
-        description = "/ca/weblite/netbeans/mirah/support/resources/MirahScript.html",
+        iconBase = "ru/programpark/mirah/support/resources/MirahFile16x16.png",
+        description = "/ru/programpark/mirah/support/resources/MyScript.html",
         category = {
-            "mirah",
+            "vruby",
             "java-main-class"
         }
     )

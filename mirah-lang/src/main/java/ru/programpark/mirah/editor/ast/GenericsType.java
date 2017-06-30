@@ -5,13 +5,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import mirah.lang.ast.ClassDefinition;
-import mirah.lang.ast.CloneListener;
-import mirah.lang.ast.JavaDoc;
-import mirah.lang.ast.Node;
-import mirah.lang.ast.NodeFilter;
-import mirah.lang.ast.NodeVisitor;
-import mirah.lang.ast.Position;
+
+import mirah.lang.ast.*;
 import ru.programpark.mirah.editor.utils.GenericsUtils;
 
 /**
@@ -239,20 +234,20 @@ public class GenericsType implements Node {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
-//    @Override
-//    public List findChild(NodeFilter nf) {
-//        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-//    }
+    @Override
+    public JavaDoc java_doc() {
+        return null;
+    }
+
+    @Override
+    public Node findChild(NodeFilter nf) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
 
     @Override
     public List findChildren(NodeFilter nf) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
-
-//    @Override
-//    public List findChildren(NodeFilter nf, List list) {
-//        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-//    }
 
     @Override
     public Node findDescendant(NodeFilter nf) {
@@ -261,21 +256,6 @@ public class GenericsType implements Node {
 
     @Override
     public List findDescendants(NodeFilter nf) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-//    @Override
-//    public List findDescendants(NodeFilter nf, List list) {
-//        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-//    }
-
-    @Override
-    public JavaDoc java_doc() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public Node findChild(NodeFilter nf) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
