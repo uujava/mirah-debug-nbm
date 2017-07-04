@@ -156,14 +156,13 @@
             <!--<version>RELEASE81</version>-->
             <scope>provided</scope>
         </dependency>
-        
-<!--        <dependency>
+        <dependency>
             <groupId>org.netbeans.api</groupId>
             <artifactId>org-netbeans-modules-java-source-compat8</artifactId>
             <version>RELEASE82</version>
             <scope>provided</scope>
             <type>nbm</type>
-        </dependency>-->
+        </dependency>
         <dependency>
             <groupId>org.netbeans.api</groupId>
             <artifactId>org-openide-util</artifactId>
