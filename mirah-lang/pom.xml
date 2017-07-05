@@ -388,13 +388,13 @@
 			<version>${netbeans.version}</version>
 			<!--<scope>compile</scope>-->
 		</dependency>
-		<!--        <dependency>
-            <groupId>org.netbeans.api</groupId>
-            <artifactId>org-netbeans-modules-project-ant-compat8</artifactId>
-            <version>RELEASE82</version>
-            <scope>provided</scope>
-            <type>nbm</type>
-        </dependency>-->
+<!--                <dependency>
+                    <groupId>org.netbeans.api</groupId>
+                    <artifactId>org-netbeans-modules-project-ant-compat8</artifactId>
+                    <version>${netbeans.version}</version>
+                    <type>jar</type>
+                    <scope>provided</scope>
+                </dependency>-->
 		<dependency>
 			<groupId>commons-io</groupId>
 			<artifactId>commons-io</artifactId>
@@ -423,6 +423,14 @@
 			<version>0.5</version>
 			<scope>test</scope>
 		</dependency>
+<!--                <dependency>
+                    <groupId>org.netbeans.api</groupId>
+                    <artifactId>org-openide-execution-compat8</artifactId>
+                    <version>${netbeans.version}</version>
+                    <type>jar</type>
+                    <scope>provided</scope>
+                </dependency>-->
+                
 	</dependencies>
 	<build>
 		<plugins>
@@ -496,6 +504,16 @@
 							<id>org.netbeans.api:org-netbeans-modules-parsing-indexing</id>
 							<type>impl</type>
 						</dependency>
+<!--						<dependency>
+							<id>org.netbeans.api:org-netbeans-modules-project-ant-compat8</id>
+							<type>impl</type>
+                                                        <explicitValue>org-netbeans.modules.project.ant.compat8/1 > 1</explicitValue>
+						</dependency>-->
+<!--						<dependency>
+							<id>org.netbeans.api:org-openide-execution-compat8</id>
+							<type>impl</type>
+                                                        <explicitValue>org.openide.execution.compat8/1 > 1</explicitValue>
+						</dependency>-->
 						<!--                        <dependency>
                             <id>org.netbeans.api:org-netbeans-modules-csl-api</id> 
                             <type>impl</type> 

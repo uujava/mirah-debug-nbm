@@ -264,20 +264,20 @@
             <artifactId>org-openide-util-ui</artifactId>
             <version>${netbeans.version}</version>
         </dependency>
-        <dependency>
+<!--        <dependency>
             <groupId>org.netbeans.api</groupId>
             <artifactId>org-netbeans-modules-java-source-compat8</artifactId>
-            <version>RELEASE82</version>
+            <version>${netbeans.version}</version>
             <scope>provided</scope>
             <type>jar</type>
-        </dependency>
-        <dependency>
+        </dependency>-->
+<!--        <dependency>
             <groupId>org.netbeans.api</groupId>
             <artifactId>org-netbeans-modules-project-ant-compat8</artifactId>
-            <version>RELEASE82</version>
+            <version>${netbeans.version}</version>
             <scope>provided</scope>
             <type>jar</type>
-        </dependency>
+        </dependency>-->
         <dependency>
             <groupId>org.netbeans.api</groupId>
             <artifactId>org-netbeans-modules-projectuiapi-base</artifactId>
@@ -402,6 +402,11 @@
                             <type>impl</type> 
                             <explicitValue>org.netbeans.modules.projectuiapi.base/1 > 1</explicitValue> 
                         </dependency>
+<!--                        <dependency>
+                            <id>org.netbeans.api:org-netbeans-modules-project-ant-compat8</id>
+                            <type>impl</type>
+                        </dependency>-->
+                        
 <!--                        <dependency> 
                             <id>org.netbeans.api:org-openide-util</id> 
                             <type>spec</type> 
