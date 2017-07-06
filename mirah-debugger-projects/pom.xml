@@ -7,7 +7,8 @@
 		<version>1.0-SNAPSHOT</version>
 		<!--<relativePath>../pom.xml</relativePath>-->
 	</parent>
-	<artifactId>mirah-debugger-projects</artifactId>
+
+        <artifactId>mirah-debugger-projects</artifactId>
 	<name>mirah-debugger-projects</name>
 	<packaging>nbm</packaging>
 	<repositories>
