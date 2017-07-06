@@ -12,6 +12,7 @@
 		<module>mirah-debugger-projects</module>
 		<module>mirah-lang</module>
 	</modules>
+        
 	<properties>
 		<deploy.version>snapshots</deploy.version>
 		<brandingToken>mirah</brandingToken>
