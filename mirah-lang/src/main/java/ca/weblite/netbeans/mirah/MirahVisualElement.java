@@ -17,15 +17,15 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
 import org.openide.windows.TopComponent;
 
-@MultiViewElement.Registration(
-        displayName = "#LBL_Mirah_VISUAL",
-        iconBase = "ca/weblite/netbeans/mirah/1391571312_application-x-ruby.png",
-        mimeType = "text/x-vruby",
-        persistenceType = TopComponent.PERSISTENCE_NEVER,
-        preferredID = "MirahVisual",
-        position = 2000
-)
-@Messages("LBL_Mirah_VISUAL=Visual")
+//@MultiViewElement.Registration(
+//        displayName = "#LBL_Mirah_VISUAL",
+//        iconBase = "ca/weblite/netbeans/mirah/1391571312_application-x-ruby.png",
+//        mimeType = "text/x-vruby",
+//        persistenceType = TopComponent.PERSISTENCE_NEVER,
+//        preferredID = "MirahVisual",
+//        position = 2000
+//)
+//@Messages("LBL_Mirah_VISUAL=Visual")
 public final class MirahVisualElement extends JPanel implements MultiViewElement {
 
     private MirahDataObject obj;
