@@ -7,6 +7,7 @@
 	<version>1.0-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<name>root</name>
+        
 	<modules>
 		<module>mirah-debugger</module>
 		<module>mirah-debugger-projects</module>
@@ -15,8 +16,6 @@
 	<properties>
 		<deploy.version>snapshots</deploy.version>
 		<brandingToken>mirah</brandingToken>
-		<!-- netbeans.version>RELEASE721</netbeans.version -->
-		<!--<netbeans.version>RELEASE802</netbeans.version>-->
 		<netbeans.version>RELEASE82</netbeans.version>
 		<bundle.namespace>${project.groupId}.${project.artifactId}</bundle.namespace>
 	</properties>
